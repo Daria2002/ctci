@@ -55,7 +55,7 @@ int partition(std::string& str, const int& low, const int& high) {
             swap_letters(str, i, j);
         }
     }
-    swap_letters(str, i, high);
+    swap_letters(str, i + 1, high);
     return (i + 1);
 }
 
