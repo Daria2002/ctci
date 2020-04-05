@@ -90,27 +90,30 @@ bool are_permutations(std::string& first, std::string& second) {
     return true;
 }
 
-// hash table: key = letter, value = number of occurences
-void insert_in_hash_table(const std::string& str, std::unordered_map<char, int>& ht) {
-    for(int i = 0; i < str.size(); i++) {
-        ht[str[i]]++;
-    }
-} 
-
 bool are_permutations_hash_table(std::string& first, std::string& second) {
     if(first.size() != second.size()) {
         return false;
     }
 
-    std::unordered_map<char, int> ht1, ht2;
-    insert_in_hash_table(first, ht1);
-    insert_in_hash_table(second, ht2);
+    std::unordered_map<char, int> ht;
+    for(int i = 0; i < first.size(); i++) {
+        ht[first.at(i)]++;
+    }
 
-    for(const auto &[key, value] : ht1) {
-        if(ht2[key] != value) {
+    char tmp;
+    for(int i = 0; i < second.size(); i++) {
+        tmp = second.at(i);
+        ht[tmp]--;
+        if(ht[tmp] < 0) { // if lower than 0, no way to increase
             return false;
         }
     }
-    
+
+    for(const auto &[key, value] : ht) {
+        if(value != 0) {
+            return false;
+        }
+    }
+
     return true;
 }
