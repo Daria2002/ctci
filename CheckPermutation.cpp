@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 bool are_permutations(std::string&, std::string&);
+bool are_permutations_hash_table(std::string&, std::string&);
 
 /**
  * Given two strings, write a method to decide if one is a permutation of the other.
@@ -18,7 +20,11 @@ int main() {
 
     std::cout << first << " and " << second << " are " << 
     (are_permutations(first, second) ? "" : "not ") << 
-    "permutation of each other" << std::endl;
+    "permutation of each other. Checked using merge sort." << std::endl;
+
+    std::cout << first << " and " << second << " are " << 
+    (are_permutations_hash_table(first, second) ? "" : "not ") << 
+    "permutation of each other. Checked using hash table." << std::endl;
 
     return 0;
 }
@@ -81,5 +87,30 @@ bool are_permutations(std::string& first, std::string& second) {
         if(first[i] != second[i]) 
             return false;
     }
+    return true;
+}
+
+// hash table: key = letter, value = number of occurences
+void insert_in_hash_table(const std::string& str, std::unordered_map<char, int>& ht) {
+    for(int i = 0; i < str.size(); i++) {
+        ht[str[i]]++;
+    }
+} 
+
+bool are_permutations_hash_table(std::string& first, std::string& second) {
+    if(first.size() != second.size()) {
+        return false;
+    }
+
+    std::unordered_map<char, int> ht1, ht2;
+    insert_in_hash_table(first, ht1);
+    insert_in_hash_table(second, ht2);
+
+    for(const auto &[key, value] : ht1) {
+        if(ht2[key] != value) {
+            return false;
+        }
+    }
+    
     return true;
 }
