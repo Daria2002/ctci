@@ -3,6 +3,7 @@
 
 bool perm_of_palin_using_hash_table(const std::string&);
 bool alternate_perm_of_palin_using_hash_table(const std::string&);
+bool is_perm_palindrome_using_bit_vector(const std::string&);
 
 /**
  * Given a string, write a function to check if it is a permutation of a palindrome.
@@ -12,16 +13,20 @@ bool alternate_perm_of_palin_using_hash_table(const std::string&);
  */
 int main() {
     std::string str;
-    std::cout << "Enter the string to check if it is a permutation of a palindrome: " << std::endl;
+    std::cout << "Enter the string to check if it's permutation is a palindrome: " << std::endl;
     std::getline(std::cin, str);
 
-    std::cout << "Check using hash table: String " << str << " is " << 
+    std::cout << "Check if permutation is a palindrome using hash table: String " << str << " have " << 
         (perm_of_palin_using_hash_table(str) ? "" : "not ") <<
-         "a permutation of a polindrome." << std::endl;
+         "got a permutation that is a polindrome." << std::endl;
 
-    std::cout << "Alternate check using hash table: String " << str << " is " << 
+    std::cout << "Check if permutation is a palindrome using alternate hash table: String " << str << " have " << 
         (alternate_perm_of_palin_using_hash_table(str) ? "" : "not ") <<
-         "a permutation of a polindrome." << std::endl;
+         "got a permutation that is a polindrome." << std::endl;
+
+    std::cout << "Check if permutation is a palindrome using bit vector: String " << str << " have " << 
+        (is_perm_palindrome_using_bit_vector(str) ? "" : "not ") <<
+         "got a permutation that is a polindrome." << std::endl;
 }
 
 int get_value(const char& character) {
@@ -69,6 +74,22 @@ int count_odd_occurrences(const std::string& str) {
         }
     }
     return count_odd;
+}
+
+bool more_than_one_set_bit(const int& bit_vector) {
+    return (bit_vector & (bit_vector - 1)) > 0;
+}
+
+bool is_perm_palindrome_using_bit_vector(const std::string& str) {
+    int checker = 0;
+
+    for(const auto& character : str) {
+        int val = get_value(character);
+        if(val == -1) continue;
+        checker ^= (1 << val); // set/unset bit
+    }
+
+    return (!more_than_one_set_bit(checker));
 }
 
 /**
