@@ -2,6 +2,7 @@
 #include <unordered_map>
 
 bool perm_of_palin_using_hash_table(const std::string&);
+bool alternate_perm_of_palin_using_hash_table(const std::string&);
 
 /**
  * Given a string, write a function to check if it is a permutation of a palindrome.
@@ -16,6 +17,10 @@ int main() {
 
     std::cout << "Check using hash table: String " << str << " is " << 
         (perm_of_palin_using_hash_table(str) ? "" : "not ") <<
+         "a permutation of a polindrome." << std::endl;
+
+    std::cout << "Alternate check using hash table: String " << str << " is " << 
+        (alternate_perm_of_palin_using_hash_table(str) ? "" : "not ") <<
          "a permutation of a polindrome." << std::endl;
 }
 
@@ -48,4 +53,29 @@ bool perm_of_palin_using_hash_table(const std::string& str) {
     std::unordered_map<int, int> hash_table;
     fill_hash_table(hash_table, str);
     return number_of_letters_that_occurred_odd_times(hash_table) <= 1;
+}
+
+int count_odd_occurrences(const std::string& str) {
+    std::unordered_map<int, int> hash_table;
+    int count_odd = 0;
+    for(const auto character : str) {
+        int val = get_value(character);
+        if(val == -1) continue;
+        hash_table[val]++;
+        if(hash_table[val] % 2 == 0) {
+            count_odd--;
+        } else {
+            count_odd++;
+        }
+    }
+    return count_odd;
+}
+
+/**
+ * This approach is similar to already introduced hash table, but here 
+ * instead of calling number_of_letters_that_occurred_odd_times, counter is 
+ * used in function where hash table is filled with characters 
+ */
+bool alternate_perm_of_palin_using_hash_table(const std::string& str) {
+    return count_odd_occurrences(str) <= 1;
 }
