@@ -18,14 +18,13 @@ bool check_dimensions(const std::vector<std::vector<int>>&);
  * Input matrix should separate elements with ,
  */
 int main(int argc, char** argv) {
-    MatrixFile::MatrixManager mm;
     if(argc != 2) {
         std::cout << "Please provide one parameter in program. Parameter should be file path." << std::endl;
         return 0;
     }
     std::vector<std::vector<int>> matrix;
     const std::string file_name = argv[1];
-    if(mm.initalize_matrix(file_name, matrix) == false) {
+    if(MatrixFile::MatrixManager::initalize_matrix(file_name, matrix) == false) {
         std::cout << "Matrix is not initailized." << std::endl;
         return 0;
     }
@@ -37,7 +36,7 @@ int main(int argc, char** argv) {
 
     rotate_matrix(matrix);
 
-    if(mm.write_matrix_to_file(file_name, matrix) == false) {
+    if(MatrixFile::MatrixManager::write_matrix_to_file(file_name, matrix) == false) {
          std::cout << "Error while writing matrix to file." << std::endl;
     }
     std::cout << "Rotated matrix is written to " << file_name << std::endl;
