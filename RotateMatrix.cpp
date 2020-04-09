@@ -3,7 +3,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "MatrixHelper.h"
+#include "MatrixHelper.hpp"
 
 void rotate_matrix(std::vector<std::vector<int>>&);
 bool check_dimensions(const std::vector<std::vector<int>>&);
