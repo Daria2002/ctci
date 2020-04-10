@@ -1,7 +1,9 @@
 #include <iostream>
 #include "MyLinkedList.hpp"
+#include <unordered_map>
 
 typedef MyLinkedListManager::Node Node;
+typedef MyLinkedListManager::LinkedList linked_list;
 
 bool get_kth_runner_technique(Node*, const int&, int&);
 Node* get_kth_recursion(Node*, const int&, int&);
@@ -13,21 +15,8 @@ Node* get_kth_recursion(Node*, const int&);
  * i.e. if k=0, last element is returned
  */
 int main() {
-    std::cout << "Enter elements for linked list. When you want to stop adding elements"
-    " add non-number value" << std::endl;
-
-    MyLinkedListManager::LinkedList ll;
-    int value, k, method;
-    std::string str_value;
-    while(true) {
-        std::cin >> str_value;
-        try {
-            value = std::stoi(str_value);
-            ll.append_node(value);
-        } catch(const std::exception& e) {
-            break;
-        }
-    }
+    int k, method, value;
+    linked_list ll = MyLinkedListManager::get_linked_list();
     std::cout << "Enter k (program will return kth node value to last element):" << std::endl;
     std::cin >> k;
     std::cout << "Enter 1 to use recursion approach or 2 for the \"runner\" technique:" << std::endl;

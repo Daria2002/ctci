@@ -37,5 +37,36 @@ namespace MyLinkedListManager {
             tmp = tmp -> next;
         }
     }
+
+    LinkedList get_linked_list() {
+        std::cout << "Enter elements for linked list. When you want to stop adding elements"
+        " add non-number value" << std::endl;
+
+        MyLinkedListManager::LinkedList ll;
+        int value;
+        std::string str_value;
+        while(true) {
+            std::cin >> str_value;
+            try {
+                value = std::stoi(str_value);
+                ll.append_node(value);
+            } catch(const std::exception& e) {
+                break;
+            }
+        }
+        return ll;
+    }
+
+    bool get_node(const LinkedList& ll, int index, Node*& node) {
+        node = ll.head;
+        while (index > 0) {
+            node = node -> next;
+            if(node == nullptr) {
+                return false;
+            }
+            index--;
+        }
+        return true;
+    }
 }
     
