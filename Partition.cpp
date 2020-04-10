@@ -4,7 +4,7 @@
 typedef MyLinkedListManager::LinkedList linked_list;
 typedef MyLinkedListManager::Node node;
 
-node partition(const linked_list&, const int&);
+node* partition_mergining_two_lists(const linked_list&, const int&);
 
 /**
  * Write code to partition a linked list around a value x, such that all nodes 
@@ -21,9 +21,44 @@ int main() {
     std::cout << "Enter a partition value:" << std::endl;
     int partition_value;
     std::cin >> partition_value;
-    node new_linked_list = partition(ll, partition_value);
+    node* new_head = partition_mergining_two_lists(ll, partition_value);
+    MyLinkedListManager::print_linked_list(new_head);
 }
 
-node partition(const linked_list& ll, const int& partition_value) {
+node* partition_mergining_two_lists(const linked_list& ll, const int& partition_value) {
+    node* smaller_list_head = nullptr;
+    node* smaller_list_tail = nullptr;
+    node* bigger_list_head = nullptr;
+    node* bigger_list_tail = nullptr;
 
+    node* tmp = ll.head;
+    while (tmp != nullptr) {
+        if(tmp -> value < partition_value) {
+            if(smaller_list_head == nullptr) {
+                smaller_list_head = tmp;
+                smaller_list_tail = tmp;
+            } else {
+                smaller_list_tail -> next = tmp;
+                smaller_list_tail = smaller_list_tail -> next;
+            }
+        } else {
+            if(bigger_list_head == nullptr) {
+                bigger_list_head = tmp;
+                bigger_list_tail = tmp;
+            } else {
+                bigger_list_tail -> next = tmp;
+                bigger_list_tail = bigger_list_tail -> next;
+            }
+        }
+        tmp = tmp -> next;
+    }
+
+    if(smaller_list_head == nullptr) {
+        return bigger_list_head;
+    }
+
+    // merge lists
+    smaller_list_tail -> next = bigger_list_head;
+
+    return smaller_list_head;
 }

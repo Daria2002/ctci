@@ -41,10 +41,18 @@ namespace MyLinkedListManager {
 
     void print_linked_list(const LinkedList& ll) {
         Node* tmp = ll.head;
-        std::cout << "Linked list:" << std::endl;
+        std::cout << "Linked list:\n";
         while(tmp != nullptr) {
             std::cout << tmp -> value << std::endl;
             tmp = tmp -> next;
+        }
+    }
+
+    void print_linked_list(const Node* head) {
+        std::cout << "Linked list:\n";
+        while(head != nullptr) {
+            std::cout << head -> value << std::endl;
+            head = head -> next;
         }
     }
 
