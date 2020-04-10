@@ -26,7 +26,6 @@ int main() {
     }
     remove_node(node);
     MyLinkedListManager::print_linked_list(ll);
-    delete(node);
 }
 
 /**
@@ -40,6 +39,4 @@ void remove_node(Node* node) {
     Node* new_next = next -> next;
     node -> value = new_value;
     node -> next = new_next;
-    delete(next);
-    delete(new_next);
 }

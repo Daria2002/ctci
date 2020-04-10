@@ -12,6 +12,16 @@ namespace MyLinkedListManager {
             LinkedList() {
                 head = nullptr;
             }
+            ~LinkedList() {
+                Node* current = head;
+                Node* next;
+                while(current != nullptr) {
+                    next = current -> next;
+                    delete current;
+                    current = next;
+                }
+                head = nullptr;
+            }
             void append_node(int n) {
                 Node* new_node = new Node();
                 new_node -> value = n;
@@ -29,7 +39,7 @@ namespace MyLinkedListManager {
             }
     };
 
-    void print_linked_list(LinkedList ll) {
+    void print_linked_list(const LinkedList& ll) {
         Node* tmp = ll.head;
         std::cout << "Linked list:" << std::endl;
         while(tmp != nullptr) {
