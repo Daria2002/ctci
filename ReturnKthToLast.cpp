@@ -4,7 +4,8 @@
 typedef MyLinkedListManager::Node Node;
 
 bool get_kth_runner_technique(Node*, const int&, int&);
-int get_kth_recursion(Node*, const int&, int&);
+Node* get_kth_recursion(Node*, const int&, int&);
+Node* get_kth_recursion(Node*, const int&);
 
 /**
  * Implement an algorithm to find the kth to last element
@@ -32,7 +33,7 @@ int main() {
     std::cout << "Enter 1 to use recursion approach or 2 for the \"runner\" technique:" << std::endl;
     std::cin >> method;
     if(method == 1) {   
-        value = 0;
+        value = get_kth_recursion(ll.head, k) -> value;
     } else if(method == 2) {
         if(get_kth_runner_technique(ll.head, k, value) == false) {
             std::cout << "k value is greater than a size of linked list!" << std::endl;
@@ -42,7 +43,7 @@ int main() {
         std::cout << "Non of the proposed methods was choosen." << std::endl;
         return 0;
     }
-    std::cout << "K-th value to the last is " << value << std::endl;
+    std::cout << "K-th value to the last is " << value << "." << std::endl;
 }
 
 bool get_kth_runner_technique(Node* head, const int& k, int& value) {
@@ -68,6 +69,20 @@ bool get_kth_runner_technique(Node* head, const int& k, int& value) {
     return true;
 }
 
-int get_kth_recursion(Node* head, const int& k, int& i) {
+Node* get_kth_recursion(Node* head, const int& k) {
+    int i = 0;
+    return get_kth_recursion(head, k, i);
+}
 
+Node* get_kth_recursion(Node* head, const int& k, int& i) {
+    if(head == nullptr) {
+        return nullptr;
+    }
+
+    Node* node = get_kth_recursion(head -> next, k, i);
+    i++;
+    if(i - 1 == k) {
+        return head;
+    } 
+    return node;
 }
