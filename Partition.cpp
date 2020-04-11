@@ -5,6 +5,7 @@ typedef MyLinkedListManager::LinkedList linked_list;
 typedef MyLinkedListManager::Node node;
 
 node* partition_mergining_two_lists(const linked_list&, const int&);
+node* partition_using_head_and_tail_node(const linked_list&, const int&);
 
 /**
  * Write code to partition a linked list around a value x, such that all nodes 
@@ -21,8 +22,45 @@ int main() {
     std::cout << "Enter a partition value:" << std::endl;
     int partition_value;
     std::cin >> partition_value;
-    node* new_head = partition_mergining_two_lists(ll, partition_value);
+    std::cout << "Enter 1 to partition a linked list aroung partition value using"
+    " merging two lists method or 2 to partition using head and tail node.\n";
+    int method;
+    std::cin >> method;
+    node* new_head = new node();
+    switch (method)
+    {
+    case 1:
+        new_head = partition_mergining_two_lists(ll, partition_value);
+        break;
+    case 2:
+        new_head = partition_using_head_and_tail_node(ll, partition_value);
+        break;
+    default:
+        std::cout << "Non of the proposed methods was choosen.\n";
+        break;
+    }
+     
     MyLinkedListManager::print_linked_list(new_head);
+}
+
+node* partition_using_head_and_tail_node(const linked_list& ll, const int& partition_value) {
+    node* head = ll.head;
+    node* tail = ll.head;
+    node* tmp = ll.head;
+    while (tmp != nullptr) {
+        node* next = tmp -> next;
+        if(tmp -> value < partition_value) {
+            tmp -> next = head;
+            head = tmp;
+        } else {
+            tail -> next = tmp;
+            tail = tmp;
+        }
+        tmp = next;
+    }
+    
+    tail -> next = nullptr;
+    return head;
 }
 
 node* partition_mergining_two_lists(const linked_list& ll, const int& partition_value) {
