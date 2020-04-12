@@ -75,6 +75,16 @@ namespace MyLinkedListManager {
         return ll;
     }
 
+    int get_size(Node* head) {
+        int size = 0;
+        while (head != nullptr)
+        {
+            size++;
+            head = head -> next;
+        }
+        return size;
+    }
+
     bool get_node(const LinkedList& ll, int index, Node*& node) {
         node = ll.head;
         while (index > 0) {
