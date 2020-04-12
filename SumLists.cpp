@@ -32,40 +32,31 @@ int main() {
 
 
 void sum_linked_list(node* head1, node* head2, node*& head_result, int residue) {
-    int sum;
-    if(head_result == nullptr) {
-        head_result = new node();
+    if(head1 == nullptr && head2 == nullptr && residue == 0) {
+        return;
     }
-    if(head1 != nullptr && head2 != nullptr) {
-        sum = head1 -> value + head2 -> value + residue;
-        residue = sum/10;
-        sum = sum % 10;
-        head_result -> value = sum;
-        sum_linked_list(head1 -> next, head2 -> next, head_result -> next, residue);
-    } else if(head1 != nullptr) {
-        sum = head1 -> value + residue;
-        residue = sum/10;
-        sum = sum % 10;
-        head_result -> value = sum;
-        sum_linked_list(head1 -> next, nullptr, head_result -> next, residue);
-    } else if(head2 != nullptr) {
-        sum = head2 -> value + residue;
-        residue = sum/10;
-        sum = sum % 10;
-        head_result -> value = sum;
-        sum_linked_list(nullptr, head2 -> next, head_result -> next, residue);
-    } else {
-        if(residue != 0) {
-            head_result -> value = residue;
-            head_result -> next = nullptr;
-        } else {
-            head_result = nullptr;
-        }
+    int sum = residue;
+    head_result = new node();
+    if(head1 != nullptr) {
+        sum += head1 -> value;
     }
+    if(head2 != nullptr) {
+        sum += head2 -> value;
+    }
+    residue = sum/10;
+    sum = sum % 10;
+    head_result -> value = sum;
+    if(head1 == nullptr || head2 == nullptr) {
+        sum_linked_list(head1 == nullptr ? nullptr : head1 -> next,
+                        head2 == nullptr ? nullptr : head2 -> next,
+                        head_result -> next, residue);
+        return;
+    }
+    sum_linked_list(head1 -> next, head2 -> next, head_result -> next, residue);
 }
 
 node* sum_linked_list(node* head1, node* head2) {
-    node* head_result = new node();
+    node* head_result;
     sum_linked_list(head1, head2, head_result, 0);
     return head_result;
 }
