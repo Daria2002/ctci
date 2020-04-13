@@ -1,7 +1,7 @@
 #include <iostream>
 #include "MyLinkedList.hpp"
 #include <vector>
-#include <bits/stdc++.h> 
+#include <stack>
 
 typedef MyLinkedListManager::Node node;
 typedef MyLinkedListManager::LinkedList linked_list;
