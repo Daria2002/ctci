@@ -37,6 +37,18 @@ namespace MyLinkedListManager {
                 tmp -> next = new_node;
                 return;
             }
+            void append_node(Node* n) {
+                if(head == nullptr) {
+                    head = n;
+                    return;
+                }
+                Node* tmp = head;
+                while(tmp -> next != nullptr) {
+                    tmp = tmp -> next;
+                }
+                tmp -> next = n;
+                return;
+            }
     };
 
     void print_linked_list(const LinkedList& ll) {
