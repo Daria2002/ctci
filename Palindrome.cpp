@@ -6,8 +6,17 @@
 typedef MyLinkedListManager::Node node;
 typedef MyLinkedListManager::LinkedList linked_list;
 
+class Result {
+    public:
+        Result(bool result, node* node) : _result(result), _node(node) {};
+        bool _result;
+        node* _node;
+};
+
 bool is_palindrome_the_runner_technique(const linked_list&);
 bool is_palindrome_reverse_and_compare(const linked_list&);
+bool is_palindrome_recursive(const linked_list&);
+Result is_palindrome_recursive(node*, int);
 bool is_equal(node*, node*);
 linked_list reverse(const linked_list&);
 
@@ -20,7 +29,7 @@ int main() {
     bool is_palindrome = is_palindrome_reverse_and_compare(ll);
     int method;
     std::cout << "Choose method to check: 1-reverse and compare, "
-    "2-the \"runner\" technique\n";
+    "2-the \"runner\" technique, 3-recursive function.\n";
     std::cin >> method;
 
     switch (method) {
@@ -29,6 +38,9 @@ int main() {
         break;
     case 2:
         is_palindrome = is_palindrome_the_runner_technique(ll);
+        break;
+    case 3:
+        is_palindrome = is_palindrome_recursive(ll);
         break;
     default:
         std::cout << "None of the methods has not been choosen.\n";
@@ -71,6 +83,30 @@ linked_list reverse(const linked_list& ll1) {
         }
     }
     return ll2;
+}
+
+bool is_palindrome_recursive(const linked_list& ll) {
+    int length = MyLinkedListManager::get_size(ll.head);
+    return is_palindrome_recursive(ll.head, length)._result;
+}
+
+Result is_palindrome_recursive(node* head, int length) {
+    // even number of nodes (return middle node closer to end)
+    if(length == 0) {
+        return Result(true, head);
+    }
+    // odd number of nodes (skip middle node)
+    if(length == 1) {
+        return Result(true, head -> next);
+    }
+    
+    Result result = is_palindrome_recursive(head -> next, length - 2);
+    if(result._node -> value != head -> value) {
+        result._result = false;
+    }
+
+    result._node = result._node -> next;
+    return result;
 }
 
 bool is_palindrome_the_runner_technique(const linked_list& ll1) {
