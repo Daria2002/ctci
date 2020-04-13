@@ -6,6 +6,7 @@
 typedef MyLinkedListManager::Node node;
 typedef MyLinkedListManager::LinkedList linked_list;
 
+bool is_palindrome_the_runner_technique(const linked_list&);
 bool is_palindrome_reverse_and_compare(const linked_list&);
 bool is_equal(node*, node*);
 linked_list reverse(const linked_list&);
@@ -17,7 +18,24 @@ int main() {
     std::cout << "Checking if a linked list is a palindrome.\n";
     linked_list ll = MyLinkedListManager::get_linked_list();
     bool is_palindrome = is_palindrome_reverse_and_compare(ll);
-    std::cout << "Linked list is " << (is_palindrome ? "" : "not ") << "palindrome.\n";
+    int method;
+    std::cout << "Choose method to check: 1-reverse and compare, "
+    "2-the \"runner\" technique\n";
+    std::cin >> method;
+
+    switch (method) {
+    case 1:
+        is_palindrome = is_palindrome_reverse_and_compare(ll);
+        break;
+    case 2:
+        is_palindrome = is_palindrome_the_runner_technique(ll);
+        break;
+    default:
+        std::cout << "None of the methods has not been choosen.\n";
+        return 0;
+    }
+
+    std::cout << "Linked list is " << (is_palindrome ? "" : "not ") << "a palindrome.\n";
 }
 
 bool is_equal(node* head1, node* head2) {
@@ -53,6 +71,32 @@ linked_list reverse(const linked_list& ll1) {
         }
     }
     return ll2;
+}
+
+bool is_palindrome_the_runner_technique(const linked_list& ll1) {
+    node* fast = ll1.head;
+    node* slow = ll1.head;
+    std::stack<int> stack;
+    
+    while(fast != nullptr && fast -> next != nullptr) {
+        stack.push(slow -> value);
+        slow = slow -> next;
+        fast = fast -> next -> next;
+    }
+    // odd numbers of elements in linked list
+    if(fast != nullptr) {
+        slow = slow -> next;
+    }
+
+    while (!stack.empty()) {
+        int value = stack.top();
+        stack.pop();
+        if(value != slow -> value) {
+            return false;
+        }
+        slow = slow -> next;
+    }
+    return true;
 }
 
 bool is_palindrome_reverse_and_compare(const linked_list& ll1) {
