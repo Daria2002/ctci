@@ -51,6 +51,16 @@ namespace MyLinkedListManager {
             }
     };
 
+    Node* get_tail(Node* head) {
+        if(head == nullptr) {
+            return head;
+        }
+        while (head -> next != nullptr) {
+            head = head -> next;
+        }
+        return head;
+    }
+
     void print_linked_list(const LinkedList& ll) {
         Node* tmp = ll.head;
         std::cout << "Linked list:\n";

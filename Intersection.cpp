@@ -17,19 +17,9 @@ node* create_intersection() {
     return head;
 }
 
-node* get_tail(node* head) {
-    if(head == nullptr) {
-        return head;
-    }
-    while (head -> next != nullptr) {
-        head = head -> next;
-    }
-    return head;
-}
-
 bool same_tail(node* head1, node* head2) {
-    node* tail1 = get_tail(head1);
-    node* tail2 = get_tail(head2);
+    node* tail1 = MyLinkedListManager::get_tail(head1);
+    node* tail2 = MyLinkedListManager::get_tail(head2);
     return tail1 == tail2;
 }
 
