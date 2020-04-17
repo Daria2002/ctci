@@ -1,3 +1,6 @@
+#ifndef __STACKEXCEPTIONS_HPP
+#define __STACKEXCEPTIONS_HPP
+
 #include <exception>
 
 class stack_full_exception : public std::exception {
@@ -11,3 +14,5 @@ class empty_stack_exception : public std::exception {
         return "Stack is empty.";
     }
 };
+
+#endif

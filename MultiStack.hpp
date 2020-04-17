@@ -1,8 +1,9 @@
 #include "StackExceptions.hpp"
+#include "BaseStack.hpp"
 #include <vector>
 
 template <typename T>
-class MultiStack {
+class MultiStack : public BaseStack<T> {
     class StackInfo {
         public:
             StackInfo(const int& start, const int& capacity) : 
@@ -10,8 +11,14 @@ class MultiStack {
             int _size;
             int _start;
             int _capacity;
+            bool is_full() const {
+                return _size == _capacity;
+            }
             bool is_empty() const {
                 return _size == 0;
+            }
+            int last_element_index() const {
+                return (_start + _size - 1);
             }
             int last_capacity_index(const int& max) const {
                 return ((_start + _size) % max);
@@ -24,13 +31,9 @@ class MultiStack {
                 int end = _start + _capacity;
                 return _start <= contiguous_index && end < contiguous_index;
             }
-        private:
     };
     public:
-        MultiStack(const int& number_of_stacks, const int& default_size) : 
-        _number_of_stacks(number_of_stacks), _capacity(default_size) {
-            values.resize(number_of_stacks * default_size);
-        }
+        using BaseStack<T>::BaseStack;
 
         void push(const int& stack_num, const T& value) {
             StackInfo stack = info.at(stack_num);
@@ -52,7 +55,7 @@ class MultiStack {
                 throw e;
             }
             T value = values[stack.last_element_index()];
-            values[stack.last_element_index()] = NULL;
+            values[stack.last_element_index()] = 0;
             stack._size--;
             return value;
         }
@@ -63,8 +66,6 @@ class MultiStack {
         }
 
     private:
-        int _capacity;
-        int _number_of_stacks;
         std::vector<StackInfo> info;
         std::vector<T> values;
 
@@ -78,7 +79,7 @@ class MultiStack {
         }
 
         void expand(const int& stack_num) {
-            shift((stack_num + 1) % info._size());
+            shift((stack_num + 1) % info.size());
             info[stack_num]._capacity++;
         }
 
@@ -88,15 +89,15 @@ class MultiStack {
 
         void shift(const int& stack_num) {
             StackInfo stack = info[stack_num];
-            if(stack._size() >= stack._capacity) {
-                StackInfo next_stack = info[(stack + 1) % info._size()];
-                shift(next_stack);
+            if(stack._size >= stack._capacity) {
+                StackInfo next_stack = info[(stack_num + 1) % info.size()];
+                shift((stack_num + 1) % info.size());
                 stack._capacity++;
             }
-            int index = stack.last_capacity_index(_number_of_stacks * _capacity);
-            while(stack.is_within_stack_capacity(index, _number_of_stacks * _capacity)) {
-                values[index] = values[previous_index(index)];
-                index = previous_index(index);
+            int index = stack.last_capacity_index(BaseStack<T>::_number_of_stacks * BaseStack<T>::_size);
+            while(stack.is_within_stack_capacity(index, BaseStack<T>::_number_of_stacks * BaseStack<T>::_size)) {
+                values[index] = values[previous_index(index, BaseStack<T>::_number_of_stacks * BaseStack<T>::_size)];
+                index = previous_index(index, BaseStack<T>::_number_of_stacks * BaseStack<T>::_size);
             }
         }
 };  
