@@ -11,7 +11,7 @@ template <typename T>
 class FixedMultiStack : public BaseStack<T> {
     public:
         using BaseStack<T>::BaseStack;
-        void push(const int& stack_num, const T& value) {
+        void push(const int& stack_num, const T& value) override {
             if(is_full(stack_num)) {
                 stack_full_exception e;
                 throw e;
@@ -19,7 +19,7 @@ class FixedMultiStack : public BaseStack<T> {
             values[get_top_position(stack_num)] = value;
             sizes[stack_num]++;
         }
-        T pop(const int& stack_num) {
+        T pop(const int& stack_num) override {
             if(is_empty(stack_num)) {
                 empty_stack_exception e;
                 throw e;
@@ -30,12 +30,25 @@ class FixedMultiStack : public BaseStack<T> {
             sizes[stack_num]--;
             return value;
         }
-        T peek(const int& stack_num) {
+        T peek(const int& stack_num) override {
             if(is_empty(stack_num)) {
                 empty_stack_exception e;
                 throw e;
             }
             return values[get_top_position(stack_num)];
+        }
+        void print_status() override {
+            for(int i = 0; i < BaseStack<T>::_number_of_stacks; i++) {
+                std::cout << "stack no. " << i << '\n';
+                std::cout << "-------------------------\n";
+                std::cout << "size = " << sizes[i] << '\n';
+                std::cout << "capacity = " << BaseStack<T>::_size << '\n';
+                std::cout << "stack elements: " << '\n';
+                int start_index = i * BaseStack<T>::_size;
+                for(int j = start_index; j < start_index + BaseStack<T>::_size; i++) {
+                    std::cout << values[j] << ", ";
+                }
+            }
         }
     private:
         bool is_empty(const int& stack_num) const {

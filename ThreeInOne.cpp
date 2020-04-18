@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include <sstream>
+#include <memory>
 
 template <typename T>
 std::map<std::string, std::function<int(BaseStack<T>, int, int)>> get_functions() {
@@ -35,17 +36,13 @@ std::vector<std::string> str_to_arr(const std::string& str, const char& regex) {
 }
 
 template <typename T>
-void print_status(BaseStack<T>& base_stack) {
-    
-}
-
-template <typename T>
 void process_stack_operations(BaseStack<T>& base_stack) {
     std::map<std::string, std::function<int(BaseStack<int>, int, int)>> functions = get_functions<int>();
     std::string input;
+    std::getchar();
     while(input != "STOP") {
         std::cout << "Please enter command:\n";
-        std::cin >> input; // get command
+        std::getline(std::cin, input);
         std::vector<std::string> command_and_args = str_to_arr(input, ' ');
         std::string command = command_and_args.at(0);
         if((command != "PUSH" && command != "POP" && command != "PEEK") || command_and_args.size() < 2) {
@@ -55,15 +52,15 @@ void process_stack_operations(BaseStack<T>& base_stack) {
         std::vector<std::string> args(command_and_args.begin() + 1, command_and_args.end());
         try {
             if(args.size() > 1) {
-                std::cout << "result = " << functions[command](base_stack, std::stoi(args[0]), std::stoi(args[1])) << "\n";
+                functions[command](base_stack, std::stoi(args[0]), std::stoi(args[1]));
             } else {
-                functions[command](base_stack, std::stoi(args[0]), 0);
+                std::cout << "result = " << functions[command](base_stack, std::stoi(args[0]), 0) << "\n";
             }
         } catch(const std::exception& e) {
             invalid_stack_command exc;
             throw exc;
         }
-        print_status(base_stack);
+        base_stack.print_status();
     }
     return;
 }
@@ -90,11 +87,11 @@ int main() {
     std::cout << "Enter number of stacks:\n";
     int number_of_stacks;
     std::cin >> number_of_stacks;
-    BaseStack<int> stack;
     if(stack_type == 1) {
-        stack = FixedMultiStack<int>(number_of_stacks, stack_size);
+        std::shared_ptr<FixedMultiStack<int>> stack(new FixedMultiStack<int>(number_of_stacks, stack_size));
+        process_stack_operations(*stack);
     } else {
-        stack = MultiStack<int>(number_of_stacks, stack_size);
+        std::shared_ptr<MultiStack<int>> stack(new MultiStack<int>(number_of_stacks, stack_size));
+        process_stack_operations(*stack);
     }
-    process_stack_operations(stack);
 }

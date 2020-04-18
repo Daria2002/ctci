@@ -1,6 +1,7 @@
 #include "StackExceptions.hpp"
 #include "BaseStack.hpp"
 #include <vector>
+#include <iostream>
 
 template <typename T>
 class MultiStack : public BaseStack<T> {
@@ -63,6 +64,21 @@ class MultiStack : public BaseStack<T> {
         T peek(const int& stack_num) const {
             StackInfo stack = info[stack_num];
             return values[stack.last_element_index()];
+        }
+
+        void print_status() {
+            int index = 0;
+            for(StackInfo stack : info) {
+                std::cout << "stack no. " << index << '\n';
+                std::cout << "-------------------------\n";
+                std::cout << "size = " << stack._size << '\n';
+                std::cout << "capacity = " << stack._capacity << '\n';
+                std::cout << "stack elements: " << '\n';
+                for(int i = stack._start; i < stack._start + stack._size; i++) {
+                    std::cout << values[i % (BaseStack<T>::_number_of_stacks * BaseStack<T>::_size)] << ", ";
+                }
+            }
+            index++;
         }
 
     private:
