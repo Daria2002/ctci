@@ -8,16 +8,16 @@
 #include <memory>
 
 template <typename T>
-std::map<std::string, std::function<int(BaseStack<T>, int, int)>> get_functions() {
-    std::map<std::string, std::function<int(BaseStack<T>, int, int)>> functions;
-    functions.emplace("PUSH", [&](BaseStack<T> stack, int stack_num, int value) {
+std::map<std::string, std::function<int(BaseStack<T>&, int, int)>> get_functions() {
+    std::map<std::string, std::function<int(BaseStack<T>&, int, int)>> functions;
+    functions.emplace("PUSH", [&](BaseStack<T>& stack, int stack_num, int value) {
         stack.push(stack_num, value);
         return 0;
     });
-    functions.emplace("PEEK", [&](BaseStack<T> stack, int stack_num, int value) {
+    functions.emplace("PEEK", [&](BaseStack<T>& stack, int stack_num, int value) {
         return stack.peek(stack_num);
     });
-    functions.emplace("POP", [&](BaseStack<T> stack, int stack_num, int value) {
+    functions.emplace("POP", [&](BaseStack<T>& stack, int stack_num, int value) {
         return stack.pop(stack_num);
     });
     return functions;
@@ -37,7 +37,7 @@ std::vector<std::string> str_to_arr(const std::string& str, const char& regex) {
 
 template <typename T>
 void process_stack_operations(BaseStack<T>& base_stack) {
-    std::map<std::string, std::function<int(BaseStack<int>, int, int)>> functions = get_functions<int>();
+    std::map<std::string, std::function<int(BaseStack<int>&, int, int)>> functions = get_functions<int>();
     std::string input;
     std::getchar();
     while(input != "STOP") {
