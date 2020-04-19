@@ -12,71 +12,55 @@ class FixedMultiStack : public BaseStack<T> {
     public:
         using BaseStack<T>::BaseStack;
         void push(const int& stack_num, const T& value) override {
-            if(sizes.size() == 0) {
-                for(int i = 0; i < BaseStack<T>::_number_of_stacks; i++) {
-                    sizes.push_back(0);
-                }
-            }
-            if(values.size() == 0) {
-                for(int i = 0; i < BaseStack<T>::_number_of_stacks * BaseStack<T>::_size; i++) {
-                    values.push_back(0);
-                }
+            if(!initialized) {
+                initialize();
             }
             if(is_full(stack_num)) {
                 stack_full_exception e;
                 throw e;
             }
-            values[get_top_position(stack_num)] = value;
+            // + 1 because we want to take next positon 
+            values.insert(values.begin() + get_top_position(stack_num) + 1, value);
             sizes[stack_num]++;
         }
         T pop(const int& stack_num) override {
-            if(sizes.size() == 0) {
-                for(int i = 0; i < BaseStack<T>::_number_of_stacks; i++) {
-                    sizes.push_back(0);
-                }
-            }
-            if(values.size() == 0) {
-                for(int i = 0; i < BaseStack<T>::_number_of_stacks * BaseStack<T>::_size; i++) {
-                    values.push_back(0);
-                }
+            if(!initialized) {
+                initialize();
             }
             if(is_empty(stack_num)) {
                 empty_stack_exception e;
                 throw e;
             }
             int index = get_top_position(stack_num);
-            T value = values[index];
-            values[index] = 0; // clear value
+            T value = values.at(index);
+            values.insert(values.begin() + index, 0);
             sizes[stack_num]--;
             return value;
         }
         T peek(const int& stack_num) override {
-            if(sizes.size() == 0) {
-                for(int i = 0; i < BaseStack<T>::_number_of_stacks; i++) {
-                    sizes.push_back(0);
-                }
-            }
-            if(values.size() == 0) {
-                for(int i = 0; i < BaseStack<T>::_number_of_stacks * BaseStack<T>::_size; i++) {
-                    values.push_back(0);
-                }
+            if(!initialized) {
+                initialize();
             }
             if(is_empty(stack_num)) {
                 empty_stack_exception e;
                 throw e;
             }
-            return values[get_top_position(stack_num)];
+            return values.at(get_top_position(stack_num));
         }
         void print_status() override {
+            std::cout << "============\n";
+            std::cout << "Stack status\n";
+            std::cout << "============\n";
             for(int i = 0; i < BaseStack<T>::_number_of_stacks; i++) {
-                std::cout << "stack no. " << i << '\n';
-                std::cout << "-------------------------\n";
-                std::cout << "size = " << sizes[i] << '\n';
-                std::cout << "capacity = " << BaseStack<T>::_size << '\n';
-                std::cout << "stack elements: " << '\n';
+                std::cout << "\t-------------------------\n";
+                std::cout << "\tstack no. " << i << '\n';
+                std::cout << "\t-------------------------\n";
+                std::cout << "\tsize = " << sizes[i] << '\n';
+                std::cout << "\tcapacity = " << BaseStack<T>::_size << '\n';
+                std::cout << "\tstack elements: " << '\n';
                 int start_index = i * BaseStack<T>::_size;
                 for(int j = start_index; j < start_index + BaseStack<T>::_size; j++) {
-                    std::cout << values[j] << ", ";
+                    std::cout << "\t\t" << values[j] << "\n";
                 }
             }
         }
@@ -91,6 +75,19 @@ class FixedMultiStack : public BaseStack<T> {
             int offset = BaseStack<T>::_size * stack_num;
             return (sizes[stack_num] - 1) + offset;
         }
+        void initialize() {
+            if(sizes.size() == 0) {
+                for(int i = 0; i < BaseStack<T>::_number_of_stacks; i++) {
+                    sizes.push_back(0);
+                }
+            }
+            if(values.size() == 0) {
+                for(int i = 0; i < BaseStack<T>::_number_of_stacks * BaseStack<T>::_size; i++) {
+                    values.push_back(0);
+                }
+            }
+        }
         std::vector<T> values;
         std::vector<int> sizes;
+        bool initialized = false;
 };
