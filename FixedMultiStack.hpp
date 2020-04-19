@@ -10,11 +10,10 @@
 template <typename T>
 class FixedMultiStack : public BaseStack<T> {
     public:
-        using BaseStack<T>::BaseStack;
+        FixedMultiStack(const int number_of_stacks, const int stack_size) : BaseStack<T>(number_of_stacks, stack_size) {
+            initialize();
+        }
         void push(const int& stack_num, const T& value) override {
-            if(!initialized) {
-                initialize();
-            }
             if(is_full(stack_num)) {
                 stack_full_exception e;
                 throw e;
@@ -29,9 +28,6 @@ class FixedMultiStack : public BaseStack<T> {
             sizes[stack_num]++;
         }
         T pop(const int& stack_num) override {
-            if(!initialized) {
-                initialize();
-            }
             if(is_empty(stack_num)) {
                 empty_stack_exception e;
                 throw e;
@@ -43,9 +39,6 @@ class FixedMultiStack : public BaseStack<T> {
             return value;
         }
         T peek(const int& stack_num) override {
-            if(!initialized) {
-                initialize();
-            }
             if(is_empty(stack_num)) {
                 empty_stack_exception e;
                 throw e;

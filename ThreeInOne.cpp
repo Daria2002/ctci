@@ -94,11 +94,11 @@ int main() {
     std::cout << "Enter number of stacks:\n";
     int number_of_stacks;
     std::cin >> number_of_stacks;
+    BaseStack<int> stack;
     if(stack_type == 1) {
-        std::shared_ptr<FixedMultiStack<int>> stack(new FixedMultiStack<int>(number_of_stacks, stack_size));
-        process_stack_operations(*stack);
+        stack = FixedMultiStack<int>(number_of_stacks, stack_size);
     } else {
-        std::shared_ptr<MultiStack<int>> stack(new MultiStack<int>(number_of_stacks, stack_size));
-        process_stack_operations(*stack);
+        stack = MultiStack<int>(number_of_stacks, stack_size);
     }
+    process_stack_operations(stack);
 }
