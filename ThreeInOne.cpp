@@ -50,15 +50,22 @@ void process_stack_operations(BaseStack<T>& base_stack) {
             throw e;
         }
         std::vector<std::string> args(command_and_args.begin() + 1, command_and_args.end());
+        int arg1, arg2;
         try {
             if(args.size() > 1) {
-                functions[command](base_stack, std::stoi(args[0]), std::stoi(args[1]));
+                arg1 = std::stoi(args[0]);
+                arg2 = std::stoi(args[1]);
             } else {
-                std::cout << "result = " << functions[command](base_stack, std::stoi(args[0]), 0) << "\n";
+                arg1 = std::stoi(args[0]);
+                arg2 = 0;
             }
         } catch(const std::exception& e) {
             invalid_stack_command exc;
             throw exc;
+        }
+        functions[command](base_stack, std::stoi(args[0]), std::stoi(args[1]));
+        if(args.size() == 1) {
+            std::cout << "result = " << functions[command](base_stack, std::stoi(args[0]), 0) << "\n";
         }
         base_stack.print_status();
     }
