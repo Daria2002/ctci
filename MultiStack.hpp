@@ -34,10 +34,11 @@ class MultiStack : public BaseStack<T> {
             }
     };
     public:
-        using BaseStack<T>::BaseStack;
-
-        void push(const int& stack_num, const T& value) {
-            StackInfo stack = info.at(stack_num);
+        MultiStack(const int& number_of_stacks, const int& default_size) : BaseStack<T>(number_of_stacks, default_size) {
+            initialize();
+        }
+        void push(const int& stack_num, const T& value) override {
+            StackInfo& stack = info.at(stack_num);
             if(all_stacks_are_full()) {
                 stack_full_exception e;
                 throw e;
@@ -45,11 +46,11 @@ class MultiStack : public BaseStack<T> {
             if(stack.is_full()) {
                 expand(stack_num);
             } 
-            values.push_back(value);
+            values[stack.last_element_index() + 1] = value;
             stack._size++;
         }
 
-        T pop(const int& stack_num) {
+        T pop(const int& stack_num) override {
             StackInfo stack = info.at(stack_num);
             if(stack.is_empty()) {
                 empty_stack_exception e;
@@ -61,29 +62,42 @@ class MultiStack : public BaseStack<T> {
             return value;
         }
 
-        T peek(const int& stack_num) const {
+        T peek(const int& stack_num) const override {
             StackInfo stack = info[stack_num];
             return values[stack.last_element_index()];
         }
 
-        void print_status() {
+        void print_status() const override {
             int index = 0;
+            std::cout << "============\n";
+            std::cout << "Stack status\n";
+            std::cout << "============\n";
             for(StackInfo stack : info) {
-                std::cout << "stack no. " << index << '\n';
-                std::cout << "-------------------------\n";
-                std::cout << "size = " << stack._size << '\n';
-                std::cout << "capacity = " << stack._capacity << '\n';
-                std::cout << "stack elements: " << '\n';
+                std::cout << "\t-------------------------\n";
+                std::cout << "\tstack no. " << index << '\n';
+                std::cout << "\t-------------------------\n";
+                std::cout << "\tsize = " << stack._size << '\n';
+                std::cout << "\tcapacity = " << stack._capacity << '\n';
+                std::cout << "\tstack elements: " << '\n';
                 for(int i = stack._start; i < stack._start + stack._size; i++) {
-                    std::cout << values[i % (BaseStack<T>::_number_of_stacks * BaseStack<T>::_size)] << ", ";
+                    std::cout << "\t\t" << values[i % (BaseStack<T>::_number_of_stacks * BaseStack<T>::_size)] << '\n';
                 }
+                index++;
             }
-            index++;
         }
 
     private:
         std::vector<StackInfo> info;
         std::vector<T> values;
+
+        void initialize() {
+            for(int i = 0; i < BaseStack<T>::_size * BaseStack<T>::_number_of_stacks; i++) {
+                values.push_back(0);
+            }
+            for(int i = 0; i < BaseStack<T>::_number_of_stacks; i++) {
+                info.push_back(StackInfo(i * BaseStack<T>::_size, BaseStack<T>::_size));
+            }
+        }
 
         bool all_stacks_are_full() {
             for(StackInfo stack : info) {
@@ -104,7 +118,7 @@ class MultiStack : public BaseStack<T> {
         }
 
         void shift(const int& stack_num) {
-            StackInfo stack = info[stack_num];
+            StackInfo& stack = info[stack_num];
             if(stack._size >= stack._capacity) {
                 StackInfo next_stack = info[(stack_num + 1) % info.size()];
                 shift((stack_num + 1) % info.size());

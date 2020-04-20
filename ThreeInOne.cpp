@@ -8,8 +8,8 @@
 #include <memory>
 
 template <typename T>
-std::map<std::string, std::function<int(BaseStack<T>&, int, int)>> get_functions() {
-    std::map<std::string, std::function<int(BaseStack<T>&, int, int)>> functions;
+std::map<std::string, std::function<T(BaseStack<T>&, int, int)>> get_functions() {
+    std::map<std::string, std::function<T(BaseStack<T>&, int, int)>> functions;
     functions.emplace("PUSH", [&](BaseStack<T>& stack, int stack_num, int value) {
         stack.push(stack_num, value);
         return 0;
@@ -37,7 +37,7 @@ std::vector<std::string> str_to_arr(const std::string& str, const char& regex) {
 
 template <typename T>
 void process_stack_operations(BaseStack<T>& base_stack) {
-    std::map<std::string, std::function<int(BaseStack<int>&, int, int)>> functions = get_functions<int>();
+    std::map<std::string, std::function<T(BaseStack<int>&, int, int)>> functions = get_functions<int>();
     std::string input;
     std::getchar();
     while(input != "STOP") {
@@ -63,10 +63,7 @@ void process_stack_operations(BaseStack<T>& base_stack) {
             invalid_stack_command exc;
             throw exc;
         }
-        functions[command](base_stack, std::stoi(args[0]), std::stoi(args[1]));
-        if(args.size() == 1) {
-            std::cout << "result = " << functions[command](base_stack, std::stoi(args[0]), 0) << "\n";
-        }
+        functions[command](base_stack, arg1, arg2);
         base_stack.print_status();
     }
     return;
@@ -94,11 +91,11 @@ int main() {
     std::cout << "Enter number of stacks:\n";
     int number_of_stacks;
     std::cin >> number_of_stacks;
-    BaseStack<int> stack;
+    std::shared_ptr<BaseStack<int>> stack_ptr;
     if(stack_type == 1) {
-        stack = FixedMultiStack<int>(number_of_stacks, stack_size);
+        stack_ptr = std::make_shared<FixedMultiStack<int>>(number_of_stacks, stack_size);
     } else {
-        stack = MultiStack<int>(number_of_stacks, stack_size);
+        stack_ptr = std::make_shared<MultiStack<int>>(number_of_stacks, stack_size);
     }
-    process_stack_operations(stack);
+    process_stack_operations(*stack_ptr);
 }
