@@ -30,7 +30,7 @@ class MultiStack : public BaseStack<T> {
                 }
                 int contiguous_index = index < _start ? index + max : index;
                 int end = _start + _capacity;
-                return _start <= contiguous_index && end < contiguous_index;
+                return _start <= contiguous_index && contiguous_index < end;
             }
     };
     public:
@@ -51,7 +51,7 @@ class MultiStack : public BaseStack<T> {
         }
 
         T pop(const int& stack_num) override {
-            StackInfo stack = info.at(stack_num);
+            StackInfo& stack = info.at(stack_num);
             if(stack.is_empty()) {
                 empty_stack_exception e;
                 throw e;
@@ -77,6 +77,7 @@ class MultiStack : public BaseStack<T> {
                 std::cout << "\tstack no. " << index << '\n';
                 std::cout << "\t-------------------------\n";
                 std::cout << "\tsize = " << stack._size << '\n';
+                std::cout << "\tstart = " << stack._start << '\n';
                 std::cout << "\tcapacity = " << stack._capacity << '\n';
                 std::cout << "\tstack elements: " << '\n';
                 for(int i = stack._start; i < stack._start + stack._size; i++) {
@@ -111,10 +112,16 @@ class MultiStack : public BaseStack<T> {
         void expand(const int& stack_num) {
             shift((stack_num + 1) % info.size());
             info[stack_num]._capacity++;
+            // TODO: reduce capacity for stack that changed
+            // start index 
+        }
+
+        int adjust_index(const int index, const int max) const {
+            return index % max;
         }
 
         int previous_index(const int& index, const int& max) const {
-            return index % max;
+            return adjust_index(index - 1, max);
         }
 
         void shift(const int& stack_num) {
@@ -122,12 +129,12 @@ class MultiStack : public BaseStack<T> {
             if(stack._size >= stack._capacity) {
                 StackInfo next_stack = info[(stack_num + 1) % info.size()];
                 shift((stack_num + 1) % info.size());
-                stack._capacity++;
             }
             int index = stack.last_capacity_index(BaseStack<T>::_number_of_stacks * BaseStack<T>::_size);
             while(stack.is_within_stack_capacity(index, BaseStack<T>::_number_of_stacks * BaseStack<T>::_size)) {
                 values[index] = values[previous_index(index, BaseStack<T>::_number_of_stacks * BaseStack<T>::_size)];
                 index = previous_index(index, BaseStack<T>::_number_of_stacks * BaseStack<T>::_size);
             }
+            stack._start = (stack._start + 1) % (BaseStack<T>::_number_of_stacks * BaseStack<T>::_size);
         }
 };  
