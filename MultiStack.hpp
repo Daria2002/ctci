@@ -59,11 +59,14 @@ class MultiStack : public BaseStack<T> {
             T value = values[stack.last_element_index()];
             values[stack.last_element_index()] = 0;
             stack._size--;
+            std::cout << "Popped value = " << value << '\n';
             return value;
         }
 
         T peek(const int& stack_num) const override {
             StackInfo stack = info[stack_num];
+            T value = values[stack.last_element_index()];
+            std::cout << "Peeked element = " << value << '\n';
             return values[stack.last_element_index()];
         }
 
@@ -112,8 +115,6 @@ class MultiStack : public BaseStack<T> {
         void expand(const int& stack_num) {
             shift((stack_num + 1) % info.size());
             info[stack_num]._capacity++;
-            // TODO: reduce capacity for stack that changed
-            // start index 
         }
 
         int adjust_index(const int index, const int max) const {
@@ -129,6 +130,7 @@ class MultiStack : public BaseStack<T> {
             if(stack._size >= stack._capacity) {
                 StackInfo next_stack = info[(stack_num + 1) % info.size()];
                 shift((stack_num + 1) % info.size());
+                return;
             }
             int index = stack.last_capacity_index(BaseStack<T>::_number_of_stacks * BaseStack<T>::_size);
             while(stack.is_within_stack_capacity(index, BaseStack<T>::_number_of_stacks * BaseStack<T>::_size)) {
@@ -136,5 +138,6 @@ class MultiStack : public BaseStack<T> {
                 index = previous_index(index, BaseStack<T>::_number_of_stacks * BaseStack<T>::_size);
             }
             stack._start = (stack._start + 1) % (BaseStack<T>::_number_of_stacks * BaseStack<T>::_size);
+            stack._capacity--;
         }
 };  

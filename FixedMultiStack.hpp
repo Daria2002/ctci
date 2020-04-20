@@ -31,7 +31,7 @@ class FixedMultiStack : public BaseStack<T> {
             T value = values.at(index);
             values[index] = 0;
             sizes[stack_num]--;
-            std::cout << "Poped value = " << value << '\n';
+            std::cout << "Popped value = " << value << '\n';
             return value;
         }
         T peek(const int& stack_num) const override {
