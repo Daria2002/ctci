@@ -46,7 +46,7 @@ class MultiStack : public BaseStack<T> {
             if(stack.is_full()) {
                 expand(stack_num);
             } 
-            values[stack.last_element_index() + 1] = value;
+            values[(stack.last_element_index() + 1) % values.size()] = value;
             stack._size++;
         }
 
@@ -56,8 +56,8 @@ class MultiStack : public BaseStack<T> {
                 empty_stack_exception e;
                 throw e;
             }
-            T value = values[stack.last_element_index()];
-            values[stack.last_element_index()] = 0;
+            T value = values[stack.last_element_index() % values.size()];
+            values[stack.last_element_index() % values.size()] = 0;
             stack._size--;
             std::cout << "Popped value = " << value << '\n';
             return value;
@@ -122,6 +122,9 @@ class MultiStack : public BaseStack<T> {
         }
 
         int previous_index(const int& index, const int& max) const {
+            if(index == 0) {
+                return max - 1;
+            }
             return adjust_index(index - 1, max);
         }
 
