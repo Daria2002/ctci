@@ -6,6 +6,7 @@
 #include <sstream>
 #include "StackExceptions.hpp"
 #include <memory>
+#include <limits>
 
 class StackNode {
     public:
@@ -14,14 +15,46 @@ class StackNode {
         int _value;
 };
 
-class StackMin {
+class Stack {
     public:
-        StackMin() {}
-        virtual int get_min() const = 0;
         virtual void push(const int value) = 0;
         virtual int peek() const = 0;
         virtual int pop() = 0;
-        virtual void print_status() const = 0;
+        virtual void print_status() const {}
+};
+
+class StackWithMins : public Stack {
+    public:
+        virtual void push(const int value) {
+            mins.push_back(value);
+        }
+        virtual int peek() const {
+            if(is_empty()) {
+                empty_stack_exception e;
+                throw e;
+            }
+            return mins[mins.size() - 1];
+        }
+        virtual int pop() {
+            if(is_empty()) {
+                empty_stack_exception e;
+                throw e;
+            }
+            int value = mins[mins.size() - 1];
+            mins.pop_back();
+            return value;
+        }
+    private:
+        inline bool is_empty() const {
+            return mins.empty();
+        }
+        std::vector<int> mins;
+};
+
+class StackMin : public Stack {
+    public:
+        StackMin() {}
+        virtual int get_min() const = 0;
 };
 
 class StackMinWithSpecialStackNode : public StackMin {
@@ -33,31 +66,47 @@ class StackMinWithSpecialStackNode : public StackMin {
         }
 
         void push(const int value) override {
-            int min = get_min();
+            int min = std::numeric_limits<int>::max();
+            if(!is_empty()) {
+                min = get_min();
+            }
             StackNode new_stack(value, ((min < value) ? min : value));
             values.push_back(new_stack);
         }
 
         int peek() const override {
+            if(is_empty()) {
+                empty_stack_exception e;
+                throw e;
+            }
             int value = values[values.size() - 1]._value;
-            std::cout << "Peeked value = " << value << '\n';
             return value;
         }
 
         int pop() override {
+            if(is_empty()) {
+                empty_stack_exception e;
+                throw e;
+            }
             int value = values[values.size() - 1]._value;
             values.pop_back();
-            std::cout << "Popped value = " << value << '\n';
             return value;
         }
 
         void print_status() const override {
+            if(is_empty()) {
+                std::cout << "Stack is empty.\n";
+                return; 
+            }
             std::cout << "Top value = " << peek() << '\n';
             std::cout << "Min value = " << get_min() << '\n';
         }
 
     private:
         std::vector<StackNode> values;
+        bool is_empty() const {
+            return values.size() == 0;
+        }
 };
 
 class StackMinWithExtraStack : public StackMin {
@@ -65,31 +114,44 @@ class StackMinWithExtraStack : public StackMin {
         StackMinWithExtraStack() : StackMin() {}
 
         int get_min() const override {
-            return values[values.size() - 1]._min;
+            return mins.peek();
         }
 
         void push(const int value) override {
-            int min = get_min();
-            StackNode new_stack(value, ((min < value) ? min : value));
-            values.push_back(new_stack);
+            if(values.empty() || value <= mins.peek()) {
+                mins.push(value);
+            }
+            values.push_back(value);
         }
 
         int peek() const override {
-            return values[values.size() - 1]._value;
+            return values[values.size() - 1];
         }
 
         int pop() override {
-            int value = values[values.size() - 1]._value;
+            int value = values[values.size() - 1];
             values.pop_back();
+            if(value == get_min()) {
+                mins.pop();
+            } 
             return value;
         }
 
         void print_status() const override {
-
+            if(is_empty()) {
+                std::cout << "Stack is empty.\n";
+                return;
+            }       
+            std::cout << "Top value = " << peek() << '\n';
+            std::cout << "Min value = " << get_min() << '\n';
         }
 
     private:
-        std::vector<StackNode> values;
+        std::vector<int> values;
+        StackWithMins mins;
+        inline bool is_empty() const {
+            return values.empty();
+        }
 };
 
 std::map<std::string, std::function<int(StackMin&, int)>> get_functions() {
@@ -122,10 +184,14 @@ std::vector<std::string> str_to_arr(const std::string& str, const char& regex) {
 void process_stack_operations(StackMin& base_stack) {
     std::map<std::string, std::function<int(StackMin&, int)>> functions = get_functions();
     std::string input;
-    std::getchar();
-    while(input != "STOP") {
+    std::getline(std::cin, input);
+    while(true) {
         std::cout << "Please enter command:\n";
         std::getline(std::cin, input);
+        if(input == "STOP") {
+            std::cout << "Program stopped.\n";
+            return;
+        }
         std::vector<std::string> command_and_arg = str_to_arr(input, ' ');
         std::string command = command_and_arg.at(0);
         if((command != "PUSH" && command != "POP" && command != "PEEK") || command_and_arg.size() < 1) {
@@ -144,6 +210,7 @@ void process_stack_operations(StackMin& base_stack) {
             throw exc;
         }
         functions[command](base_stack, arg);
+        base_stack.print_status();
     }
     return;
 }
@@ -155,7 +222,7 @@ int main() {
     
     int method;
     std::cout << "Enter 1 to use stack with special StackNode(value and min of"
-    << " substack. Enter 2 to use stack with help stack used to track min:\n";
+    << " substack). Enter 2 to use stack with help stack used to track min:\n";
     std::shared_ptr<StackMin> stack_ptr;
     switch (method){
         case 1:

@@ -47,15 +47,15 @@ class FixedMultiStack : public BaseStack<T> {
             std::cout << "============\n";
             std::cout << "Stack status\n";
             std::cout << "============\n";
-            for(int i = 0; i < BaseStack<T>::_number_of_stacks; i++) {
+            for(int stack_num = 0; stack_num < BaseStack<T>::_number_of_stacks; stack_num++) {
                 std::cout << "\t-------------------------\n";
-                std::cout << "\tstack no. " << i << '\n';
+                std::cout << "\tstack no. " << stack_num << '\n';
                 std::cout << "\t-------------------------\n";
-                std::cout << "\tsize = " << sizes[i] << '\n';
+                std::cout << "\tsize = " << sizes[stack_num] << '\n';
                 std::cout << "\tcapacity = " << BaseStack<T>::_size << '\n';
                 std::cout << "\tstack elements: " << '\n';
-                int start_index = i * BaseStack<T>::_size;
-                for(int j = start_index; j < start_index + BaseStack<T>::_size; j++) {
+                int start_index = stack_num * BaseStack<T>::_size;
+                for(int j = start_index; j < start_index + sizes[stack_num]; j++) {
                     std::cout << "\t\t" << values[j] << "\n";
                 }
             }

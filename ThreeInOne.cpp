@@ -40,9 +40,13 @@ void process_stack_operations(BaseStack<T>& base_stack) {
     std::map<std::string, std::function<T(BaseStack<int>&, int, int)>> functions = get_functions<int>();
     std::string input;
     std::getchar();
-    while(input != "STOP") {
+    while(true) {
         std::cout << "Please enter command:\n";
         std::getline(std::cin, input);
+        if(input == "STOP") {
+            std::cout << "Program stopped.\n";
+            return;
+        }
         std::vector<std::string> command_and_args = str_to_arr(input, ' ');
         std::string command = command_and_args.at(0);
         if((command != "PUSH" && command != "POP" && command != "PEEK") || command_and_args.size() < 2) {
