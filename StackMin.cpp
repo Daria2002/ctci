@@ -215,6 +215,11 @@ void process_stack_operations(StackMin& base_stack) {
     return;
 }
 
+/**
+ * How would you desifn a stack which, in addition to push and pop, has a 
+ * function min which returns the minimum element? Push, pop and min should
+ * all operate in O(1) time.
+ */
 int main() {
     std::cout << "===========================================\n";
     std::cout << "Program to process operations with StackMin\n";
