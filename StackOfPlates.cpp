@@ -9,23 +9,21 @@
 
 class SetOfStacks {
     public:
-        SetOfStacks(int capacity) : _capacity(capacity) {
-            stacks = std::make_shared<std::vector<std::shared_ptr<std::stack<int>>>>();
-        }
+        SetOfStacks(int capacity) : _capacity(capacity) {}
 
         void push(const int value) {
             std::shared_ptr<std::stack<int>> top_stack = get_top_stack();
             if(top_stack == nullptr || (*top_stack).empty() || (*top_stack).size() == _capacity) {
                 std::shared_ptr<std::stack<int>> new_stack = std::make_shared<std::stack<int>>();
                 (*new_stack).push(value);
-                (*stacks).push_back(new_stack);
+                stacks.push_back(new_stack);
             } else {
                 (*top_stack).push(value);
             }
         }
 
         int pop() {
-            if((*stacks).empty()) {
+            if(stacks.empty()) {
                 empty_stack_exception e;
                 throw e;
             }
@@ -33,17 +31,17 @@ class SetOfStacks {
             int top_value = (*top_stack).top();
             (*top_stack).pop();
             if((*top_stack).empty()) {
-                (*stacks).erase((*stacks).begin() + (*stacks).size() - 1);
+                stacks.erase(stacks.begin() + stacks.size() - 1);
             }
             return top_value;
         }
 
         void print_status() {
             std::cout << "==================\nStack status\n==================\n";
-            std::cout << "Number of substacks = " << (*stacks).size() << '\n';
-            for(int stack_num = 0; stack_num < (*stacks).size(); stack_num++) {
+            std::cout << "Number of substacks = " << stacks.size() << '\n';
+            for(int stack_num = 0; stack_num < stacks.size(); stack_num++) {
                 std::cout << "Substack no. " << stack_num << '\n';
-                std::stack<int> stack = *((*stacks).at(stack_num));
+                std::stack<int> stack = *(stacks.at(stack_num));
                 while(!stack.empty()) {
                     std::cout << stack.top() << '\n';
                     stack.pop();
@@ -51,13 +49,13 @@ class SetOfStacks {
             }
         } 
     private:
-        std::shared_ptr<std::vector<std::shared_ptr<std::stack<int>>>> stacks;
+        std::vector<std::shared_ptr<std::stack<int>>> stacks;
         int _capacity;
         std::shared_ptr<std::stack<int>> get_top_stack() {
-            if(stacks == nullptr || (*stacks).empty()) {
+            if(stacks.empty()) {
                 return nullptr;
             }
-            return (*stacks).at((*stacks).size() - 1);
+            return stacks.at(stacks.size() - 1);
         }
 };
 
