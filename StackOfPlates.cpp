@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stack>
 #include <vector>
 #include "StackExceptions.hpp"
 #include <map>
@@ -7,14 +6,87 @@
 #include <sstream>
 #include <memory>
 
+class StackNode {
+    public:
+        StackNode() {}
+        StackNode(int value) : _value(value) {}
+        StackNode* _below;
+        StackNode* _above;
+        int _value;
+};
+
+class Stack {
+    public:
+        int _capacity;
+        StackNode _top;
+        StackNode _bottom;
+        int _size = 0;
+
+        Stack() {}
+        Stack(int capacity) : _capacity(capacity) {}
+        
+        bool empty() {
+            return _size == 0;
+        }
+
+        bool push(const int value) {
+            if(_size >= _capacity) {
+                return false;
+            }
+            _size++;
+            StackNode new_stack_node(value);
+            if(_size == 1) {
+                _bottom = new_stack_node;
+            }
+            join(new_stack_node, _top);
+            _top = new_stack_node;
+            return true;
+        }
+
+        void join(StackNode& above, StackNode& below) {
+            if(&above != nullptr) {
+                above._below = &below;
+            } 
+            if(&below != nullptr) {
+                below._above = &above;
+            }
+        }
+
+        int size() {
+            return _size;
+        }
+
+        int top() {
+            return _top._value;
+        }
+        
+        int pop() {
+            int old_top_value = _top._value;
+            _size--;
+            _top = *(_top._below);
+            _top._above = nullptr;
+            return old_top_value;
+        }
+
+        int remove_bottom() {
+            int bottom_value = _bottom._value;
+            _bottom = *(_bottom._above);
+            if(&_bottom != nullptr) {
+                _bottom._below == nullptr;
+            }
+            _size--;
+            return bottom_value;
+        }
+};
+
 class SetOfStacks {
     public:
         SetOfStacks(int capacity) : _capacity(capacity) {}
 
         void push(const int value) {
-            std::shared_ptr<std::stack<int>> top_stack = get_top_stack();
+            std::shared_ptr<Stack> top_stack = get_top_stack();
             if(top_stack == nullptr || (*top_stack).empty() || (*top_stack).size() == _capacity) {
-                std::shared_ptr<std::stack<int>> new_stack = std::make_shared<std::stack<int>>();
+                std::shared_ptr<Stack> new_stack = std::make_shared<Stack>(_capacity);
                 (*new_stack).push(value);
                 stacks.push_back(new_stack);
             } else {
@@ -27,7 +99,7 @@ class SetOfStacks {
                 empty_stack_exception e;
                 throw e;
             }
-            std::shared_ptr<std::stack<int>> top_stack = get_top_stack();
+            std::shared_ptr<Stack> top_stack = get_top_stack();
             int top_value = (*top_stack).top();
             (*top_stack).pop();
             if((*top_stack).empty()) {
@@ -36,22 +108,42 @@ class SetOfStacks {
             return top_value;
         }
 
+        int pop_at(const int substack_index) {
+            left_shift(substack_index, true);
+        }
+
+        int left_shift(const int substack_index, const bool remove_top) {
+            std::shared_ptr<Stack> stack = stacks.at(substack_index);
+            int removed_item;
+            if(remove_top) {
+                removed_item = (*stack).pop();
+            } else {
+                removed_item = (*stack).remove_bottom();
+            }
+            if((*stack).empty()) {
+                stacks.erase(stacks.begin() + substack_index);
+            } else if(substack_index + 1 < stacks.size()) {
+                int value = left_shift(substack_index + 1, false);
+                (*stack).push(value);
+            }
+            return removed_item;
+        }
+
         void print_status() {
             std::cout << "==================\nStack status\n==================\n";
             std::cout << "Number of substacks = " << stacks.size() << '\n';
             for(int stack_num = 0; stack_num < stacks.size(); stack_num++) {
                 std::cout << "Substack no. " << stack_num << '\n';
-                std::stack<int> stack = *(stacks.at(stack_num));
+                Stack stack = *(stacks.at(stack_num));
                 while(!stack.empty()) {
-                    std::cout << stack.top() << '\n';
-                    stack.pop();
+                    std::cout << stack.pop() << '\n';
                 }
             }
         } 
     private:
-        std::vector<std::shared_ptr<std::stack<int>>> stacks;
+        std::vector<std::shared_ptr<Stack>> stacks;
         int _capacity;
-        std::shared_ptr<std::stack<int>> get_top_stack() {
+        std::shared_ptr<Stack> get_top_stack() {
             if(stacks.empty()) {
                 return nullptr;
             }
@@ -67,6 +159,9 @@ std::map<std::string, std::function<int(SetOfStacks&, int)>> get_functions() {
     });
     functions.emplace("POP", [&](SetOfStacks& stack, int value) {
         return stack.pop();
+    });
+    functions.emplace("POPAT", [&](SetOfStacks& stack, int value) {
+        return stack.pop_at(value);
     });
     return functions;
 }
@@ -96,7 +191,7 @@ void process_stack_operations(SetOfStacks& base_stack) {
         }
         std::vector<std::string> command_and_args = str_to_arr(input, ' ');
         std::string command = command_and_args.at(0);
-        if((command != "PUSH" && command != "POP") || command_and_args.size() < 1) {
+        if((command != "PUSH" && command != "POP" && command != "POPAT") || command_and_args.size() < 1) {
             invalid_stack_command e;
             throw e;
         }
