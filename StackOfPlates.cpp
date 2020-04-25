@@ -5,11 +5,26 @@
 #include <functional>
 #include <sstream>
 #include <memory>
+#include <exception>
 
 class StackNode {
     public:
         StackNode() {}
         StackNode(int value) : _value(value) {}
+        StackNode(const StackNode& copy_node) {
+            std::cout << "copy constructor\n";
+            _value = copy_node._value;
+        }
+        StackNode& operator=(const StackNode& copy_node) {
+            if(&copy_node == nullptr) {
+                return *this;
+            }
+            std::cout << "copy assignment\n";
+            _value = copy_node._value;
+            *_below = *copy_node._below;
+            *_above = *copy_node._above;
+            return *this;
+        }
         StackNode* _below;
         StackNode* _above;
         int _value;
@@ -18,8 +33,8 @@ class StackNode {
 class Stack {
     public:
         int _capacity;
-        StackNode _top;
-        StackNode _bottom;
+        StackNode* _top = nullptr;
+        StackNode* _bottom = nullptr;
         int _size = 0;
 
         Stack() {}
@@ -35,21 +50,32 @@ class Stack {
             }
             _size++;
             StackNode new_stack_node(value);
+            new_stack_node._above = nullptr;
+            new_stack_node._below = nullptr;
+            join(new_stack_node, *_top);
             if(_size == 1) {
-                _bottom = new_stack_node;
+                _bottom = new StackNode(new_stack_node._value);
             }
-            join(new_stack_node, _top);
-            _top = new_stack_node;
+            std::cout << "prije promjene top\n";
+            if(_size == 1) {
+                _top = new StackNode(new_stack_node._value);
+            }
+            std::cout << "poslje promjene top\n";
+            (*_top)._above = nullptr;
+            if(_size == 1) {
+                (*_top)._below = nullptr;
+            }
             return true;
         }
 
         void join(StackNode& above, StackNode& below) {
-            if(&above != nullptr) {
+            if((&above != nullptr) && ((&below) != nullptr)) {
                 above._below = &below;
             } 
             if(&below != nullptr) {
                 below._above = &above;
             }
+            std::cout << "ok\n";
         }
 
         int size() {
@@ -57,22 +83,24 @@ class Stack {
         }
 
         int top() {
-            return _top._value;
+            return (*_top)._value;
         }
         
         int pop() {
-            int old_top_value = _top._value;
+            int old_top_value = (*_top)._value;
             _size--;
-            _top = *(_top._below);
-            _top._above = nullptr;
+            if((*_top)._below != nullptr) {
+                (*_top) = *((*_top)._below);
+            }
+            (*_top)._above = nullptr;
             return old_top_value;
         }
 
         int remove_bottom() {
-            int bottom_value = _bottom._value;
-            _bottom = *(_bottom._above);
-            if(&_bottom != nullptr) {
-                _bottom._below == nullptr;
+            int bottom_value = (*_bottom)._value;
+            _bottom = ((*_bottom)._above);
+            if(_bottom != nullptr) {
+                (*_bottom)._below == nullptr;
             }
             _size--;
             return bottom_value;
