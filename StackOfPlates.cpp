@@ -66,7 +66,9 @@ class Stack {
 
         int remove_bottom() {
             int bottom_value = _bottom._value;
-            _bottom = *(_bottom._above);
+            if(_bottom._above != nullptr) {
+                _bottom = *(_bottom._above);
+            }
             if(&_bottom != nullptr) {
                 _bottom._below == nullptr;
             }
