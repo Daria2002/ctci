@@ -4,28 +4,35 @@
 class Person {
     public:
         Person(int age, std::string name) : _age(age), _name(name) {}
-        int _age;
-        std::string _name;
         bool operator < (const Person& str) const {
             return (_age < str._age);
         }
+        friend std::ostream& operator<<(std::ostream& os, const Person& p);
+    private:
+        int _age;
+        std::string _name;
 };
+
+std::ostream& operator<<(std::ostream& os, const Person& p) {
+    os << p._name;
+    return os;
+}
 
 template <typename T>
 void sort_stack(std::stack<T>& stack) {
     std::stack<T> sorted_stack;
     while (!stack.empty()) {
-        int value = stack.top();
+        T value = stack.top();
         stack.pop();
         while (!sorted_stack.empty() && value < sorted_stack.top()) {
-            int value = sorted_stack.top();
+            T tmp = sorted_stack.top();
             sorted_stack.pop();
-            stack.push(value);
+            stack.push(tmp);
         }
         sorted_stack.push(value);
     }
     while (!sorted_stack.empty()) {
-        int value = sorted_stack.top();
+        T value = sorted_stack.top();
         sorted_stack.pop();
         stack.push(value);
     }
@@ -67,4 +74,17 @@ int main() {
     sort_stack(stack);
     std::cout << "Sorted stack values:\n";
     print_stack_values(stack);
+    std::cout << "===================\n"
+                 "Now test people :) \n"
+                 "===================\n";
+    Person p1(14, "ana");
+    Person p2(9, "mario");
+    Person p3(25, "lovro");
+    std::stack<Person> people_stack;
+    people_stack.push(p1);
+    people_stack.push(p2);
+    people_stack.push(p3);
+    std::cout << "Sorted people:\n";
+    sort_stack(people_stack);
+    print_stack_values(people_stack);
 }
