@@ -35,19 +35,15 @@ class Stack {
                 return false;
             }
             _size++;
-            StackNode new_stack_node(value);
-            join(new_stack_node, _top);
-            _top = new_stack_node;
-            return true;
-        }
-
-        void join(StackNode& above, StackNode& below) {
-            if(&above != nullptr) {
-                above._below = &below;
-            } 
-            if(&below != nullptr) {
-                below._above = &above;
+            StackNode* new_stack_node = new StackNode(value);
+            if(_size == 1) {
+                _bottom = *new_stack_node;
             }
+            if(_size != 1) {
+                new_stack_node->_below = new StackNode(_top._value);
+            }
+            _top = *new_stack_node;
+            return true;
         }
 
         int size() {
