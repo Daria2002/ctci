@@ -17,7 +17,7 @@ class empty_stack_exception : public std::exception {
 
 class invalid_stack_command : public std::exception {
     virtual const char* what() const throw() {
-        return "Inavlid stack command.";
+        return "Invalid stack command.";
     }
 };
 
