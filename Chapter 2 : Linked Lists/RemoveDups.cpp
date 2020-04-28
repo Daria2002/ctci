@@ -1,5 +1,5 @@
 #include <iostream>
-#include "MyLinkedList.hpp"
+#include "../include/linked list/MyLinkedList.hpp"
 #include <unordered_set>
 
 void remove_duplicates_using_hash_table(const MyLinkedListManager::LinkedList&);

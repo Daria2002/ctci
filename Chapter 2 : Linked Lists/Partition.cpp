@@ -1,5 +1,5 @@
 #include <iostream>
-#include "MyLinkedList.hpp"
+#include "../include/linked list/MyLinkedList.hpp"
 
 typedef MyLinkedListManager::LinkedList linked_list;
 typedef MyLinkedListManager::Node node;
@@ -22,7 +22,7 @@ int main() {
     std::cout << "Enter a partition value:" << std::endl;
     int partition_value;
     std::cin >> partition_value;
-    std::cout << "Enter 1 to partition a linked list aroung partition value using"
+    std::cout << "Enter 1 to partition a linked list around partition value using"
     " merging two lists method or 2 to partition using head and tail node.\n";
     int method;
     std::cin >> method;

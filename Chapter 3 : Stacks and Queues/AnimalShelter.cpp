@@ -3,7 +3,7 @@
 #include <map>
 #include <sstream>
 #include <functional>
-#include "StackExceptions.hpp"
+#include "../include/stack/StackExceptions.hpp"
 
 class Animal {
     public:

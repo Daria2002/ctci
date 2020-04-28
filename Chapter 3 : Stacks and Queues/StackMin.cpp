@@ -1,10 +1,10 @@
 #include <iostream>
-#include "BaseStack.hpp"
+#include "../include/stack/BaseStack.hpp"
 #include <vector>
 #include <map>
 #include <functional>
 #include <sstream>
-#include "StackExceptions.hpp"
+#include "../include/stack/StackExceptions.hpp"
 #include <memory>
 #include <limits>
 

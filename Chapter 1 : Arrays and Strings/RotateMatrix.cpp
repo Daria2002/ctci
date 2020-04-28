@@ -3,7 +3,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "MatrixHelper.hpp"
+#include "../include/matrix/MatrixHelper.hpp"
 
 void rotate_matrix(std::vector<std::vector<int>>&);
 bool check_dimensions(const std::vector<std::vector<int>>&);
@@ -16,6 +16,9 @@ bool check_dimensions(const std::vector<std::vector<int>>&);
  * @param fileName file where user wrote matrix NxN. After executing program matrix 
  * will be modified. New matrix is input matrix rotated by 90 degrees.
  * Input matrix should separate elements with ,
+ * In launch.json file add arg that will represent matrix input. 
+ * i.e: 
+ * home/daria/Documents/ctci/input/matrix.txt
  */
 int main(int argc, char** argv) {
     if(argc != 2) {

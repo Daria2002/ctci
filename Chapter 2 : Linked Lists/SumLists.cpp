@@ -1,5 +1,5 @@
 #include <iostream>
-#include "MyLinkedList.hpp" 
+#include "../include/linked list/MyLinkedList.hpp" 
 
 typedef MyLinkedListManager::LinkedList linked_list;
 typedef MyLinkedListManager::Node node;

@@ -1,6 +1,6 @@
 #include <iostream>
-#include "FixedMultiStack.hpp"
-#include "MultiStack.hpp"
+#include "../include/stack/FixedMultiStack.hpp"
+#include "../include/stack/MultiStack.hpp"
 #include <map>
 #include <algorithm>
 #include <functional>

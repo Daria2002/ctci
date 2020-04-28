@@ -1,5 +1,5 @@
 #include <iostream>
-#include "MyLinkedList.hpp"
+#include "../include/linked list/MyLinkedList.hpp"
 
 typedef MyLinkedListManager::Node node;
 typedef MyLinkedListManager::LinkedList linked_list;
@@ -48,13 +48,12 @@ node get_intersection_node(node* head1, node* head2) {
     return *head1;
 }
 
-node get_intersection_node(linked_list ll1, linked_list ll2) {
+bool get_intersection_node(linked_list ll1, linked_list ll2, node& intersection) {
     if(same_tail(ll1.head, ll2.head)) {
-        node intersection = get_intersection_node(ll1.head, ll2.head);
-        return intersection;
+        intersection = get_intersection_node(ll1.head, ll2.head);
+        return true;
     }
-    std::cout << "tu je\n";
-    // return nullptr;
+    return false;
 }
 
 /**
@@ -70,6 +69,10 @@ int main() {
     ll1.append_node(intersection);
     ll2.append_node(intersection);
     
-    node calculated_intersection = get_intersection_node(ll1, ll2);
-    std::cout << "calculated intersection is node with value " << calculated_intersection.value << '.\n'; 
+    node calculated_intersection;
+    if(get_intersection_node(ll1, ll2, calculated_intersection) == false) {
+        std::cout << "no intersection\n";
+        return 0;
+    }
+    std::cout << "calculated intersection is node with value " << calculated_intersection.value << ".\n"; 
 }

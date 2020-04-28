@@ -1,4 +1,4 @@
-#include "MyLinkedList.hpp"
+#include "../include/linked list/MyLinkedList.hpp"
 
 typedef MyLinkedListManager::Node node;
 typedef MyLinkedListManager::LinkedList linked_list;
