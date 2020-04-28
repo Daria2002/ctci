@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../include/linked list/MyLinkedList.hpp"
+#include "linked_list/MyLinkedList.hpp"
 #include <unordered_map>
 
 typedef MyLinkedListManager::Node Node;

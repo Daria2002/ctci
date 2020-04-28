@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "../include/stack/StackExceptions.hpp"
+#include "stack/StackExceptions.hpp"
 #include <map>
 #include <functional>
 #include <sstream>
