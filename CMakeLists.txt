@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(ctci)
 
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
 file(GLOB_RECURSE ctci_SOURCES src/*.cpp )
 file(GLOB_RECURSE ctci_HEADERS include/*.hpp)
 
