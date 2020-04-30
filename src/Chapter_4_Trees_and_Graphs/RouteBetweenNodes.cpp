@@ -24,7 +24,7 @@ class Graph {
         void add_node(const Node& node) {
             nodes.push_back(node);
         }
-        bool get_node(const std::string& name, Node& node) {
+        bool get_node(const std::string& name, Node& node) const {
             for(int i = 0; i < nodes.size(); i++) {
                 if(nodes[i].name == name) {
                     node = nodes[i];
@@ -84,7 +84,7 @@ bool operator!=(const Node& node1, const Node& node2) {
     return !(node1 == node2);
 }
 
-bool has_route(Node& start, Node& end) {
+bool has_route(const Graph& graph, Node& start, Node& end) {
     if(start == end) {
         return true;
     }
@@ -92,7 +92,8 @@ bool has_route(Node& start, Node& end) {
     q.push(start);
     start.visited = true;
     while(!q.empty()) {
-        Node tmp = q.front();
+        Node tmp;
+        graph.get_node(q.front().name, tmp);
         q.pop();
         if(tmp == end) {
             return true;
@@ -123,9 +124,11 @@ int main() {
     std::cout << "graph has been successfully created\n";
     Node start;
     Node end;
-    if(graph.get_node("A", start) && graph.get_node("H", end)) {
-        std::cout << "has route = " << has_route(start, end) << '\n';
+    bool start_exists = graph.get_node("A", start);
+    bool end_exists = graph.get_node("C", end);
+    if(start_exists && end_exists) {
+        std::cout << "has route = " << has_route(graph, start, end) << '\n';
     } else {
-        std::cout << "Start and end nodes doesn't exist.\n";
+        std::cout << ((start_exists == false) ? "start" : "end") << "doesn't exist.\n";
     }
 }
