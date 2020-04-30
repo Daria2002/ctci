@@ -1,16 +1,15 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <map>
 
 class Node {
     public:
         Node() {}
         Node(std::string _name) : name(_name) {
-            std::cout << "node " << name << " created\n";
             visited = false;
         }
         void add_child(const Node& node) {
-            std::cout << "node " << node.name << " is added to " << "node " << name << '\n';
             children.push_back(node);
         }
         std::vector<Node> children;
@@ -29,6 +28,22 @@ class Graph {
                 if(nodes[i].name == name) {
                     node = nodes[i];
                     return true;
+                }
+            }
+            return false;
+        }
+        void visit(const Node& node) {
+            for(int i = 0; i < nodes.size(); i++) {
+                if(nodes[i].name == node.name) {
+                    nodes[i].visited = true;
+                }
+            }
+        }
+
+        bool is_visited(const Node& node) const {
+            for(int i = 0; i < nodes.size(); i++) {
+                if(nodes[i].name == node.name) {
+                    return nodes[i].visited;
                 }
             }
             return false;
@@ -84,7 +99,7 @@ bool operator!=(const Node& node1, const Node& node2) {
     return !(node1 == node2);
 }
 
-bool has_route(const Graph& graph, Node& start, Node& end) {
+bool has_route(Graph& graph, Node& start, Node& end) {
     if(start == end) {
         return true;
     }
@@ -98,14 +113,14 @@ bool has_route(const Graph& graph, Node& start, Node& end) {
         if(tmp == end) {
             return true;
         }
-        for(Node child : tmp.children) {
-            if(child.visited) {
+        for(Node& child : tmp.children) {
+            if(graph.is_visited(child)) {
                 continue;
             }
             if(child == end) {
                 return true;
             }
-            child.visited = true;
+            graph.visit(child.name);
             q.push(child);
         }
     }
@@ -121,13 +136,13 @@ int main() {
                  "Program to check if there is a route between nodes.\n"
                  "===================================================\n";
     Graph graph = create_graph();
-    std::cout << "graph has been successfully created\n";
     Node start;
     Node end;
     bool start_exists = graph.get_node("A", start);
-    bool end_exists = graph.get_node("C", end);
+    bool end_exists = graph.get_node("H", end);
     if(start_exists && end_exists) {
-        std::cout << "has route = " << has_route(graph, start, end) << '\n';
+        std::cout << "There is " << (has_route(graph, start, end) ? "a " : "no ")
+         << "root between " << start.name << " and " << end.name << ".\n";
     } else {
         std::cout << ((start_exists == false) ? "start" : "end") << "doesn't exist.\n";
     }
