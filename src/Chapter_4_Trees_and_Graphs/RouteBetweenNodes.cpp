@@ -6,11 +6,15 @@
 class Node {
     public:
         Node() {}
-        Node(std::string _name) : name(_name) {
+        Node(const std::string _name) : name(_name) {
             visited = false;
         }
-        void add_child(const Node& node) {
+        void add_child(Node node) {
             children.push_back(node);
+        }
+        template <class ...Nodes>
+        void add_children(Nodes... nodes) {
+            (add_child(nodes), ...);
         }
         std::vector<Node> children;
         std::string name;
@@ -19,34 +23,29 @@ class Node {
 
 class Graph {
     public:
-        std::vector<Node> nodes;
-        void add_node(const Node& node) {
-            nodes.push_back(node);
+        std::map<std::string, Node> nodes;
+        void add_node(Node node) {
+            nodes[node.name] = node;
+        }
+        template <class ...Nodes>
+        void add_nodes(Nodes... nodes) {
+            (add_node(nodes), ...);
         }
         bool get_node(const std::string& name, Node& node) const {
-            for(int i = 0; i < nodes.size(); i++) {
-                if(nodes[i].name == name) {
-                    node = nodes[i];
-                    return true;
-                }
+            if(nodes.find(name) != nodes.end()) {
+                node = nodes.at(name);
+                return true;
             }
             return false;
         }
         void visit(const Node& node) {
-            for(int i = 0; i < nodes.size(); i++) {
-                if(nodes[i].name == node.name) {
-                    nodes[i].visited = true;
-                }
+            if(nodes.find(node.name) != nodes.end()) {
+                nodes[node.name].visited = true;
             }
         }
 
         bool is_visited(const Node& node) const {
-            for(int i = 0; i < nodes.size(); i++) {
-                if(nodes[i].name == node.name) {
-                    return nodes[i].visited;
-                }
-            }
-            return false;
+            return nodes.at(node.name).visited;
         }
 };
 
@@ -67,32 +66,17 @@ Graph create_graph() {
     Node nodeH("H");
     nodeA.add_child(nodeB);
     nodeB.add_child(nodeF);
-    nodeC.add_child(nodeB);
-    nodeD.add_child(nodeB);
-    nodeD.add_child(nodeC);
+    nodeC.add_children(nodeA, nodeB);
+    nodeD.add_children(nodeB, nodeC);
     nodeF.add_child(nodeG);
     nodeG.add_child(nodeH);
     nodeH.add_child(nodeF);
-    graph.add_node(nodeA);
-    graph.add_node(nodeB);
-    graph.add_node(nodeC);
-    graph.add_node(nodeD);
-    graph.add_node(nodeF);
-    graph.add_node(nodeG);
-    graph.add_node(nodeH);
+    graph.add_nodes(nodeA, nodeB, nodeC, nodeD, nodeF, nodeG, nodeH);
     return graph;
 }
 
 bool operator==(const Node& node1, const Node& node2) {
-    if(node1.name != node2.name) {
-        return false;
-    }
-    for(int i = 0; i < node1.children.size(); i++) {
-        if(&node1.children[i] != &node2.children[i]) {
-            return false;
-        }
-    }
-    return true;
+    return node1.name == node2.name;
 }
 
 bool operator!=(const Node& node1, const Node& node2) {
@@ -136,10 +120,24 @@ int main() {
                  "Program to check if there is a route between nodes.\n"
                  "===================================================\n";
     Graph graph = create_graph();
-    Node start;
-    Node end;
-    bool start_exists = graph.get_node("A", start);
-    bool end_exists = graph.get_node("H", end);
+
+    std::cout << "Created graph:\n"
+                 "A ->  B   -> F -> G\n"
+                 "^  ^         ^    |\n"
+                 "|   \\         \\   ˇ\n"
+                 "C <- D            H\n";
+
+    Node start, end;
+    std::string start_name, end_name;
+
+    std::cout << "Enter start node name:\n";
+    std::cin >> start_name;
+    std::cout << "Enter end node name:\n";
+    std::cin >> end_name;
+
+    bool start_exists = graph.get_node(start_name, start);
+    bool end_exists = graph.get_node(end_name, end);
+
     if(start_exists && end_exists) {
         std::cout << "There is " << (has_route(graph, start, end) ? "a " : "no ")
          << "root between " << start.name << " and " << end.name << ".\n";
