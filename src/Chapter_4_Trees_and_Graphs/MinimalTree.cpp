@@ -49,8 +49,14 @@ int get_depth(TreeNode* root, int& depth) {
     return depth;
 }
 
+// print bst using inorder traversal
 void print_BST(TreeNode* root) {
-
+    if(root == nullptr) {
+        return;
+    }
+    print_BST(root -> left);
+    std::cout << root -> _value << '\n';
+    print_BST(root -> right);
 }
 
 TreeNode* create_minimal_BST(const std::vector<int>& values) {
@@ -70,8 +76,7 @@ int main() {
     std::cout <<"=============================================================\n"
                 "Program for creating a binary search tree with minimal height\n"
                 "=============================================================\n";
-    // std::vector<int> values = get_values();
-    std::vector<int> values = {1, 3, 4, 5, 6, 7, 8}; // example
+    std::vector<int> values = get_values();
     std::sort(values.begin(), values.end(), std::less<int>());
     TreeNode* root = create_minimal_BST(values);
 }
