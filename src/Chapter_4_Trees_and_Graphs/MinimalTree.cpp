@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 std::vector<int> get_values() {
     std::vector<int> v;
@@ -21,24 +22,24 @@ std::vector<int> get_values() {
 class TreeNode {
     public:
         int _value;
-        TreeNode* left;
-        TreeNode* right;
+        std::shared_ptr<TreeNode> left;
+        std::shared_ptr<TreeNode> right;
         TreeNode() {}
         TreeNode(int value) : _value(value) {}
 };
 
-TreeNode* create_minimal_BST(const std::vector<int>& values, const int start, const int end) {
+std::shared_ptr<TreeNode> create_minimal_BST(const std::vector<int>& values, const int start, const int end) {
     if(start > end) {
         return nullptr;
     }
     int middle_index = start + (end - start) / 2;
-    TreeNode* root = new TreeNode(values[middle_index]);
+    std::shared_ptr<TreeNode> root(new TreeNode(values[middle_index]));
     root -> left = create_minimal_BST(values, start, middle_index - 1);
     root -> right = create_minimal_BST(values, middle_index + 1, end);
     return root;
 }
 
-int get_depth(TreeNode* root, int& depth) {
+int get_depth(std::shared_ptr<TreeNode> root, int& depth) {
     if(root == nullptr) {
         return 0;
     }
@@ -50,7 +51,7 @@ int get_depth(TreeNode* root, int& depth) {
 }
 
 // print bst using inorder traversal
-void print_BST(TreeNode* root) {
+void print_BST(std::shared_ptr<TreeNode> root) {
     if(root == nullptr) {
         return;
     }
@@ -59,12 +60,11 @@ void print_BST(TreeNode* root) {
     print_BST(root -> right);
 }
 
-TreeNode* create_minimal_BST(const std::vector<int>& values) {
-    TreeNode* root = create_minimal_BST(values, 0, values.size() - 1);
+std::shared_ptr<TreeNode> create_minimal_BST(const std::vector<int>& values) {
+    std::shared_ptr<TreeNode> root = create_minimal_BST(values, 0, values.size() - 1);
     int depth = 0;
     get_depth(root, depth);
     std::cout << "Minimal BST depth = " << depth << '\n';
-    print_BST(root);
     return root;
 }
 
@@ -78,5 +78,6 @@ int main() {
                 "=============================================================\n";
     std::vector<int> values = get_values();
     std::sort(values.begin(), values.end(), std::less<int>());
-    TreeNode* root = create_minimal_BST(values);
+    std::shared_ptr<TreeNode> root = create_minimal_BST(values);
+    print_BST(root);
 }
