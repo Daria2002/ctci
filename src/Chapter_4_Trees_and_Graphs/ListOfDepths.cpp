@@ -1,7 +1,10 @@
 #include <iostream>
 #include <vector>
-#include <list>
 #include <memory>
+#include "linked_list/MyLinkedList.hpp"
+
+typedef MyLinkedListManager::Node Node;
+typedef MyLinkedListManager::LinkedList Linked_list;
 
 std::vector<int> get_values() {
     std::vector<int> v;
@@ -28,37 +31,44 @@ class TreeNode {
         TreeNode(int value) : _value(value) {}
 };
 
+
 std::shared_ptr<TreeNode> create_binary_tree(const std::vector<int>& values, const int start, const int end) {
     if(start > end) {
         return nullptr;
     }
     int middle_index = start + (end - start) / 2;
-    std::shared_ptr<TreeNode> root(new TreeNode(values[middle_index]));
+    std::shared_ptr<TreeNode> root = std::make_shared<TreeNode>(values[middle_index]);
     root -> left = create_binary_tree(values, start, middle_index - 1);
     root -> right = create_binary_tree(values, middle_index + 1, end);
     return root;
 }
 
-void get_linked_lists(std::shared_ptr<TreeNode> root, std::vector<std::list<int>>& linked_lists, int& index) {
-    std::list<int> list;
-    if(linked_lists.size() <= index) {
-        linked_lists.push_back(list);
+void get_linked_lists(std::shared_ptr<TreeNode> root, std::vector<Linked_list*>& linked_lists, int index) {
+    if(root == nullptr) {
+        return;
     }
-    linked_lists[index].push_back(root -> _value);
+    std::cout << "index = " << index << '\n';
+    Linked_list ll;
+    if(linked_lists.empty()) {
+        linked_lists.push_back(&ll);
+    }
+    (*(linked_lists[index])).append_node(root -> _value);
 
     index++;
-
     get_linked_lists(root -> left, linked_lists, index);
     get_linked_lists(root -> right, linked_lists, index);
+
+    return;
 }
 
-void get_linked_lists(std::shared_ptr<TreeNode> root, std::vector<std::list<int>>& linked_lists) {
+void get_linked_lists(const std::shared_ptr<TreeNode> root, std::vector<Linked_list*>& linked_lists) {
     int start = 0;
     get_linked_lists(root, linked_lists, start);
+    return;
 }
 
 std::shared_ptr<TreeNode> create_binary_tree(const std::vector<int>& values) {
-    std::shared_ptr<TreeNode> root = create_binary_tree(values, 0, values.size() - 1);
+    std::shared_ptr<TreeNode> root(create_binary_tree(values, 0, values.size() - 1));
     return root;
 }
 
@@ -72,7 +82,9 @@ int main() {
                  "===============================================================\n";
     // std::vector<int> values = get_values();
     std::vector<int> values = {1, 5, 4, 7, 19, 10};
-    std::shared_ptr<TreeNode> root = create_binary_tree(values);
-    std::vector<std::list<int>> lists;
+    std::shared_ptr<TreeNode> root(create_binary_tree(values));
+    std::vector<Linked_list*> lists;
     get_linked_lists(root, lists);
+    std::cout << "hello\n";
+    return 0;
 }

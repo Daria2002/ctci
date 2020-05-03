@@ -23,6 +23,11 @@ namespace MyLinkedListManager {
                 head = nullptr;
             }
             void append_node(int n) {
+                if(head == nullptr) {
+                    head = new Node();
+                    head -> value = n;
+                    return;
+                }
                 Node* new_node = new Node();
                 new_node -> value = n;
                 new_node -> next = nullptr;
