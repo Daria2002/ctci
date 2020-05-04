@@ -43,33 +43,68 @@ std::shared_ptr<TreeNode> create_binary_tree(const std::vector<int>& values, con
     return root;
 }
 
-void get_linked_lists(std::shared_ptr<TreeNode> root, std::vector<Linked_list*>& linked_lists, int index) {
+void get_linked_lists(std::shared_ptr<TreeNode>& root, std::vector<Linked_list>& linked_lists, int index) {
     if(root == nullptr) {
         return;
     }
-    std::cout << "index = " << index << '\n';
-    Linked_list ll;
-    if(linked_lists.empty()) {
-        linked_lists.push_back(&ll);
-    }
-    (*(linked_lists[index])).append_node(root -> _value);
-
+    linked_lists[index].append_node(root -> _value);
     index++;
-    get_linked_lists(root -> left, linked_lists, index);
     get_linked_lists(root -> right, linked_lists, index);
+    get_linked_lists(root -> left, linked_lists, index);
 
-    return;
-}
-
-void get_linked_lists(const std::shared_ptr<TreeNode> root, std::vector<Linked_list*>& linked_lists) {
-    int start = 0;
-    get_linked_lists(root, linked_lists, start);
     return;
 }
 
 std::shared_ptr<TreeNode> create_binary_tree(const std::vector<int>& values) {
     std::shared_ptr<TreeNode> root(create_binary_tree(values, 0, values.size() - 1));
     return root;
+}
+
+int get_depth(std::shared_ptr<TreeNode> root, int& depth) {
+    if(root == nullptr) {
+        return 0;
+    }
+    int tmp1 = get_depth(root -> left, depth);
+    int tmp2 = get_depth(root -> right, depth);
+    depth = ((tmp1 > tmp2) ? tmp1 : tmp2);
+    depth++;
+    return depth;
+}
+
+int get_depth(std::shared_ptr<TreeNode> root) {
+    int depth = 0;
+    get_depth(root, depth);
+    return depth;
+}
+
+std::vector<Linked_list> initialize_linked_list(int size) {
+    std::vector<Linked_list> linked_lists;
+    for(int i = 0; i < size; i++) {
+        Linked_list ll;
+        linked_lists.push_back(ll);
+    }
+    return linked_lists;
+}
+
+std::vector<Linked_list> get_linked_lists(const std::vector<int>& values) {
+    std::shared_ptr<TreeNode> root(create_binary_tree(values));
+    int start = 0;
+    int depth = get_depth(root);
+    std::vector<Linked_list> linked_lists = initialize_linked_list(depth);
+    get_linked_lists(root, linked_lists, start);
+    return linked_lists;
+}
+
+void print_result(const std::vector<Linked_list>& lists) {
+    for(int i = 0; i < lists.size(); i++) {
+        std::cout << "list number " << i << ":\n";
+        Node* tmp = lists[i].head;
+        while (tmp != nullptr) {
+            std::cout << tmp -> value << '\n';
+            tmp = tmp -> next;
+        }
+        
+    }
 }
 
 /**
@@ -80,11 +115,8 @@ int main() {
     std::cout << "===============================================================\n"
                  "Program for creating linked list for every level of binary tree\n"
                  "===============================================================\n";
-    // std::vector<int> values = get_values();
-    std::vector<int> values = {1, 5, 4, 7, 19, 10};
-    std::shared_ptr<TreeNode> root(create_binary_tree(values));
-    std::vector<Linked_list*> lists;
-    get_linked_lists(root, lists);
-    std::cout << "hello\n";
+    std::vector<int> values = get_values();
+    std::vector<Linked_list> lists = get_linked_lists(values);
+    print_result(lists);
     return 0;
 }
