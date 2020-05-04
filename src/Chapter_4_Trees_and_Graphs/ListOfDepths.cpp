@@ -31,7 +31,6 @@ class TreeNode {
         TreeNode(int value) : _value(value) {}
 };
 
-
 std::shared_ptr<TreeNode> create_binary_tree(const std::vector<int>& values, const int start, const int end) {
     if(start > end) {
         return nullptr;
