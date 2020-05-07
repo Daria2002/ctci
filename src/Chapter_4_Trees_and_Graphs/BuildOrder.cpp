@@ -11,24 +11,37 @@ class Project {
         Project() {}
         Project(std::string _name) : name(_name) {}
         std::string name;
-        void add_child(const Project& project) {
-            children.push_back(project);
-            dependencies_to_be_build++;
-        }
         std::vector<Project> children;
         int dependencies_to_be_build = 0;
+        bool built = false;
 };
 
 class Graph {
     public:
-        std::vector<Project> nodes;
+        Graph() {}
         std::map<std::string, Project> map_nodes;
-        void add_node(const Project project) {
-            nodes.push_back(project);
+        void add_node(const Project& project) {
             map_nodes[project.name] = project;
         }
-        Project get_node(const std::string& node_name) {
-            return map_nodes[node_name];
+        void add_child(Project& parent, Project& child) {
+            map_nodes[parent.name].children.push_back(child);
+            map_nodes[child.name].dependencies_to_be_build++;
+        }
+        void build(const std::string& project_name) {
+            map_nodes[project_name].built = true;
+            for(int i = 0; i < map_nodes[project_name].children.size(); i++) {
+                map_nodes[map_nodes[project_name].children[i].name].dependencies_to_be_build--;
+            }
+            map_nodes[project_name].children.clear();
+        }
+        bool all_built() const {
+            bool found = true;
+            std::for_each(map_nodes.begin(), map_nodes.end(), [&](auto& pair) {
+                if(!pair.second.built) {
+                    found = false;
+                }   
+            });
+            return found;
         }
 };
 
@@ -54,15 +67,14 @@ std::vector<std::pair<std::string, std::string>> make_dependency_pairs(std::vect
     return pairs;
 }
 
-bool get_child(std::vector<std::pair<std::string, std::string>> dependency_pairs, const std::string& parent, std::string& child) {
-    auto it = std::find_if(dependency_pairs.begin(), dependency_pairs.end(), 
-    [&](const std::pair<std::string, std::string>& pair) {
-        if(pair.first == parent) {
-            child = pair.second;
-            return true;
+std::vector<std::string> get_children_names(const std::vector<std::pair<std::string, std::string>>& dependency_pairs, const std::string& parent) {
+    std::vector<std::string> children_names;
+    for(int i = 0; i < dependency_pairs.size(); i++) {
+        if(dependency_pairs[i].first == parent) {
+            children_names.push_back(dependency_pairs[i].second);
         }
-    });
-    return it != dependency_pairs.end();
+    }
+    return children_names;
 }
 
 Graph build_graph(std::string project_names, std::string project_dependencies) {
@@ -76,12 +88,15 @@ Graph build_graph(std::string project_names, std::string project_dependencies) {
         graph.add_node(project);
     });
 
-    std::for_each(graph.nodes.begin(), graph.nodes.end(), [&](auto& project) {
-        if(std::string child; get_child(dependency_pairs, project.name, child)) {
-            project.add_child(graph.map_nodes[child]);
-        }
-    });
-
+    for(int i = 0; i < names.size(); i++) {
+        std::vector<std::string> children = get_children_names(dependency_pairs, names[i]);
+        Project parent = graph.map_nodes[names[i]];
+        std::for_each(children.begin(), children.end(), [&](auto& el) {
+            Project child = graph.map_nodes[el];
+            graph.add_child(parent, child);
+        });
+    }
+    
     return graph;
 }
 
@@ -94,9 +109,16 @@ Graph get_graph(const std::string& input_file) {
     return build_graph(project_names, project_dependencies);
 }
 
-std::vector<Project> get_build_order(const Graph& graph) {
+std::vector<Project> get_build_order(Graph& graph) {
     std::vector<Project> build_order;
-
+    while(!graph.all_built()) {
+        for(std::pair<std::string, Project> node : graph.map_nodes) {
+            if(node.second.dependencies_to_be_build <= 0 && node.second.built == false) {
+                build_order.push_back(node.second);
+                graph.build(node.first);
+            }
+        }
+    }
     return build_order;
 }
 
