@@ -5,6 +5,11 @@
 #include <map>
 #include <algorithm>
 #include <sstream>
+#include <stack>
+
+enum Build_state {
+    NOT_BUILT, BUILDING, BUILT
+};
 
 class Project {
     public:
@@ -13,7 +18,7 @@ class Project {
         std::string name;
         std::vector<Project> children;
         int dependencies_to_be_build = 0;
-        bool built = false;
+        Build_state state = Build_state::NOT_BUILT;
 };
 
 class Graph {
@@ -28,7 +33,7 @@ class Graph {
             map_nodes[child.name].dependencies_to_be_build++;
         }
         void build(const std::string& project_name) {
-            map_nodes[project_name].built = true;
+            map_nodes[project_name].state = Build_state::BUILT;
             for(int i = 0; i < map_nodes[project_name].children.size(); i++) {
                 map_nodes[map_nodes[project_name].children[i].name].dependencies_to_be_build--;
             }
@@ -37,7 +42,7 @@ class Graph {
         bool all_built() const {
             bool found = true;
             std::for_each(map_nodes.begin(), map_nodes.end(), [&](auto& pair) {
-                if(!pair.second.built) {
+                if(pair.second.state == Build_state::NOT_BUILT) {
                     found = false;
                 }   
             });
@@ -113,7 +118,7 @@ std::vector<Project> get_build_order(Graph& graph) {
     std::vector<Project> build_order;
     while(!graph.all_built()) {
         for(std::pair<std::string, Project> node : graph.map_nodes) {
-            if(node.second.dependencies_to_be_build <= 0 && node.second.built == false) {
+            if(node.second.dependencies_to_be_build <= 0 && node.second.state == Build_state::NOT_BUILT) {
                 build_order.push_back(node.second);
                 graph.build(node.first);
             }
@@ -134,6 +139,43 @@ void print_build_order(const std::vector<Project>& build_order) {
     }
 }
 
+bool make_build_order_from_end_to_start(Graph& graph, std::string node, std::stack<Project>& build_order) {
+    if(graph.map_nodes[node].state == Build_state::BUILDING) { // in case of cycle (when two nodes depend on each other)
+        return false;
+    }
+    if(graph.map_nodes[node].state == Build_state::NOT_BUILT) {
+        graph.map_nodes[node].state = Build_state::BUILDING;
+        for(int i = 0; i < graph.map_nodes[node].children.size(); i++) {
+            if(!make_build_order_from_end_to_start(graph, graph.map_nodes[node].children[i].name, build_order)) {
+                return false;
+            }
+        }
+        graph.map_nodes[node].state = Build_state::BUILT;
+        build_order.push(graph.map_nodes[node]);
+    }   
+    return true;
+}
+
+std::vector<Project> make_build_order_from_end_to_start(Graph& graph) {
+    std::vector<Project> build_order;
+    std::stack<Project> build_stack;
+    while(!graph.all_built()) {
+        for(auto pair : graph.map_nodes) {
+            if(graph.map_nodes[pair.first].state == Build_state::NOT_BUILT) {
+                if(!make_build_order_from_end_to_start(graph, pair.first, build_stack)) {
+                    return build_order;
+                }
+            }
+        }
+    }
+    while (!build_stack.empty()) {
+        build_order.push_back(build_stack.top());
+        build_stack.pop();
+    }
+    
+    return build_order;
+}
+
 /**
  * You are given a list of projects and a list of dependencies (which is a list of pairs of projects, 
  * where the second project is dependent on the first project). All of a project's dependencies must be
@@ -147,6 +189,25 @@ void print_build_order(const std::vector<Project>& build_order) {
  */
 int main(int argc, char** argv) {
     Graph graph = get_graph(argv[1]);
-    std::vector<Project> build_order = get_build_order(graph);
+    std::cout << "Enter 1 to make build order from start to end or 2 to make build order from end to start:\n";
+    int method;
+    std::cin >> method;
+    std::vector<Project> build_order;
+    std::string start_node;
+    switch (method) {
+    case 1:
+        build_order = get_build_order(graph);
+        break;
+    case 2:
+        build_order = make_build_order_from_end_to_start(graph);
+        if(build_order.empty()) {
+            std::cout << "There is a cycle.\n";
+            return 0;
+        }
+        break;
+    default:
+        std::cout << "None of the proposed methods was selected.\n";
+        return 0;
+    }
     print_build_order(build_order);
 }
