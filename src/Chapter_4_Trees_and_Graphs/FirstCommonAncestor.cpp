@@ -11,7 +11,7 @@ class Node {
         std::string name;
 };
 
-bool create_tree(const std::string& file_path, std::shared_ptr<Node> root) {
+bool create_tree(std::shared_ptr<Node> root) {
 
 }
 
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     std::shared_ptr<Node> successor_node2;
     std::shared_ptr<Node> fca;
     int method, successor_name1, successor_name2;
-    create_tree(argv[1], root);
+    create_tree(root);
     std::cin >> method;
     std::cout << "Enter first successor value\n";
     std::cin >> successor_name1;
