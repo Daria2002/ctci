@@ -4,22 +4,27 @@
 class Node {
     public:
         Node() {}
-        Node(std::string _name) : name(_name) {}
+        Node(int _value) : value(_value) {}
         std::shared_ptr<Node> right;
         std::shared_ptr<Node> left;
         std::weak_ptr<Node> parent;
-        std::string name;
+        int value;
 };
 
-bool create_tree(std::shared_ptr<Node> root) {
+using NodePtr = std::shared_ptr<Node>;
+
+// TODO: understand why you need to send by ref to change root and root->left
+// it's a pointer and why sending it by value doesn't change root and root->left?
+void create_tree(NodePtr& root) {
+    root = std::make_shared<Node>(20);
+    root -> left = std::make_shared<Node>(25);
+}
+
+std::shared_ptr<Node> fca_links_to_parents(NodePtr& root, NodePtr& successor1, NodePtr& successor2) {
 
 }
 
-std::shared_ptr<Node> fca_links_to_parents(std::shared_ptr<Node> root, std::shared_ptr<Node> successor1, std::shared_ptr<Node> successor2) {
-
-}
-
-void get_node(const int value, std::shared_ptr<Node> root, std::shared_ptr<Node> node) {
+void get_node(const int value, NodePtr& root, NodePtr& node) {
 
 }
 
@@ -44,10 +49,10 @@ int main(int argc, char** argv) {
     std::cout << "2 - With links to Parents - approved\n";
     std::cout << "3 - Without links to Parents\n";
     std::cout << "4 - Optimized\n";
-    std::shared_ptr<Node> root;
-    std::shared_ptr<Node> successor_node1;
-    std::shared_ptr<Node> successor_node2;
-    std::shared_ptr<Node> fca;
+    NodePtr root;
+    NodePtr successor_node1;
+    NodePtr successor_node2;
+    NodePtr fca;
     int method, successor_name1, successor_name2;
     create_tree(root);
     std::cin >> method;
