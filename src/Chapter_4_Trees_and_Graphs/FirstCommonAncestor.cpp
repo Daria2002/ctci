@@ -83,6 +83,35 @@ bool get_node(const int value, NodePtr& root, NodePtr& node) {
     return false;
 }
 
+bool covers(NodePtr& root, NodePtr& node) {
+    if(root == nullptr) return false;
+    if(node == root) return true;
+    return covers(root -> right, node) || covers(root -> left, node);
+}
+
+NodePtr get_sibiling(NodePtr& node) {
+    if(node == nullptr || (node -> parent).lock() == nullptr) return nullptr;
+    NodePtr parent = (node -> parent).lock();
+    return (parent -> left == node ? parent -> right : parent -> left);
+}
+
+NodePtr fca_links_to_parents(NodePtr& root, NodePtr& successor1, NodePtr& successor2) {
+    if(!covers(root, successor1) || !covers(root, successor2)) {
+        return nullptr;
+    } else if(covers(successor1, successor2)) {
+        return successor1;
+    } else if(covers(successor1, successor2)) {
+        return successor2;
+    }
+    NodePtr parent = (successor1 -> parent).lock();
+    NodePtr sibiling = get_sibiling(successor1);
+    while (!covers(sibiling, successor2)) {
+        sibiling = get_sibiling(parent);
+        parent = (parent -> parent).lock();
+    }
+    return parent;
+}
+
 /**
  * Design an algorithm and write code to find the first common ancestor 
  * of two nodes in a binary tree. Avoid storing additional nodes in a data
@@ -97,22 +126,22 @@ int main(int argc, char** argv) {
                  "=====================================\n";
     std::cout << "Enter method number for finding first common ancestor:\n";
     std::cout << "1 - With links to Parents\n";
-    std::cout << "2 - With links to Parents - approved\n";
+    std::cout << "2 - With links to Parents - reaching all nodes in the first common ancestor subtree\n";
     std::cout << "3 - Without links to Parents\n";
     std::cout << "4 - Optimized\n";
     NodePtr root, fca;
-    int method = 1;
+    int method;
     create_tree(root);
     NodePtr first_successor, second_successor;
     get_node(4, root, first_successor);
     get_node(15, root, second_successor);
-    // std::cin >> method;
+    std::cin >> method;
     switch (method) {
     case 1:
         fca = fca_links_to_parents(first_successor, second_successor);
         break;
     case 2:
-        // fca = fca_links_to_parents_approved();
+        fca = fca_links_to_parents(root, first_successor, second_successor);
         break;
     case 3:
         // fca = fca_without_links_to_parents();
@@ -124,5 +153,5 @@ int main(int argc, char** argv) {
         std::cout << "None of the provided methods have not been selected\n";
         break;
     }
-    std::cout << "First common ancestor has value " << (fca -> value) << '\n';
+    std::cout << "First common ancestor has value " << (fca -> value) << ".\n";
 }
