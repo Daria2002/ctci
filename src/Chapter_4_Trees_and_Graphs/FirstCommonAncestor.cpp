@@ -112,6 +112,57 @@ NodePtr fca_links_to_parents(NodePtr& root, NodePtr& successor1, NodePtr& succes
     return parent;
 }
 
+NodePtr fca_without_links_to_parents(NodePtr& root, NodePtr& successor1, NodePtr& successor2) {
+    if(!covers(root, successor1) || !covers(root, successor2)) {
+        return nullptr;
+    }
+    if(root == nullptr || successor1 == root || successor2 == root) {
+        return root;
+    }
+    // nodes are on different side
+    // true if - one left and other is not
+    // false if both left or both right
+    bool successor1OnLeft = covers(root -> left, successor1);
+    bool successor2OnLeft = covers(root -> left, successor2);
+    if(successor1OnLeft != successor2OnLeft) {
+        return root;
+    }
+    NodePtr next = successor1OnLeft ? root -> left : root -> right;
+    return fca_without_links_to_parents(next, successor1, successor2);
+}
+
+class Result {
+    public: 
+        Result(NodePtr n, bool is_anc) : node(n), is_ancestor(is_anc) {}
+        NodePtr node;
+        bool is_ancestor;
+};
+
+Result fca_get_result(NodePtr& root, NodePtr& successor1, NodePtr& successor2) {
+    if(root == nullptr) return Result(nullptr, false);
+    if(root == successor1 && root == successor2) return Result(root, true);
+    Result rl = fca_get_result(root -> left, successor1, successor2);
+    if(rl.is_ancestor) {
+        return rl;
+    }
+    Result rr = fca_get_result(root -> right, successor1, successor2);
+    if(rr.is_ancestor) {
+        return rr;
+    }
+    if(rl.node != nullptr && rr.node != nullptr) {
+        return Result(root, true);
+    } else if(root == successor1 || root == successor2) {
+        return Result(root, rr.node != nullptr || rl.node != nullptr);
+    } else {
+        return Result(rl.node != nullptr ? rl.node : rr.node, false);
+    }
+}
+
+NodePtr fca_optimized(NodePtr& root, NodePtr& successor1, NodePtr& successor2) {
+    Result result = fca_get_result(root, successor1, successor2);
+    return result.is_ancestor ? result.node : nullptr;
+}
+
 /**
  * Design an algorithm and write code to find the first common ancestor 
  * of two nodes in a binary tree. Avoid storing additional nodes in a data
@@ -144,10 +195,10 @@ int main(int argc, char** argv) {
         fca = fca_links_to_parents(root, first_successor, second_successor);
         break;
     case 3:
-        // fca = fca_without_links_to_parents();
+        fca = fca_without_links_to_parents(root, first_successor, second_successor);
         break;
     case 4:
-        // fca = fca_optimized();
+        fca = fca_optimized(root, first_successor, second_successor);
         break;
     default:
         std::cout << "None of the provided methods have not been selected\n";
