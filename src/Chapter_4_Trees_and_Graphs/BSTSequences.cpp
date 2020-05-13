@@ -43,9 +43,51 @@ std::ostream& operator<<(std::ostream& os, const std::list<T>& v) {
     return os;
 }
 
+void weave(std::list<int> first, std::list<int> second, std::vector<std::list<int>>& results, std::list<int> prefix) {
+    if(first.empty() || second.empty()) {
+        std::for_each(first.begin(), first.end(), [&](auto el) {
+            prefix.push_back(el);
+        });
+        std::for_each(second.begin(), second.end(), [&](auto el) {
+            prefix.push_back(el);
+        });
+        results.push_back(prefix);
+        return;
+    }
+    int head_first = first.front();
+    first.pop_front();
+    prefix.push_back(head_first);
+    weave(first, second, results, prefix);
+    prefix.pop_back();
+    first.push_front(head_first);
+    int head_second = second.front();
+    second.pop_front();
+    prefix.push_back(head_second);
+    weave(first, second, results, prefix);
+    prefix.pop_back();
+    first.push_front(head_second);
+}
+
 std::vector<std::list<int>> get_combinations(NodePtr root) {
-    std::vector<std::list<int>> results;
-    return results;
+    std::vector<std::list<int>> combinations;
+    std::list<int> prefix;
+    if(root == nullptr) {
+        combinations.push_back(prefix);
+        return combinations;
+    }
+    prefix.push_back(root -> value);
+    std::vector<std::list<int>> left_combinations = get_combinations(root -> left);
+    std::vector<std::list<int>> right_combinations = get_combinations(root -> right);
+    for(std::list<int> left_combination : left_combinations) {
+        for(std::list<int> right_combination : right_combinations) {
+            std::vector<std::list<int>> weaved_combinations;
+            weave(left_combination, right_combination, weaved_combinations, prefix);
+            std::for_each(weaved_combinations.begin(), weaved_combinations.end(), [&](auto& el) {
+                combinations.push_back(el);
+            });
+        }
+    }
+    return combinations;
 }
 
 void print_combinations(std::vector<std::list<int>> v) {
