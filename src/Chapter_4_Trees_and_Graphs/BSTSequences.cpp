@@ -20,19 +20,8 @@ using NodePtr = std::shared_ptr<Node>;
 
 void create_tree(NodePtr& root) {
     root = std::make_shared<Node>(20, 25, 14);
-    NodePtr tmp = root -> left;
-    tmp -> left = std::make_shared<Node>(17);
-    tmp -> left -> left = std::make_shared<Node>(16);
-    tmp -> left -> left -> right = std::make_shared<Node>(15);
-    tmp -> right = std::make_shared<Node>(5, 18, 3);
-    tmp -> right -> left -> right = std::make_shared<Node>(1);
-    tmp -> right -> right -> right = std::make_shared<Node>(21);
-    tmp = tmp -> right -> right -> right;
-    tmp -> left = std::make_shared<Node>(4, 19, 12);
-    tmp = root -> right;
-    tmp -> left = std::make_shared<Node>(13);
-    tmp -> right = std::make_shared<Node>(27);
-    tmp -> left -> right = std::make_shared<Node>(7);
+    root -> left -> left = std::make_shared<Node>(17);
+    root -> left -> right = std::make_shared<Node>(12);
 }
 
 template <typename T>
@@ -43,32 +32,32 @@ std::ostream& operator<<(std::ostream& os, const std::list<T>& v) {
     return os;
 }
 
-void weave(std::list<int> first, std::list<int> second, std::vector<std::list<int>>& results, std::list<int> prefix) {
+void weave(std::list<int>& first, std::list<int>& second, std::vector<std::list<int>>& results, std::list<int> prefix) {
     if(first.empty() || second.empty()) {
-        std::for_each(first.begin(), first.end(), [&](auto el) {
-            prefix.push_back(el);
-        });
-        std::for_each(second.begin(), second.end(), [&](auto el) {
-            prefix.push_back(el);
-        });
+        prefix.insert(prefix.end(), first.begin(), first.end());
+        prefix.insert(prefix.end(), second.begin(), second.end());
         results.push_back(prefix);
         return;
     }
-    int head_first = first.front();
+    int head = first.front();
     first.pop_front();
-    prefix.push_back(head_first);
+    prefix.push_back(head);
     weave(first, second, results, prefix);
     prefix.pop_back();
-    first.push_front(head_first);
-    int head_second = second.front();
+    first.push_front(head);
+    head = second.front();
     second.pop_front();
-    prefix.push_back(head_second);
+    prefix.push_back(head);
     weave(first, second, results, prefix);
     prefix.pop_back();
-    first.push_front(head_second);
+    second.push_front(head);
 }
 
-std::vector<std::list<int>> get_combinations(NodePtr root) {
+void print_combinations(const std::vector<std::list<int>>& v) {
+    std::for_each(v.begin(), v.end(), [](const std::list<int>& el) { std::cout << el << '\n';});
+}
+
+std::vector<std::list<int>> get_combinations(const NodePtr& root) {
     std::vector<std::list<int>> combinations;
     std::list<int> prefix;
     if(root == nullptr) {
@@ -78,20 +67,15 @@ std::vector<std::list<int>> get_combinations(NodePtr root) {
     prefix.push_back(root -> value);
     std::vector<std::list<int>> left_combinations = get_combinations(root -> left);
     std::vector<std::list<int>> right_combinations = get_combinations(root -> right);
-    for(std::list<int> left_combination : left_combinations) {
-        for(std::list<int> right_combination : right_combinations) {
-            std::vector<std::list<int>> weaved_combinations;
+    std::vector<std::list<int>> weaved_combinations;
+    for(std::list<int>& left_combination : left_combinations) {
+        for(std::list<int>& right_combination : right_combinations) {
             weave(left_combination, right_combination, weaved_combinations, prefix);
-            std::for_each(weaved_combinations.begin(), weaved_combinations.end(), [&](auto& el) {
-                combinations.push_back(el);
-            });
+            combinations.insert(combinations.end(), weaved_combinations.begin(), weaved_combinations.end());
+            weaved_combinations.clear();
         }
     }
     return combinations;
-}
-
-void print_combinations(std::vector<std::list<int>> v) {
-    std::for_each(v.begin(), v.end(), [](std::list<int> el) { std::cout << el << '\n';});
 }
 
 /**
