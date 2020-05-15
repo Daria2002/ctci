@@ -51,6 +51,24 @@ bool is_subtree(const NodePtr& root1, const NodePtr& root2) {
     return is_subtree(root1 -> left, root2 -> left) && is_subtree(root1 -> right, root2 -> right);
 }
 
+void create_preorder_traversal(const NodePtr& node, std::string& str) {
+    if(node == nullptr) {
+        str.push_back('X');
+        return;
+    }
+    str.push_back(node -> value);
+    str.push_back(' ');
+    create_preorder_traversal(node -> left, str);
+    create_preorder_traversal(node -> right, str);
+}
+
+bool is_subtree_preorder_traversal(const NodePtr& root1, const NodePtr& root2) {
+    std::string preorder_traversal1, preorder_traversal2;
+    create_preorder_traversal(root1, preorder_traversal1);
+    create_preorder_traversal(root2, preorder_traversal2);
+    return preorder_traversal1.find(preorder_traversal2) != std::string::npos;
+}
+
 /**
  * T1 and T2 are two very large binary trees, with T1 much bigger than T2. Create an
  * algorithm to determine if T2 is a subtree of T1. A tree T2 is a subtree if T1 if
@@ -63,5 +81,21 @@ int main() {
     create_bigger_tree(t1);
     // create_smaller_nonsubtree(t2);
     create_smaller_subtree(t2);
-    std::cout << "T2 is " << (is_subtree(t1, t2) ? "" : "not ") << "a subtree of T1.\n";
+    std::cout << "Enter 1 to check if T2 is a subtree of T1 using recursive function or 2 to check "
+                 "if T2 is a subtree of T1 using a preorder traversal.\n";
+    int method;
+    bool result;
+    std::cin >> method;
+    switch (method) {
+    case 1:
+        result = is_subtree(t1, t2);
+        break;
+    case 2:
+        result = is_subtree_preorder_traversal(t1, t2);
+        break;
+    default:
+        std::cout << "None of the proposed methods have not been choosen.\n";
+        return 0;
+    }
+    std::cout << "T2 is " << (result ? "" : "not ") << "a subtree of T1.\n";
 }
