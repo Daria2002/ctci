@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 
-class TreeNode {
+class TreeNode : public std::enable_shared_from_this<TreeNode> { // public inheritance!!
     public:     
         TreeNode() {};
         TreeNode(int val) : value(val) {}
@@ -28,7 +28,7 @@ class TreeNode {
         }
         std::shared_ptr<TreeNode> find(int val) {
             if(val == value) {
-                return std::shared_ptr<TreeNode>(this);
+                return shared_from_this();
             }
             if(val < value) {
                 return left == nullptr ? nullptr : left -> find(val);
@@ -37,22 +37,21 @@ class TreeNode {
             }
         }
         void delete_node(int val) {
-            if(value == val) {
-                delete this;
-            }
-            if(left -> value == val) {
+            if(left != nullptr && left -> value == val) {
                 left = nullptr;
-            } else if(right -> value == val) {
+            } else if(right != nullptr && right -> value == val) {
                 right = nullptr;
             }
-            if(left -> value < val) {
+            if(left != nullptr && left -> value < val) {
                 left -> delete_node(val);
-            } else {
+            } else if(right != nullptr) {
                 right -> delete_node(val);
             }
+            size--;
         }
         std::shared_ptr<TreeNode> get_random_node() {
-            
+            // TODO
+            return shared_from_this();
         }
 };
 
@@ -65,5 +64,9 @@ using NodePtr = std::shared_ptr<TreeNode>;
  * getRandomNode, and explain how you would implement the rest of the methods.
  */
 int main() {
-
+    NodePtr node = std::make_shared<TreeNode>(1);
+    node -> insert(2);
+    node -> insert(3);
+    NodePtr node2 = node -> find(2);
+    node -> delete_node(3);
 }
