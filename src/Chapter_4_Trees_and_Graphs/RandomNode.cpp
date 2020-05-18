@@ -1,5 +1,7 @@
 #include <iostream>
 #include <memory>
+#include <stdlib.h>
+#include <time.h>
 
 class TreeNode : public std::enable_shared_from_this<TreeNode> { // public inheritance!!
     public:     
@@ -50,12 +52,44 @@ class TreeNode : public std::enable_shared_from_this<TreeNode> { // public inher
             size--;
         }
         std::shared_ptr<TreeNode> get_random_node() {
-            // TODO
-            return shared_from_this();
+            int left_size = left == nullptr ? 0 : left -> size;
+            // initialize random seed
+            srand(time(NULL));
+            // generate random number in range [0, size]
+            int random_number = rand();
+            random_number %= size;
+            if(random_number < left_size) {
+                return left -> get_random_node();
+            } else if(random_number == left_size) {
+                return shared_from_this();
+            }
+            // return right node
+            return right -> get_random_node();
         }
 };
 
 using NodePtr = std::shared_ptr<TreeNode>;
+
+void create_tree(NodePtr& node) {
+    node = std::make_shared<TreeNode>(150);
+    node -> insert(2);
+    node -> insert(20);
+    node -> insert(15);
+    node -> insert(45);
+    node -> insert(210);
+    node -> insert(310);
+    node -> insert(49);
+    node -> insert(200);
+    node -> insert(300);
+    node -> insert(46);
+    node -> insert(5000);
+    node -> insert(100);
+    node -> insert(1000);
+    node -> insert(3);
+    NodePtr found_node = node -> find(2);
+    std::cout << "found node = " << found_node -> value << '\n';
+    node -> delete_node(3); // used for testing delete_node_functionality
+}
 
 /**
  * You are implementing a binary search tree class from scratch, which, in addition to 
@@ -64,9 +98,8 @@ using NodePtr = std::shared_ptr<TreeNode>;
  * getRandomNode, and explain how you would implement the rest of the methods.
  */
 int main() {
-    NodePtr node = std::make_shared<TreeNode>(1);
-    node -> insert(2);
-    node -> insert(3);
-    NodePtr node2 = node -> find(2);
-    node -> delete_node(3);
+    NodePtr node;
+    create_tree(node);
+    NodePtr random_node = node -> get_random_node();
+    std::cout << "random node value = " << random_node -> value << '\n';
 }
