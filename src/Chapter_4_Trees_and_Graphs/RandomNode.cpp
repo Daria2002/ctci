@@ -56,8 +56,7 @@ class TreeNode : public std::enable_shared_from_this<TreeNode> { // public inher
             // initialize random seed
             srand(time(NULL));
             // generate random number in range [0, size]
-            int random_number = rand();
-            random_number %= size;
+            int random_number = rand() % size;
             if(random_number < left_size) {
                 return left -> get_random_node();
             } else if(random_number == left_size) {
@@ -66,9 +65,53 @@ class TreeNode : public std::enable_shared_from_this<TreeNode> { // public inher
             // return right node
             return right -> get_random_node();
         }
+        std::shared_ptr<TreeNode> ith_node(int index) {
+            int left_size = left == nullptr ? 0 : left -> size;
+            if(index < left_size) {
+                return left -> ith_node(index);
+            } else if(index == left_size) {
+                return shared_from_this();
+            }
+            return right -> ith_node(index - (left_size + 1));
+        }
 };
 
 using NodePtr = std::shared_ptr<TreeNode>;
+
+class Tree {
+    public:
+        NodePtr root = nullptr;
+        int size() {
+            return root == nullptr ? 0 : root -> size;
+        }
+        void insert(int val) {
+            if(root == nullptr) {
+                root = std::make_shared<TreeNode>(val);
+            } else {
+                root -> insert(val);
+            }
+        }
+        NodePtr find(int val) {
+            if(root == nullptr) {
+                return nullptr;
+            }
+            return root -> find(val);
+        }
+        void delete_node(int val) {
+            if(root == nullptr) {
+                return;
+            }
+            return root -> delete_node(val);
+        }
+        std::shared_ptr<TreeNode> get_random_node() {
+            if(root == nullptr) {
+                return nullptr;
+            }
+            srand(time(NULL));
+            int random_number = rand() % size();
+            return root -> ith_node(random_number);
+        }
+};
 
 void create_tree(NodePtr& node) {
     node = std::make_shared<TreeNode>(150);
@@ -101,5 +144,9 @@ int main() {
     NodePtr node;
     create_tree(node);
     NodePtr random_node = node -> get_random_node();
-    std::cout << "random node value = " << random_node -> value << '\n';
+    std::cout << "Method 1: random node value = " << random_node -> value << '\n';
+    Tree tree;
+    tree.root = node;
+    random_node = tree.get_random_node();
+    std::cout << "Method 2: random node value = " << random_node -> value << '\n';
 }
