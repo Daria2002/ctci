@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 
 class TreeNode : public std::enable_shared_from_this<TreeNode> { // public inheritance!!
     public:     
