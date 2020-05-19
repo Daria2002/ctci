@@ -105,7 +105,7 @@ int count_paths_with_sum_optimized(NodePtr node, const int target_sum, int curre
     update_hash_table(path_count, current_sum, 1);
     num_of_paths += count_paths_with_sum_optimized(node -> left, target_sum, current_sum, path_count);
     num_of_paths += count_paths_with_sum_optimized(node -> right, target_sum, current_sum, path_count);
-    update_hash_table(path_count, current_sum, -1);
+    // update_hash_table(path_count, current_sum, -1);
     return num_of_paths;
 }
 
