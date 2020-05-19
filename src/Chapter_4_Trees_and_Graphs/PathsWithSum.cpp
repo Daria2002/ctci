@@ -38,10 +38,10 @@ class Tree {
 Tree create_tree() {
     NodePtr node = std::make_shared<Node>(150);
     node -> insert(2);
-    node -> insert(20);
-    node -> insert(15);
-    node -> insert(45);
-    node -> insert(210);
+    node -> insert(4);
+    node -> insert(-3);
+    node -> insert(6);
+    node -> insert(1);
     node -> insert(310);
     node -> insert(49);
     node -> insert(200);
@@ -79,18 +79,26 @@ int count_paths_with_sum(NodePtr node, int sum) {
 void update_hash_table(std::unordered_map<int, int>& hash_table, int key, int delta) {
     if(hash_table.find(key) != hash_table.end()) {
         int old_val = hash_table[key];
-        hash_table.insert(key, old_val + delta);
+        hash_table.insert({key, old_val + delta});
         return;
     }
-    hash_table.insert(key, delta);
+    hash_table.insert({key, delta});
+}
+
+int get_value_or_default(std::unordered_map<int, int> path_count, int sum_to_search) {
+    if(path_count.find(sum_to_search) == path_count.end()) {
+        return 0;
+    }
+    return path_count[sum_to_search];
 }
 
 int count_paths_with_sum_optimized(NodePtr node, const int target_sum, int current_sum, std::unordered_map<int, int> path_count) {
     if(node == nullptr) {
         return 0;
     }
-    int num_of_paths = 0;
     current_sum += node -> value;
+    int sum_to_search = current_sum - target_sum;
+    int num_of_paths = get_value_or_default(path_count, sum_to_search);
     if(current_sum == target_sum) {
         num_of_paths++;
     }
