@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 
 class Node {
     public:
@@ -75,6 +76,35 @@ int count_paths_with_sum(NodePtr node, int sum) {
     return paths_from_root + paths_on_left + paths_on_right;
 }
 
+void update_hash_table(std::unordered_map<int, int>& hash_table, int key, int delta) {
+    if(hash_table.find(key) != hash_table.end()) {
+        int old_val = hash_table[key];
+        hash_table.insert(key, old_val + delta);
+        return;
+    }
+    hash_table.insert(key, delta);
+}
+
+int count_paths_with_sum_optimized(NodePtr node, const int target_sum, int current_sum, std::unordered_map<int, int> path_count) {
+    if(node == nullptr) {
+        return 0;
+    }
+    int num_of_paths = 0;
+    current_sum += node -> value;
+    if(current_sum == target_sum) {
+        num_of_paths++;
+    }
+    update_hash_table(path_count, current_sum, 1);
+    num_of_paths += count_paths_with_sum_optimized(node -> left, target_sum, current_sum, path_count);
+    num_of_paths += count_paths_with_sum_optimized(node -> right, target_sum, current_sum, path_count);
+    update_hash_table(path_count, current_sum, -1);
+    return num_of_paths;
+}
+
+int count_paths_with_sum_optimized(NodePtr node, const int target_sum) {
+    return count_paths_with_sum_optimized(node, target_sum, 0, std::unordered_map<int, int>());
+}
+
 /**
  * You are given a binary tree in which each node contains an integer value (which
  * might be positive or negative). Design an algorithm to count the number of paths
@@ -87,7 +117,21 @@ int main() {
     std::cout << "Program for counting paths with sum\n";
     std::cout << "===================================\n";
     std::cout << "Enter sum:\n";
-    int sum;
+    int sum, num_of_paths, method;
     std::cin >> sum;
-    std::cout << "Number of paths = " << count_paths_with_sum(tree.root, sum) << '\n';
+    std::cout << "Enter 1 to calculate number of paths using brute force algorithm or "
+                 "2 to calculate number of paths using optimized algorithm.\n";
+    std::cin >> method;
+    switch (method) {
+    case 1:
+        num_of_paths = count_paths_with_sum(tree.root, sum);
+        break;
+    case 2:
+        num_of_paths = count_paths_with_sum_optimized(tree.root, sum);
+        break;
+    default:
+        std::cout << "Non of the proposed methods have not been choosen.\n";
+        return 0;
+    }
+    std::cout << "Number of paths = " << num_of_paths << '\n';
 }
