@@ -62,12 +62,54 @@ int get_prev_bm(int number) {
     return number;
 }
 
-int get_next_arithmetic(int number) {
-
+int get_next_arithmetic(int n) {
+    // set trailing 0s to 1s
+    int c0 = 0, c1 = 0, tmp = n;
+    while((tmp & 1 == 0) && tmp != 0) {
+        tmp >>= 1;
+        c0++;
+    }
+    while((tmp & 1) == 1) {
+        tmp >>= 1;
+        c1++;
+    }
+    // there is no larger number with the same number of 1s because
+    // number looks like: 1111...111000...0000
+    if(c0 + c1 == 31 || c0 + c1 == 0) {
+        return -1;
+    }
+    // set trailing 0s to 1
+    n = n + (1 << c0) - 1;
+    // set rightmost non-trailing 0 to 1
+    n = n + 1;
+    // set c1 - 1 leftmost 0s to 1s
+    n = n + (1 << (c1-1)) - 1; // be careful: 2 ^ x = 2 xor x, but: 1 << x = pow(2, x)
+    return n;
 }
 
-int get_prev_arithmetic(int number) {
+int get_prev_arithmetic(int n) {
+    int c0 = 0, c1 = 0, tmp = n;
+    while(tmp & 1 == 1) {
+        c1++;
+        tmp >>= 1;
+    }
 
+    // there is no smaller number because all 1s are on the right just next to each other
+    if(tmp == 0) {
+        return -1;  
+    }
+
+    while(((tmp & 1) == 0) && (tmp != 0)) {
+        c0++;
+        tmp >>= 1;
+    }
+    // set to 0 everything that is on the right of the rightmost non-trailing 1
+    n = n - ((1 << c1) - 1);
+    // set the rightmost non-trailing 1 to 0 and everything on the right to it flip from 0 to 1
+    n = n - 1;
+    // set last (c0 - 1) numbers (with indexes in range [0, c0 - 2]) to 0
+    n = n - ((1 << (c0 - 1)) - 1);
+    return n;
 }
 
 typedef int (* function_call)(int number);
@@ -103,15 +145,15 @@ int main() {
     std::cin >> number;
     NextNumbers result;
     switch (method) {
-    case 1:
-        result = next_numbers_bm(number);
-        break;
-    case 2:
-        result = next_numbers_arithmetic(number);
-        break;
-    default:
-        std::cout << "None of the proposed methods have not been choosen.\n";
-        return 0;
+        case 1:
+            result = next_numbers_bm(number);
+            break;
+        case 2:
+            result = next_numbers_arithmetic(number);
+            break;
+        default:
+            std::cout << "None of the proposed methods have not been choosen.\n";
+            return 0;
     }
     std::cout << result;
 }
