@@ -1,54 +1,21 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 
-bool is_bin(int num) {
+int longest_sequence(int num) {
+    if(~num == 0) return sizeof(int) * 8; 
+    int max = 0, prev = 0, curr = 0;
     while(num != 0) {
-        if(num % 10 != 1 && num % 10 != 0) {
-            return false;
-        } 
-        num /= 10;
-    }
-    return true;
-}
-
-void decimal_to_binary(int num, std::string& bin) {
-    if(num / 2 != 0) {
-        decimal_to_binary(num / 2, bin);
-    }
-    bin += num % 2 + '0';
-}
-
-std::string to_bin(int num) {
-    if(is_bin(num)) {
-        return std::to_string(num);
-    }
-    std::string bin;
-    decimal_to_binary(num, bin);
-    return bin;
-}
-
-int longest_sequence(std::string bin) {
-    int max = 0, right = 0, left = 0;
-    bool counting_right = false;
-    for(int i = 0; i < bin.size(); i++) {
-        if(bin[i] == '1' && !counting_right) {
-            left++;
-        } else if(bin[i] == '0' && !counting_right) {
-            counting_right = true;
-            left++;
-        } else if(bin[i] == '0' && counting_right) {
-            // counting_right = false;
-            if(left + right > max) {
-                max = left + right;
-            }
-            left = right + 1;
-            right = 0;
-        } else {
-            right++;
+        if((num & 1) == 1) {
+            curr++;
+        } else if((num & 1) == 0) {
+            prev = curr; // update prev
+            curr = 0; // start counting new sequence length
         }
+        max = std::max(curr + prev + 1, max);
+        num >>= 1;
     }
-    // check if the last sequence is longer than current max
-    return left + right > max ? left + right : max;
+    return max;
 }
 
 /**
@@ -65,6 +32,5 @@ int main() {
     std::cout << "Enter input:\n";
     int num;
     std::cin >> num;
-    std::string bin = to_bin(num);
-    std::cout << "The length of the longest sequence = " << longest_sequence(bin) << '\n'; 
+    std::cout << "The length of the longest sequence = " << longest_sequence(num) << '\n'; 
 }
