@@ -38,7 +38,28 @@ int get_next_bm(int number) {
 }
 
 int get_prev_bm(int number) {
+    int c0 = 0, c1 = 0, tmp = number;
+    while(tmp & 1 == 1) {
+        c1++;
+        tmp >>= 1;
+    }
 
+    // there is no smaller number because all 1s are on the right just next to each other
+    if(tmp == 0) {
+        return -1;
+    }
+
+    while(((tmp & 1) == 0) && (tmp != 0)) {
+        c0++;
+        tmp >>= 1;
+    }
+    int p = c0 + c1;
+    // clear all bits till (including) rightmost non-trailing 1
+    int mask_clear = ((~0) << (p + 1));
+    number &= mask_clear;
+    int mask_set_ones = (1 << (c1 + 1)) - 1; // rightmost non-trailing 1 is flipped to 0, so there is one extra 1 to set
+    number |= mask_set_ones << (c0 - 1); // rightmost non-trailing 1 is flipped to 0, so there is one 0 less to be set
+    return number;
 }
 
 int get_next_arithmetic(int number) {
