@@ -97,7 +97,7 @@ int analyze_results_and_obtain_next_digit(std::vector<Bottle>& bottles, std::vec
             break;
         }
     }
-    return i;
+    return (i == test_stripes.size() ? -1 : i); // return -1 if all result on valid test stripes are negative
 }
 
 int naive_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Strip> test_stripes) {
@@ -119,7 +119,13 @@ int optimized_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test
             test_stripes[index].add_drop_on_day(bottles[i], today);
         }
         today += TESTING_PERIOD;
-        result += analyze_results_and_obtain_next_digit(bottles, test_stripes, today) * std::pow(10, MAX_NUM_OF_DIGITS - iter - 1);
+        int digit = analyze_results_and_obtain_next_digit(bottles, test_stripes, today);
+        if(digit == -1) {
+            // result not find because there are duplicate digits in poison id number
+            // TODO: result = ...
+        } else {
+            result += digit * std::pow(10, MAX_NUM_OF_DIGITS - iter - 1);
+        }
         iter++;
     }
     return bottles.size() == 1 ? bottles[0].id : -1;
