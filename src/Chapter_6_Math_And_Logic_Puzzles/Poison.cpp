@@ -63,29 +63,25 @@ class Test_Strip {
         std::vector<std::vector<Bottle>> drops_by_day;
 };
 
-void drop_content_on_stripes(std::vector<Bottle> bottles, std::vector<Test_Strip> test_stripes, int day) {
+void drop_content_on_stripes(std::vector<Bottle>& bottles, std::vector<Test_Strip>& test_stripes, int day) {
     int index = 0;
     for(Bottle b : bottles) {
-        Test_Strip strip = test_stripes[index];
-        strip.add_drop_on_day(b, day);
+        test_stripes[index].add_drop_on_day(b, day);
         index = (index + 1) % NUMBER_OF_TEST_STRIPES;
     }
 }
 
-void remove_positive_stripes(std::vector<Bottle> bottles, std::vector<Test_Strip>& test_stripes, int today) {
-    std::vector<Test_Strip> negative_test_stripes;
-    for(int i = 0; i < test_stripes.size(); i++) {
+void remove_positive_stripes(std::vector<Bottle>& bottles, std::vector<Test_Strip>& test_stripes, int today) {
+    int i;
+    for(i = 0; i < test_stripes.size(); i++) {
         if(test_stripes[i].is_positive_on_day(today)) { // if test_stripes[i] was ever positive
             bottles = test_stripes[i].get_last_weeks_bottles(today);
-            // new_test_stripes vector doesn't contain positive test stripe
-            // it contains only the ones that can be reused
             break;
-        } else {
-            negative_test_stripes.push_back(test_stripes[i]);
         }
     }
-    test_stripes = negative_test_stripes;
-    return;
+    // new_test_stripes vector doesn't contain positive test stripe
+    // it contains only the ones that can be reused
+    test_stripes.erase(test_stripes.begin() + i);
 }
 
 int naive_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Strip> test_stripes) {
@@ -95,7 +91,7 @@ int naive_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Str
         today += TESTING_PERIOD;
         remove_positive_stripes(bottles, test_stripes, today);
     }
-    return bottles.size() == 1 ? bottles[1].id : -1;
+    return bottles.size() == 1 ? bottles[0].id : -1;
 }
 
 int optimized_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Strip> test_stripes) {
@@ -114,6 +110,7 @@ std::vector<Bottle> set_bottles() {
     std::vector<Bottle> bottles;
     srand(time(NULL));
     int poisoned_id = rand() % NUMBER_OF_BOTTLES;
+    std::cout << "Randomly selected poison bottle id = " << poisoned_id << '\n';
     for(int i = 0; i < NUMBER_OF_BOTTLES; i++) {
         Bottle b(i);
         if(poisoned_id == i) b.poisoned = true;
