@@ -152,8 +152,10 @@ int optimized_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test
         digits[1] = digits[0];
     }
 
-    if(digits[2] == -1) {
-        if(digits[3] == -1) { // digits[2] is same as digits[1] or digits[0]
+    if(digits[2] == -1) { // digits[2] is same as digits[1] or digits[0]
+        if(digits[3] == -1) {
+            // in this case digits[2] is same as digits[1] or digits[0], but digit[0] + 1 == digit[1]
+            // because even after shifting test there is an overlap, so second digit is calculated using this:
             digits[2] = (digits[0] + 1) % NUMBER_OF_TEST_STRIPES == digits[1] ? digits[0] : digits[1];
         } else {
             digits[2] = (digits[3] - 1 + NUMBER_OF_TEST_STRIPES) % NUMBER_OF_TEST_STRIPES;
