@@ -1,8 +1,10 @@
 #include <iostream>
 #include <vector>
+#include <array>
 #include <ctime>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
 
 #define NUMBER_OF_BOTTLES 1000
 #define NUMBER_OF_TEST_STRIPES 10
@@ -88,18 +90,6 @@ void remove_positive_stripes(std::vector<Bottle>& bottles, std::vector<Test_Stri
     test_stripes.erase(test_stripes.begin() + i);
 }
 
-int analyze_results_and_obtain_next_digit(std::vector<Bottle>& bottles, std::vector<Test_Strip>& test_stripes, int today) {
-    int i;
-    for(i = 0; i < test_stripes.size(); i++) {
-        if(test_stripes[i].usable && test_stripes[i].is_positive_on_day(today)) { // if test_stripes[i] was ever positive
-            bottles = test_stripes[i].get_last_weeks_bottles(today);
-            test_stripes[i].usable = false;
-            break;
-        }
-    }
-    return (i == test_stripes.size() ? -1 : i); // return -1 if all result on valid test stripes are negative
-}
-
 int naive_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Strip> test_stripes) {
     int today = 0;
     while (bottles.size() > 0 && test_stripes.size() > 0) {
@@ -110,25 +100,66 @@ int naive_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Str
     return bottles.size() == 1 ? bottles[0].id : -1;
 }
 
-int optimized_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Strip> test_stripes) {
-    int today = 0, result = 0, iter = 0, index = 0;
-    while(bottles.size() > 1 && test_stripes.size() > 0) {
-        for(int i = 0; i < bottles.size(); i++) {
-            int factor = std::pow(10, MAX_NUM_OF_DIGITS - iter);
-            index = (bottles[i].id % (factor)) / std::pow(10, MAX_NUM_OF_DIGITS - iter - 1);
-            test_stripes[index].add_drop_on_day(bottles[i], today);
-        }
-        today += TESTING_PERIOD;
-        int digit = analyze_results_and_obtain_next_digit(bottles, test_stripes, today);
-        if(digit == -1) {
-            // result not find because there are duplicate digits in poison id number
-            // TODO: result = ...
-        } else {
-            result += digit * std::pow(10, MAX_NUM_OF_DIGITS - iter - 1);
-        }
-        iter++;
+int get_index(Bottle bottle, int day) {
+    int id = bottle.id;
+    switch (day)
+    {
+    case 0:
+        return id/100;
+    case 1:
+        return (id%100)/10;
+    case 2:
+        return (id%10);
+    case 3:
+        return (id%10+1)%NUMBER_OF_TEST_STRIPES;
+    default:
+        return -1;
     }
-    return bottles.size() == 1 ? bottles[0].id : -1;
+}
+
+void drop_content_on_strips_optimized(const std::vector<Bottle> bottles, std::vector<Test_Strip>& test_stripes, int day) {
+    if(day > 3) return; 
+    for(Bottle b : bottles) {
+        int index = get_index(b, day);
+        test_stripes[index].add_drop_on_day(b, day);
+    }
+}
+
+int get_positive_on_day(std::vector<Test_Strip>& test_stripes, int result_day) {
+    for(Test_Strip& s : test_stripes) {
+        int id = s.id;
+        if(s.usable && s.is_positive_on_day(result_day)) {
+            return s.id;
+        }
+    }
+    return -1;
+}
+
+int optimized_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Strip>& test_stripes) {
+    int today = 0, iter = 0, index = 0;
+    std::array<int, MAX_NUM_OF_DIGITS + 1> digits;
+    
+    // every day is used for testing one digit + one extra
+    for(int day = 0; day < MAX_NUM_OF_DIGITS + 1; day++) {
+        drop_content_on_strips_optimized(bottles, test_stripes, day);
+    }
+    for(int day = 0; day < MAX_NUM_OF_DIGITS + 1; day++) {
+        int result_day = day + TESTING_PERIOD;
+        digits[day] = get_positive_on_day(test_stripes, result_day);
+    }
+
+    if(digits[1] == -1) {
+        digits[1] = digits[0];
+    }
+
+    if(digits[2] == -1) {
+        if(digits[3] == -1) { // digits[2] is same as digits[1] or digits[0]
+            digits[2] = (digits[0] + 1) % NUMBER_OF_TEST_STRIPES == digits[1] ? digits[0] : digits[1];
+        } else {
+            digits[2] = (digits[3] - 1 + NUMBER_OF_TEST_STRIPES) % NUMBER_OF_TEST_STRIPES;
+        }
+    }
+    return digits[0] * 100 + digits[1] * 10 + digits[2];
 }
 
 int optimal_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Strip> test_stripes) {
