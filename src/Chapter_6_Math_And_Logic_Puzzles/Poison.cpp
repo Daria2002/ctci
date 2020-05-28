@@ -33,14 +33,6 @@ class Test_Strip {
             }
             drops_by_day[day].push_back(bottle);
         }
-        bool has_poison(std::vector<Bottle> bottles) {
-            for(Bottle b : bottles) {
-                if(b.poisoned) {
-                    return true;
-                }
-            }
-            return false;
-        }
         bool is_positive_on_day(int day) {
             int test_start_day = day - TESTING_PERIOD;
             if(test_start_day < 0 || test_start_day >= drops_by_day.size()) {
@@ -67,6 +59,14 @@ class Test_Strip {
         // drops_by_day is vector of days where each day is represented as
         // a vector of bottles tested on that day
         std::vector<std::vector<Bottle>> drops_by_day;
+        bool has_poison(std::vector<Bottle> bottles) {
+            for(Bottle b : bottles) {
+                if(b.poisoned) {
+                    return true;
+                }
+            }
+            return false;
+        }
 };
 
 void drop_content_on_stripes(std::vector<Bottle>& bottles, std::vector<Test_Strip>& test_stripes, int day) {
@@ -165,9 +165,27 @@ int optimized_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test
 }
 
 int optimal_find_poisoned_bottle(std::vector<Bottle> bottles, std::vector<Test_Strip> test_stripes) {
-    std::cout << "optimal\n";
-    // TODO
-    return 0;
+    int day = 0, result = 0;
+    // go throw binary representation of the bottle.id and if bit = 1 put bottle drop on test strip with id equal to bit index
+    for(const Bottle bottle : bottles) {
+        int id = bottle.id;
+        int index = 0;
+        while (id != 0) {
+            if((id & 1) == 1) {
+                test_stripes[index].add_drop_on_day(bottle, day);
+            }
+            id >>= 1;
+            index++;
+        }
+    }
+    day += TESTING_PERIOD;
+    // go through all test strips and if a test strip is positive we know that bottle id has bit 1 on position test_strip.id 
+    for(int test_index = 0; test_index < test_stripes.size(); test_index++) {
+        if(test_stripes[test_index].is_positive_on_day(day)) {
+            result = result + (1 << test_index);
+        }
+    }
+    return result;
 }
 
 std::vector<Bottle> set_bottles() {
