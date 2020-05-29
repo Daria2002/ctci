@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <memory>
 
 enum JobTitle {
     Respondent = 0, Manager = 1, Director = 2
@@ -10,23 +11,18 @@ class Call;
 class Employee {
     public:
         Employee() = default;
-        Employee(JobTitle t) : job_title(t) {
-            free = true;
-        }
+        Employee(JobTitle t) : job_title(t) {}
         JobTitle job_title;
-        Call current_call;
+        std::shared_ptr<Call> current_call;
         bool is_free() {
-            return free;
+            return current_call == nullptr;
         }
-        void start_call(Call call) {
-            free = false;
+        void start_call(std::shared_ptr<Call> call) {
             current_call = call;
         }
         void finish_call() {
-            free = true;
+            current_call = nullptr;
         }
-    private:
-        bool free;
 };
 
 class Caller {
