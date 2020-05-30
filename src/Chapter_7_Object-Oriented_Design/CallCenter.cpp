@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <ctime>
+#include <cstdlib>
 #include <array>
 
 enum JobTitle {
@@ -12,7 +14,9 @@ class CallHandler;
 
 class Caller {
     public:
-        int phone_number;
+        Caller(int cl) : challenging_level(cl) {}
+        // normal caller = 0, not so easy going caller = 1, hard caller = 2
+        int challenging_level;
 };
 
 class Call {
@@ -88,9 +92,10 @@ std::vector<Employee> get_employees(const int, const int, const int, std::shared
 
 class CallHandler : public std::enable_shared_from_this<CallHandler> {
     public:
-        CallHandler() {
+        void initialize_employees() {
             employees = get_employees(num_of_repondents, num_of_managers, num_of_directors, shared_from_this());
         }
+
         static constexpr auto num_of_repondents = 10;
         static constexpr auto num_of_managers = 4;
         static constexpr auto num_of_directors = 2;
@@ -154,6 +159,21 @@ void Employee::escalate_and_reassign() {
     current_call = nullptr;
 }
 
+std::vector<Call> get_random_calls() {
+    std::vector<Call> calls;
+    constexpr auto num_of_calls = 25;
+    int challenging_level;
+    constexpr int num_of_challenging_levels = 3;
+    srand(time(NULL));
+    for(int i = 0; i < num_of_calls; i++) {
+        challenging_level = rand() % num_of_challenging_levels;
+        Caller caller(challenging_level);
+        Call call(caller);
+        calls.push_back(call);
+    }
+    return calls;
+}
+
 /**
  * Imagine you have a call center with three levels of employees: respondent, 
  * manager and director. An incoming telephone call must be first allocated to 
@@ -167,5 +187,8 @@ int main() {
     std::cout << "===================\n"
                  "Call center program\n"
                  "===================\n";
-    CallHandler ch();
+    std::shared_ptr<CallHandler> call_handler = std::make_shared<CallHandler>();
+    call_handler -> initialize_employees();
+    std::vector<Call> calls = get_random_calls();
+    return 0;
 }
