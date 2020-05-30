@@ -3,8 +3,6 @@
 #include <memory>
 #include <array>
 
-#define LEVELS 3
-
 enum JobTitle {
     Respondent = 0, Manager = 1, Director = 2
 };
@@ -65,9 +63,6 @@ class Employee {
             current_call = call;
             return is_free();  
         }
-        Employee& operator=(Employee e) {
-    
-        }
         void escalate_and_reassign();
 };
 
@@ -89,20 +84,24 @@ class Director : Employee {
     }
 };
 
-std::vector<Employee> get_employees(int, int, int, std::shared_ptr<CallHandler>);
+std::vector<Employee> get_employees(const int, const int, const int, std::shared_ptr<CallHandler>);
 
 class CallHandler : public std::enable_shared_from_this<CallHandler> {
     public:
-        const int num_of_repondents = 10;
-        const int num_of_managers = 4;
-        const int num_of_directors = 2;
-        std::vector<Employee> employees = get_employees(num_of_repondents, num_of_managers, num_of_directors, shared_from_this());
-        std::array<std::vector<Call>, LEVELS> call_queues;
+        CallHandler() {
+            employees = get_employees(num_of_repondents, num_of_managers, num_of_directors, shared_from_this());
+        }
+        static constexpr auto num_of_repondents = 10;
+        static constexpr auto num_of_managers = 4;
+        static constexpr auto num_of_directors = 2;
+        static constexpr auto levels = 3;
+        std::vector<Employee> employees;
+        std::array<std::vector<Call>, levels> call_queues;
 
-        bool get_handler_for_call(std::shared_ptr<Call> call, std::shared_ptr<Employee>& em) {
+        bool get_handler_for_call(std::shared_ptr<Call> call, Employee em) {
             for(int i = 0; i < employees.size(); i++) {
                 if(employees[i].is_free()) {
-                    em = std::make_shared<Employee>(employees[i]);
+                    em = employees[i];
                     return true;
                 }
             }
@@ -111,10 +110,11 @@ class CallHandler : public std::enable_shared_from_this<CallHandler> {
 
         // routes the call to an available employee, or saves in a queue if no employee is available
         void dispatch_call(std::shared_ptr<Call> call) {
-            std::shared_ptr<Employee> em;
+            Employee em;
             if(get_handler_for_call(call, em)) {
-                (*em).receive_call(call);
-                (*call).set_handler(em);
+                em.receive_call(call);
+                std::shared_ptr<Employee> em_ptr = std::make_shared<Employee>(em);
+                (*call).set_handler(em_ptr);
             } else {
                 // no employee is available
                 (*call).reply("Please wait for free employee to reply.\n");
@@ -133,25 +133,25 @@ class CallHandler : public std::enable_shared_from_this<CallHandler> {
         } 
 };
 
+std::vector<Employee> get_employees(const int num_of_repondents, const int num_of_managers, 
+                                    const int num_of_directors, std::shared_ptr<CallHandler> handler) {
+    std::vector<Employee> employees;
+    for(int i = 0; i < num_of_repondents; i++) {
+        employees.push_back(Employee(JobTitle::Respondent, i, handler));
+    }
+    for(int i = 0; i < num_of_managers; i++) {
+        employees.push_back(Employee(JobTitle::Manager, i + num_of_repondents, handler));
+    }
+    for(int i = 0; i < num_of_directors; i++) {
+        employees.push_back(Employee(JobTitle::Director, i + num_of_repondents + num_of_managers, handler));
+    }
+    return employees;
+}
 void Employee::escalate_and_reassign() {
     (*current_call).increment_title();
     finish_call();
     (*handler).dispatch_call(current_call);
     current_call = nullptr;
-}
-
-std::vector<Employee> get_employees(int resp, int man, int dir, std::shared_ptr<CallHandler> handler) {
-    std::vector<Employee> employees;
-    for(int i = 0; i < resp; i++) {
-        employees.push_back(Employee(JobTitle::Respondent, i, handler));
-    }
-    for(int i = 0; i < man; i++) {
-        employees.push_back(Employee(JobTitle::Manager, i + resp, handler));
-    }
-    for(int i = 0; i < dir; i++) {
-        employees.push_back(Employee(JobTitle::Director, i + resp + man, handler));
-    }
-    return employees;
 }
 
 /**
@@ -167,5 +167,5 @@ int main() {
     std::cout << "===================\n"
                  "Call center program\n"
                  "===================\n";
-    
+    CallHandler ch();
 }
