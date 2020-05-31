@@ -4,6 +4,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <array>
+#include <thread>
 
 enum JobTitle {
     Respondent = 0, Manager = 1, Director = 2
@@ -35,13 +36,23 @@ class Caller {
         int challenging_level;
 };
 
+time_t call_end_time() {
+    std::time_t now = time(0); // current date/time based on current system
+    char* dt = ctime(&now);
+    srand(time(NULL));
+    std::time_t end_time = now + rand() % 10; // increase random num of seconds in range [0, 10]
+    return end_time;
+}
+
 class Call : public std::enable_shared_from_this<Call> {
     public:
-        Call(Caller c) : caller(c), title(JobTitle::Respondent) {}
+        Call(Caller c) : caller(c), title(JobTitle::Respondent){}
         Caller caller;
         Employee handler;
+        time_t end_time;
         void set_handler(Employee& e) {
             handler = e;
+            end_time = call_end_time();
             e.receive_call(*this);
         }
         void reply(std::string m) {

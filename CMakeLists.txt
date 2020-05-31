@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.10)
 project(ctci)
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 file(GLOB_RECURSE ctci_SOURCES src/*.cpp )
 file(GLOB_RECURSE ctci_HEADERS include/*.hpp)
@@ -15,5 +17,6 @@ foreach( testsourcefile ${ctci_SOURCES} )
     string( REPLACE ".cpp" "" testname ${testname} )
 
     add_executable( ${testname} ${testsourcefile} )
+    target_link_libraries(${testname} Threads::Threads)
 
 endforeach( testsourcefile ${ctci_SOURCES} )
