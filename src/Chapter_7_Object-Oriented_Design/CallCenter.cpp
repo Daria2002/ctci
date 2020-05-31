@@ -42,7 +42,6 @@ class Call : public std::enable_shared_from_this<Call> {
         Employee handler;
         void set_handler(Employee& e) {
             handler = e;
-            std::shared_ptr<Call> this_ptr = shared_from_this();
             e.receive_call(*this);
         }
         void reply(std::string m) {
@@ -128,17 +127,13 @@ class CallHandler : public std::enable_shared_from_this<CallHandler> {
 
         bool get_handler_for_call(Call& call) {
             for(Employee& em : employees) {
-                if(em.is_free()) {
-                    std::shared_ptr<Call> call_ptr = std::make_shared<Call>(call);
-                    call_ptr -> set_handler(em);
-                    std::cout << "Handler(call is ptr) id = " << call_ptr -> handler.id << '\n';
+                if(em.is_free() && em.job_title == call.get_title()) {
+                    call.set_handler(em);
                     std::cout << "Handler id = " << call.handler.id << '\n';
                     return true;
-                } else {
-                    std::cout << "Employee is not available\n";
                 }
             }
-            std::cout << "There is no available handlers.\n";
+            std::cout << "There is no available handler.\n";
             return false;
         }  
 
