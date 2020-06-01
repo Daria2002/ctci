@@ -22,7 +22,7 @@ class Employee {
         std::shared_ptr<Call> current_call;
         std::shared_ptr<CallHandler> handler;
         bool is_free();
-        void start_call(std::shared_ptr<Call>);
+        void start_call(Call&);
         void finish_call();
         bool receive_call(std::shared_ptr<Call>&);
         bool receive_call(Call&);
@@ -49,10 +49,8 @@ class Call : public std::enable_shared_from_this<Call> {
         Call(Caller c) : caller(c), title(JobTitle::Respondent){}
         Caller caller;
         Employee handler;
-        time_t end_time;
         void set_handler(Employee& e) {
             handler = e;
-            end_time = call_end_time();
             e.receive_call(*this);
         }
         void reply(std::string m) {
@@ -70,17 +68,46 @@ class Call : public std::enable_shared_from_this<Call> {
             
         }
     private:
-        JobTitle title;
+        JobTitle title; // target_title
 };
 
 bool Employee::is_free() {
     return current_call == nullptr;
 }
-void Employee::start_call(std::shared_ptr<Call> call) {
-    std::cout << "call started\n";
+
+std::string str_title(const JobTitle& jt) {
+    std::string title;
+    switch (jt)
+    {
+    case JobTitle::Respondent:
+        title = "respondent";
+        break;
+    case JobTitle::Manager:
+        title = "manager";
+        break;
+    case JobTitle::Director:
+        title = "director";
+        break;
+    default:
+        break;
+    }
+    return title;
+}
+
+void Employee::start_call(Call& call) {
+    std::string title = str_title(call.get_title());
+    std::cout << "Started call with " << title << '\n';
+    if(call.caller.challenging_level != job_title) {
+        std::cout << "Call redirected.\n";
+    } else {
+        time_t end_call = call_end_time();
+        while(time(0) < end_call) {
+            std::cout << "Employee with id " << call.handler.id << " is talking.\n";
+        }
+    }
 }
 void Employee::finish_call() {
-    std::cout << "call finished\n";
+    std::cout << "Finished call with ";
     current_call = nullptr;
 }
 bool Employee::receive_call(std::shared_ptr<Call>& call) {
@@ -141,6 +168,8 @@ class CallHandler : public std::enable_shared_from_this<CallHandler> {
                 if(em.is_free() && em.job_title == call.get_title()) {
                     call.set_handler(em);
                     std::cout << "Handler id = " << call.handler.id << '\n';
+                    em.receive_call(call);
+                    em.start_call(call);
                     return true;
                 }
             }
@@ -166,6 +195,7 @@ class CallHandler : public std::enable_shared_from_this<CallHandler> {
             for(Call& call : call_queues[emp.job_title]) {
                 std::shared_ptr<Call> call_ptr = std::make_shared<Call>(call);
                 emp.receive_call(call_ptr);
+                emp.start_call(call);
                 return true;
             }
             return false;
@@ -190,8 +220,8 @@ class CallHandler : public std::enable_shared_from_this<CallHandler> {
 void Employee::escalate_and_reassign() {
     current_call -> increment_title();
     finish_call();
+    finish_call();
     handler -> dispatch_call(current_call);
-    current_call = nullptr;
 }
 
 std::vector<Call> get_random_calls() {
