@@ -46,12 +46,16 @@ time_t call_end_time() {
 
 class Call : public std::enable_shared_from_this<Call> {
     public:
-        Call(Caller c) : caller(c), title(JobTitle::Respondent){}
+        Call(Caller c) : caller(c), title(JobTitle::Respondent){
+            call_oder = order;
+            order++;
+        }
         Caller caller;
+        int call_oder;
+        static int order;
         Employee handler;
         void set_handler(Employee& e) {
             handler = e;
-            e.receive_call(*this);
         }
         void reply(std::string m) {
         }
@@ -70,6 +74,8 @@ class Call : public std::enable_shared_from_this<Call> {
     private:
         JobTitle title; // target_title
 };
+
+int Call::order = 0;
 
 bool Employee::is_free() {
     return current_call == nullptr;
@@ -96,25 +102,35 @@ std::string str_title(const JobTitle& jt) {
 
 void Employee::start_call(Call& call) {
     std::string title = str_title(call.get_title());
-    std::cout << "Started call with " << title << '\n';
     if(call.caller.challenging_level != job_title) {
         std::cout << "Call redirected.\n";
+        escalate_and_reassign();
     } else {
         time_t end_call = call_end_time();
+        bool printed = false;
+        std::cout << "Started call with " << title << '\n';
         while(time(0) < end_call) {
-            std::cout << "Employee with id " << call.handler.id << " is talking.\n";
+            if (!printed) {
+                std::cout << "Employee with id " << call.handler.id << " is talking.\n";
+                printed = true;
+            }
         }
+        std::cout << "Employee with id " << call.handler.id << " is not talking anymore.\n";
+        call.handler.finish_call();
     }
 }
 void Employee::finish_call() {
-    std::cout << "Finished call with ";
+    std::cout << "Finished call with call " << current_call -> call_oder << '\n';
     current_call = nullptr;
+    std::cout << "Current call is initialized to nullptr\n";
 }
 bool Employee::receive_call(std::shared_ptr<Call>& call) {
+    std::cout << "Call " << call->call_oder << " is received1\n";
     current_call = call;
     return is_free();  
 }
 bool Employee::receive_call(Call& call) {
+    std::cout << "Call " << call.call_oder << " is received\n";
     current_call = std::make_shared<Call>(call);
     return is_free();  
 }
@@ -146,9 +162,9 @@ class CallHandler : public std::enable_shared_from_this<CallHandler> {
             employees = get_employees(num_of_repondents, num_of_managers, num_of_directors, this_ptr);
         }
 
-        static constexpr auto num_of_repondents = 10;
-        static constexpr auto num_of_managers = 4;
-        static constexpr auto num_of_directors = 2;
+        static constexpr auto num_of_repondents = 1; // 10
+        static constexpr auto num_of_managers = 2; // 4
+        static constexpr auto num_of_directors = 2; // 2
         static constexpr auto levels = 3;
         std::vector<Employee> employees;
         std::array<std::vector<Call>, levels> call_queues;
@@ -218,20 +234,22 @@ class CallHandler : public std::enable_shared_from_this<CallHandler> {
 };
 
 void Employee::escalate_and_reassign() {
+    std::cout << "Title should be incremented\n";
     current_call -> increment_title();
-    finish_call();
-    finish_call();
+    std::cout << "Title incremented\n";
     handler -> dispatch_call(current_call);
+    current_call = nullptr;
 }
 
 std::vector<Call> get_random_calls() {
     std::vector<Call> calls;
-    constexpr auto num_of_calls = 25;
+    constexpr auto num_of_calls = 5;
     int challenging_level;
     constexpr int num_of_challenging_levels = 3;
     srand(time(NULL));
     for(int i = 0; i < num_of_calls; i++) {
         challenging_level = rand() % num_of_challenging_levels;
+        std::cout << "Call order = " << i << ", challenging level = " << challenging_level << '\n';
         Caller caller(challenging_level);
         Call call(caller);
         calls.push_back(call);
