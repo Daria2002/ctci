@@ -26,6 +26,7 @@ class Playlist;
 class CD;
 class Song;
 class SetOfSongs;
+class Artist;
 
 class Jukebox {
     public:
@@ -97,22 +98,23 @@ class SetOfSongs {
         SetOfSongs(std::vector<std::shared_ptr<Song>> s, std::string n) : songs(s), name(n) {}
 };
 
-void Jukebox::play(std::shared_ptr<SetOfSongs>&& set) {
-    std::cout << "Set " << set -> name << " is playing\n";
-}
-
-class Artist;
-
-class CD : public SetOfSongs {
-    public:
-        CD(std::vector<std::shared_ptr<Song>> s, std::string n) : SetOfSongs(s, n) {}
-        std::shared_ptr<Artist> artist;
-};
-
 class Song {
     public:
         Song(std::string n, std::shared_ptr<Artist> a) : name(n), artist(a) {}
         std::string name;
+        std::shared_ptr<Artist> artist;
+};
+
+void Jukebox::play(std::shared_ptr<SetOfSongs>&& set) {
+    std::cout << "Set " << set -> name << " is playing\n";
+    for(std::shared_ptr<Song> s : set->songs) {
+        std::cout << "Song " << s -> name << " is playing.\n";
+    }
+}
+
+class CD : public SetOfSongs {
+    public:
+        CD(std::vector<std::shared_ptr<Song>> s, std::string n) : SetOfSongs(s, n) {}
         std::shared_ptr<Artist> artist;
 };
 
@@ -145,6 +147,31 @@ class Playlist : public SetOfSongs {
         }
 };
 
+std::string gen_random_alphanum(const int len) {
+    std::string str;
+    const char alphanum[] = 
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    for (int i = 0; i < len; i++) {
+        str.push_back(alphanum[rand() % (sizeof(alphanum) - 1)]);
+    }
+    return str;
+}
+
+std::vector<std::shared_ptr<Song>> generate_random_songs() {
+    std::vector<std::shared_ptr<Song>> songs;
+    srand(time(NULL)); // set srand only once
+    songs.push_back(std::make_shared<Song>(gen_random_alphanum(rand() % 8), std::make_shared<Artist>("aa")));
+    songs.push_back(std::make_shared<Song>(gen_random_alphanum(rand() % 8), std::make_shared<Artist>("aa")));
+    songs.push_back(std::make_shared<Song>(gen_random_alphanum(rand() % 8), std::make_shared<Artist>("aa")));
+    songs.push_back(std::make_shared<Song>(gen_random_alphanum(rand() % 8), std::make_shared<Artist>("aa")));
+    songs.push_back(std::make_shared<Song>(gen_random_alphanum(rand() % 8), std::make_shared<Artist>("aa")));
+    songs.push_back(std::make_shared<Song>(gen_random_alphanum(rand() % 8), std::make_shared<Artist>("aa")));
+    songs.push_back(std::make_shared<Song>(gen_random_alphanum(rand() % 8), std::make_shared<Artist>("aa")));
+    return songs;
+}
+
 /**
  * Design a musical jukebox using object-oriented principles.
  * ASSUMPTIONS: The jukebox is a computer simulation. It's free.
@@ -153,23 +180,19 @@ int main() {
     std::cout << "================================\n"
                  "Free of charge jukebox simulator\n"
                  "================================\n";
-    std::vector<std::shared_ptr<Song>> pl;
-    pl.push_back(std::make_shared<Song>("a", std::make_shared<Artist>("aa")));
-    pl.push_back(std::make_shared<Song>("b", std::make_shared<Artist>("aa")));
-    pl.push_back(std::make_shared<Song>("c", std::make_shared<Artist>("aa")));
-    pl.push_back(std::make_shared<Song>("d", std::make_shared<Artist>("aa")));
-    pl.push_back(std::make_shared<Song>("e", std::make_shared<Artist>("aa")));
-    pl.push_back(std::make_shared<Song>("f", std::make_shared<Artist>("aa")));
-    pl.push_back(std::make_shared<Song>("g", std::make_shared<Artist>("aa")));
-    std::string str = "mix";
-    Playlist p(pl, str);
-    p.shuffle();
-
     Jukebox jukebox;
     jukebox.sign_up();
     jukebox.login();
+    Playlist p(generate_random_songs(), "my playlist");
     jukebox.add_playlist(std::make_shared<Playlist>(p));
     std::shared_ptr<Playlist> playlist_ptr = std::make_shared<Playlist>(p);
     jukebox.play(playlist_ptr);
+    p.shuffle();
+    std::cout << "#### after shuffle:\n";
+    jukebox.play(playlist_ptr);
+    CD cd(generate_random_songs(), "my cd");
+    jukebox.add_cd(std::make_shared<CD>(cd));
+    std::shared_ptr<CD> cd_ptr = std::make_shared<CD>(cd);
+    jukebox.play(cd_ptr);
     jukebox.logout();
 }
