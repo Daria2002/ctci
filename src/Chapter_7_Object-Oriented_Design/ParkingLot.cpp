@@ -23,11 +23,7 @@ class Vehicle {
         void park_in_spots(std::shared_ptr<ParkingSpot> spot) {
             spots.push_back(spot);
         }
-        bool can_fit_in_spot(ParkingSpot spot) {
-            if(spot.spot_size >= spot_size) {
-                return true;
-            }
-        }
+        bool can_fit_in_spot(ParkingSpot spot);
     private:
         std::vector<std::shared_ptr<ParkingSpot>> spots;
 };
@@ -71,7 +67,7 @@ class ParkingLot final {
 
         }
         bool park_vehicle(Vehicle vehicle) {
-
+            
         }
 };
 
@@ -92,6 +88,24 @@ class ParkingSpot {
         }
 };
 
+bool Vehicle::can_fit_in_spot(ParkingSpot spot) {
+    if(spot.spot_size >= spot_size) {
+        return true;
+    }
+}
+
+std::vector<Vehicle> generate_random_vehcles() {
+    std::vector<Vehicle> vehicles;
+    // TODO
+    return vehicles;
+}
+
+ParkingLot build_parking_lot() {
+    ParkingLot parking_lot;
+    // TODO
+    return parking_lot;
+}
+
 /**
  * Design a parking lot using object-oriented principles.
  * Assumptions:
@@ -106,4 +120,6 @@ int main() {
     std::cout << "===========\n"
                  "Parking lot\n"
                  "===========\n";
+    std::vector<Vehicle> vehicles = generate_random_vehcles();
+    ParkingLot parking_lot = build_parking_lot();
 }
