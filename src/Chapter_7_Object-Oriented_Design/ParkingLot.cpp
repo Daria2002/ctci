@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <cstdlib>
+#include <ctime>
 
 class ParkingSpot;
 class Level;
@@ -12,12 +14,13 @@ class Parkinglot;
 class ParkingSpot;
 
 enum SpotSize {
-    Motorcycle, Compact, Large
+    Tiny, Compact, Large
 };
 
 class Vehicle {
     public:
         int spots_needed;
+        int id;
         SpotSize spot_size;
         std::string license_plate;
         void park_in_spots(std::shared_ptr<ParkingSpot> spot) {
@@ -30,7 +33,8 @@ class Vehicle {
 
 class Car final : public Vehicle {
     public: 
-        Car() {
+        Car(int i) {
+            id = i;
             spots_needed = 1;
             spot_size = SpotSize::Compact;
         }
@@ -38,15 +42,17 @@ class Car final : public Vehicle {
 
 class Motorcycle final : public Vehicle {
     public: 
-        Motorcycle() {
+        Motorcycle(int i) {
+            id = i;
             spots_needed = 1;
-            spot_size = SpotSize::Motorcycle;
+            spot_size = SpotSize::Tiny;
         }   
 };
 
 class Bus final : public Vehicle {
     public: 
-        Bus() {
+        Bus(int i) {
+            id = i;
             spots_needed = 5;
             spot_size = SpotSize::Large;
         }   
@@ -67,7 +73,8 @@ class ParkingLot final {
 
         }
         bool park_vehicle(Vehicle vehicle) {
-            
+            // todo
+            return true;
         }
 };
 
@@ -92,17 +99,30 @@ bool Vehicle::can_fit_in_spot(ParkingSpot spot) {
     if(spot.spot_size >= spot_size) {
         return true;
     }
+    return false;
 }
 
 std::vector<Vehicle> generate_random_vehcles() {
     std::vector<Vehicle> vehicles;
-    // TODO
+    srand(time(0));
+    constexpr int max_num_of_one_type_vehicles = 10;
+    const int num_of_motorcycles = rand() % max_num_of_one_type_vehicles;
+    const int num_of_cars = rand() % max_num_of_one_type_vehicles;
+    const int num_of_buses = rand() % max_num_of_one_type_vehicles;
+    for(int i = 0; i < num_of_motorcycles; i++) {
+        vehicles.push_back(Motorcycle(i));
+    }
+    for(int i = num_of_motorcycles; i < num_of_cars + num_of_motorcycles; i++) {
+        vehicles.push_back(Car(i));
+    }
+    for(int i = num_of_motorcycles + num_of_cars; i < num_of_buses + num_of_motorcycles + num_of_cars; i++) {
+        vehicles.push_back(Bus(i));
+    }
     return vehicles;
 }
 
 ParkingLot build_parking_lot() {
     ParkingLot parking_lot;
-    // TODO
     return parking_lot;
 }
 
