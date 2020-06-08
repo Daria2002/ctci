@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <cstdlib>
+#include <array>
 #include <ctime>
 
 class ParkingSpot;
@@ -11,7 +12,6 @@ class Car;
 class Motorcycle;
 class Bus;
 class Parkinglot;
-class ParkingSpot;
 
 enum SpotSize {
     Tiny, Compact, Large
@@ -23,7 +23,7 @@ class Vehicle {
         int id;
         SpotSize spot_size;
         std::string license_plate;
-        void park_in_spot(std::shared_ptr<ParkingSpot>& spot);
+        void park_in_spot(const std::shared_ptr<ParkingSpot>& spot);
         // remove vehicle from spot, notify spot that it's gone
         void clear_spots();
         bool can_fit_in_spot(ParkingSpot spot);
@@ -58,16 +58,18 @@ class Bus final : public Vehicle {
         }   
 };
 
-class ParkingSpot {
+class ParkingSpot : public std::enable_shared_from_this<ParkingSpot> {
     public:
         std::shared_ptr<Level> level;
         int row, number;
         SpotSize spot_size;
+        ParkingSpot() = default;
         ParkingSpot(std::shared_ptr<Level> l, int r, int n, SpotSize s) : level(l), row(r), number(n), spot_size(s) {}
         Vehicle vehicle;
         bool free = true;
-        void park(Vehicle v) {
+        void park(Vehicle& v) {
             vehicle = v;
+            vehicle.park_in_spot(shared_from_this());
             free = false;
         }
         void remove_vehicle() {
@@ -75,33 +77,47 @@ class ParkingSpot {
         }
 };
 
-class Level {
+class Level : public std::enable_shared_from_this<Level> {
     public:
-        std::vector<ParkingSpot> spots;
+        std::vector<std::shared_ptr<ParkingSpot>> spots;
         const int spots_per_row = 10;
+        Level() : floor(0), number_of_spots(0) {}
+        static int level_no;
         Level(int f, int num_of_spots) : floor(f), number_of_spots(num_of_spots) {
             available_spots = number_of_spots; // at the begining all spots are available
+            level_no++;
         }
+
+        void initialize_spots() {
+            // initialize spots
+            for(int i = 0; i < number_of_spots; i++) {
+                SpotSize size = i % 3 == 0 ? SpotSize::Compact : (i % 3 == 1 ? SpotSize::Large : SpotSize::Tiny);
+                std::shared_ptr<ParkingSpot> spot = 
+                    std::make_shared<ParkingSpot>(shared_from_this(), i / spots_per_row, i % spots_per_row, size);
+                spots.push_back(spot);
+            }
+        }
+
         int available_spots = 0;
-        bool park_vehicle(Vehicle v) {
+        bool park_vehicle_on_level(Vehicle& v) {
             int first_spot = find_available_spots(v);
             if(first_spot == -1) {
                 std::cout << "There is no available spot\n";
                 return false;
             }
-            for(int i = first_spot; i < v.spots_needed; i++) {
-                spots[i].park(v);
+            for(int i = first_spot; i < first_spot + v.spots_needed; i++) {
+                spots[i] -> park(v);
             }
             return true;
         }
         void spot_freed() {
             available_spots++;
         }
-        int find_available_spots(Vehicle v) {
-            for(int i = 0; i < spots.size() - v.spots_needed; i = i + v.spots_needed) {
-                if([&] {
+        int find_available_spots(const Vehicle& v) const {
+            for(int i = 0; i < spots.size() - v.spots_needed; i++) {
+                if([&]() -> int {
                     for(int j = i; j < i + v.spots_needed; j++) {
-                        if(!spots[j].free) return -1;
+                        if(!(spots[j] -> free)) return -1;
                     }
                     return i;
                 } () != -1) {
@@ -114,21 +130,29 @@ class Level {
         int floor, number_of_spots;
 };
 
+int Level::level_no = 0;
+
 class ParkingLot final {
     public:
-        std::vector<Level> levels;
-        static constexpr int NUM_LEVELS = 5;
         ParkingLot() {
-
+            levels.push_back(std::make_shared<Level>(0, 20));
+            levels.push_back(std::make_shared<Level>(1, 20));
+            levels.push_back(std::make_shared<Level>(2, 10));
+            for(int i = 0; i < levels.size(); i++) {
+                levels[i] -> initialize_spots();
+            }
         }
-        bool park_vehicle(Vehicle vehicle) {
-            for(Level& level : levels) {
-                if(level.park_vehicle(vehicle)) {
+        bool park_vehicle(Vehicle& vehicle) {
+            for(std::shared_ptr<Level>& level : levels) {
+                if(level -> park_vehicle_on_level(vehicle)) {
                     return true;
                 }
             }
             return false;
         }
+    private:
+        static constexpr int NUM_LEVELS = 3;    
+        std::vector<std::shared_ptr<Level>> levels;
 };
 
 bool Vehicle::can_fit_in_spot(ParkingSpot spot) {
@@ -145,8 +169,7 @@ void Vehicle::clear_spots() {
     spots.clear();
 }
 
-void Vehicle::park_in_spot(std::shared_ptr<ParkingSpot>& spot) {
-    spot -> park(*this);
+void Vehicle::park_in_spot(const std::shared_ptr<ParkingSpot>& spot) {
     spots.push_back(spot);
 }
 
@@ -169,11 +192,6 @@ std::vector<Vehicle> generate_random_vehcles() {
     return vehicles;
 }
 
-ParkingLot build_parking_lot() {
-    ParkingLot parking_lot;
-    return parking_lot;
-}
-
 /**
  * Design a parking lot using object-oriented principles.
  * Assumptions:
@@ -189,5 +207,9 @@ int main() {
                  "Parking lot\n"
                  "===========\n";
     std::vector<Vehicle> vehicles = generate_random_vehcles();
-    ParkingLot parking_lot = build_parking_lot();
+    ParkingLot parking_lot;
+    for(Vehicle& vehicle : vehicles) {
+        parking_lot.park_vehicle(vehicle);
+    }
+    return 0;
 }
