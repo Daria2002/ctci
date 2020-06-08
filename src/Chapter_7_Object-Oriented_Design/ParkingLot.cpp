@@ -23,12 +23,12 @@ class Vehicle {
         int id;
         SpotSize spot_size;
         std::string license_plate;
-        void park_in_spots(std::shared_ptr<ParkingSpot> spot) {
-            spots.push_back(spot);
-        }
+        void park_in_spot(std::shared_ptr<ParkingSpot>& spot);
+        // remove vehicle from spot, notify spot that it's gone
+        void clear_spots();
         bool can_fit_in_spot(ParkingSpot spot);
     private:
-        std::vector<std::shared_ptr<ParkingSpot>> spots;
+        std::vector<std::shared_ptr<ParkingSpot>> spots; // parking spots taken by this vehicle
 };
 
 class Car final : public Vehicle {
@@ -58,9 +58,58 @@ class Bus final : public Vehicle {
         }   
 };
 
+class ParkingSpot {
+    public:
+        std::shared_ptr<Level> level;
+        int row, number;
+        SpotSize spot_size;
+        ParkingSpot(std::shared_ptr<Level> l, int r, int n, SpotSize s) : level(l), row(r), number(n), spot_size(s) {}
+        Vehicle vehicle;
+        bool free = true;
+        void park(Vehicle v) {
+            vehicle = v;
+            free = false;
+        }
+        void remove_vehicle() {
+            free = true;
+        }
+};
+
 class Level {
     public:
-        Level(int f, int num_of_spots) : floor(f), number_of_spots(num_of_spots) {}
+        std::vector<ParkingSpot> spots;
+        const int spots_per_row = 10;
+        Level(int f, int num_of_spots) : floor(f), number_of_spots(num_of_spots) {
+            available_spots = number_of_spots; // at the begining all spots are available
+        }
+        int available_spots = 0;
+        bool park_vehicle(Vehicle v) {
+            int first_spot = find_available_spots(v);
+            if(first_spot == -1) {
+                std::cout << "There is no available spot\n";
+                return false;
+            }
+            for(int i = first_spot; i < v.spots_needed; i++) {
+                spots[i].park(v);
+            }
+            return true;
+        }
+        void spot_freed() {
+            available_spots++;
+        }
+        int find_available_spots(Vehicle v) {
+            for(int i = 0; i < spots.size() - v.spots_needed; i = i + v.spots_needed) {
+                if([&] {
+                    for(int j = i; j < i + v.spots_needed; j++) {
+                        if(!spots[j].free) return -1;
+                    }
+                    return i;
+                } () != -1) {
+                    return i;
+                } 
+            }
+            return -1;
+        }
     private:
         int floor, number_of_spots;
 };
@@ -73,25 +122,12 @@ class ParkingLot final {
 
         }
         bool park_vehicle(Vehicle vehicle) {
-            // todo
-            return true;
-        }
-};
-
-class ParkingSpot {
-    public:
-        Level level;
-        int row, number;
-        SpotSize spot_size;
-        ParkingSpot(Level l, int r, int n, SpotSize s) : level(l), row(r), number(n), spot_size(s) {}
-        Vehicle vehicle;
-        bool free = true;
-        void park(Vehicle v) {
-            vehicle = v;
-            free = false;
-        }
-        void remove_vehicle() {
-            free = true;
+            for(Level& level : levels) {
+                if(level.park_vehicle(vehicle)) {
+                    return true;
+                }
+            }
+            return false;
         }
 };
 
@@ -100,6 +136,18 @@ bool Vehicle::can_fit_in_spot(ParkingSpot spot) {
         return true;
     }
     return false;
+}
+
+void Vehicle::clear_spots() {
+    for(std::shared_ptr<ParkingSpot>& spot : spots) {
+        spot -> remove_vehicle();
+    }
+    spots.clear();
+}
+
+void Vehicle::park_in_spot(std::shared_ptr<ParkingSpot>& spot) {
+    spot -> park(*this);
+    spots.push_back(spot);
 }
 
 std::vector<Vehicle> generate_random_vehcles() {
