@@ -51,6 +51,12 @@ class Puzzle {
         void group_pieces(std::list<std::shared_ptr<Piece>>&, std::list<std::shared_ptr<Piece>>&, std::list<std::shared_ptr<Piece>>&);
         // orient this corner piece so that it's flat edges are on the top left
         void orient_top_left_corner(std::shared_ptr<Piece>);
+        bool is_border_index(int location) {
+            return location == 0 || location == size - 1;
+        }
+        bool get_matching_edge(std::shared_ptr<Edge>, std::list<std::shared_ptr<Piece>>, std::shared_ptr<Edge>&);
+        void set_edge_in_solution(std::list<std::shared_ptr<Piece>>, std::shared_ptr<Edge>, int, int, Orientation);
+        std::list<std::shared_ptr<Piece>> get_piece_list_to_search(std::list<std::shared_ptr<Piece>>, std::list<std::shared_ptr<Piece>>, std::list<std::shared_ptr<Piece>>, int, int);
     private:
         void initialize_solution_matrix() {
             for(int i = 0; i < size; i++) {
@@ -192,12 +198,14 @@ class Piece : public std::enable_shared_from_this<Piece> {
         Edge get_edge_with_orientation(Orientation orientation) {
             return edges_map[orientation];
         }
-        Edge get_matching_edge(Edge target_edge) {
+        bool get_matching_edge(std::shared_ptr<Edge> target_edge, std::shared_ptr<Edge>& matching_edge) {
             for(std::pair<Orientation, Edge> el : edges_map) {
-                if(target_edge.fits_with(el.second)) {
-                    return el.second;
+                if(target_edge -> fits_with(el.second)) {
+                    matching_edge = std::make_shared<Edge>(el.second);
+                    return true;
                 }
             }
+            return false;
         }
         static constexpr int num_of_edges = 4;
         std::unordered_map<Orientation, Edge, KeyHash, KeyEqual> edges_map;
@@ -251,6 +259,38 @@ void Puzzle::group_pieces(std::list<std::shared_ptr<Piece>>& corner_pieces, std:
     }
 }
 
+bool Puzzle::get_matching_edge(std::shared_ptr<Edge> target_edge, std::list<std::shared_ptr<Piece>> pieces, std::shared_ptr<Edge>& matching_edge) {
+    for(std::shared_ptr<Piece> piece : pieces) {
+        if(piece -> get_matching_edge(target_edge, matching_edge)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Puzzle::set_edge_in_solution(std::list<std::shared_ptr<Piece>> pieces, std::shared_ptr<Edge> edge, int row, int column, Orientation orientation) {
+    std::shared_ptr<Piece> piece = edge -> get_parent_piece();
+    piece -> set_edge_as_orientation(edge, orientation);
+    pieces.remove(piece);
+    solution[row][column] = piece;
+}
+
+std::list<std::shared_ptr<Piece>> Puzzle::get_piece_list_to_search(std::list<std::shared_ptr<Piece>> corner_pieces, std::list<std::shared_ptr<Piece>> border_pieces, std::list<std::shared_ptr<Piece>> inside_pieces, int row, int column) {
+
+}
+
+
+std::list<std::shared_ptr<Piece>> ini_puzzle(int size) {
+    // todo
+}
+
+bool test_size(int size) {
+    std::list<std::shared_ptr<Piece>> pieces = ini_puzzle(size);
+    Puzzle puzzle(size, pieces);
+    // puzzle.solve();
+    // todo
+}
+
 /**
  * Implement and NxN jigsaw puzzle. Design the data structure and explain
  * an algorithm to solve the puzzle. You can assume that you have a fitsWith
@@ -261,4 +301,10 @@ int main() {
     std::cout << "=============\n"
                  "Jigsaw solver\n"
                  "=============\n";
+
+    for(int size = 1; size < 10; size++) {
+        if(!test_size(size)) {
+            std::cout << "ERROR: " << size << '\n';
+        }
+    }
 }
