@@ -57,6 +57,11 @@ class Puzzle {
         bool get_matching_edge(std::shared_ptr<Edge>, std::list<std::shared_ptr<Piece>>, std::shared_ptr<Edge>&);
         void set_edge_in_solution(std::list<std::shared_ptr<Piece>>, std::shared_ptr<Edge>, int, int, Orientation);
         std::list<std::shared_ptr<Piece>> get_piece_list_to_search(std::list<std::shared_ptr<Piece>>, std::list<std::shared_ptr<Piece>>, std::list<std::shared_ptr<Piece>>, int, int);
+        bool fit_next_edge(std::list<std::shared_ptr<Piece>>, int, int);
+        bool solve();
+        std::vector<std::vector<std::shared_ptr<Piece>>> get_current_solution() {
+            return solution;
+        }
     private:
         void initialize_solution_matrix() {
             for(int i = 0; i < size; i++) {
@@ -276,9 +281,18 @@ void Puzzle::set_edge_in_solution(std::list<std::shared_ptr<Piece>> pieces, std:
 }
 
 std::list<std::shared_ptr<Piece>> Puzzle::get_piece_list_to_search(std::list<std::shared_ptr<Piece>> corner_pieces, std::list<std::shared_ptr<Piece>> border_pieces, std::list<std::shared_ptr<Piece>> inside_pieces, int row, int column) {
-
+    if(is_border_index(row) && is_border_index(column)) return corner_pieces;
+    else if(is_border_index(row) || is_border_index(column)) return border_pieces;
+    return inside_pieces;
 }
 
+bool Puzzle::fit_next_edge(std::list<std::shared_ptr<Piece>> pieces_to_search, int row, int column) {
+    
+}
+
+bool Puzzle::solve() {
+
+}
 
 std::list<std::shared_ptr<Piece>> ini_puzzle(int size) {
     // todo
