@@ -75,5 +75,13 @@
         "valarray": "cpp",
         "variant": "cpp",
         "charconv": "cpp"
+    }, 
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "build" : true
     }
 }
