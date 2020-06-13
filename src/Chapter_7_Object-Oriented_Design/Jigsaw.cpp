@@ -57,11 +57,8 @@ class Puzzle {
         bool get_matching_edge(std::shared_ptr<Edge>, std::list<std::shared_ptr<Piece>>, std::shared_ptr<Edge>&);
         void set_edge_in_solution(std::list<std::shared_ptr<Piece>>, std::shared_ptr<Edge>, int, int, Orientation);
         std::list<std::shared_ptr<Piece>> get_piece_list_to_search(std::list<std::shared_ptr<Piece>>, std::list<std::shared_ptr<Piece>>, std::list<std::shared_ptr<Piece>>, int, int);
+        // find the matching piece within pieces_to_search and insert it at row, column
         bool fit_next_edge(std::list<std::shared_ptr<Piece>>, int, int);
-        bool solve();
-        std::vector<std::vector<std::shared_ptr<Piece>>> get_current_solution() {
-            return solution;
-        }
     private:
         void initialize_solution_matrix() {
             for(int i = 0; i < size; i++) {
@@ -281,17 +278,35 @@ void Puzzle::set_edge_in_solution(std::list<std::shared_ptr<Piece>> pieces, std:
 }
 
 std::list<std::shared_ptr<Piece>> Puzzle::get_piece_list_to_search(std::list<std::shared_ptr<Piece>> corner_pieces, std::list<std::shared_ptr<Piece>> border_pieces, std::list<std::shared_ptr<Piece>> inside_pieces, int row, int column) {
-    if(is_border_index(row) && is_border_index(column)) return corner_pieces;
-    else if(is_border_index(row) || is_border_index(column)) return border_pieces;
+    if(is_border_index(row) && is_border_index(column)) {
+        return corner_pieces;
+    } else if(is_border_index(row) || is_border_index(column)) {
+        return border_pieces;
+    }
     return inside_pieces;
 }
 
 bool Puzzle::fit_next_edge(std::list<std::shared_ptr<Piece>> pieces_to_search, int row, int column) {
-    
-}
-
-bool Puzzle::solve() {
-
+    if(row == 0 && column == 0) {
+        std::shared_ptr<Piece> piece = pieces_to_search.back();
+        pieces_to_search.pop_back();
+        orient_top_left_corner(piece);
+        solution[0][0] = piece;
+    } else {
+        // get the right edge and list to match
+        std::shared_ptr<Piece> piece_to_match = ((column == 0) ? solution[row - 1][0] : solution[row][column - 1]);
+        Orientation orientation_to_match = column == 0 ? Orientation::BOTTOM : Orientation::RIGHT;
+        Edge edge_to_match = piece_to_match -> get_edge_with_orientation(orientation_to_match);
+        std::shared_ptr<Edge> edge_to_match_ptr = std::make_shared<Edge>(edge_to_match);
+        // get matching edge
+        std::shared_ptr<Edge> edge;
+        if(!get_matching_edge(edge_to_match_ptr, pieces_to_search, edge)) {
+            return false;
+        }
+        Orientation orientation = get_opposite(orientation_to_match);
+        set_edge_in_solution(pieces_to_search, edge, row, column, orientation);
+    }
+    return true;
 }
 
 std::list<std::shared_ptr<Piece>> ini_puzzle(int size) {
