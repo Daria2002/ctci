@@ -3,6 +3,8 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <ctime>
+#include <cstdlib>
 
 // every edge has orientation
 // i.e. puzzle has 4 edges and each one of those has different orientation
@@ -20,6 +22,22 @@ Orientation get_opposite(const Orientation& orientation) {
         case BOTTOM: return TOP;
     }
     return TOP;
+}
+
+std::string orientation_to_str(Orientation o) {
+    switch (o)
+    {
+    case LEFT:
+        return "left";
+    case RIGHT:
+        return "right";
+    case TOP:
+        return "top";
+    case BOTTOM:
+        return "bottom";
+    default:
+        return "";
+    }
 }
 
 enum Shape {
@@ -59,6 +77,10 @@ class Puzzle {
         std::list<std::shared_ptr<Piece>> get_piece_list_to_search(std::list<std::shared_ptr<Piece>>, std::list<std::shared_ptr<Piece>>, std::list<std::shared_ptr<Piece>>, int, int);
         // find the matching piece within pieces_to_search and insert it at row, column
         bool fit_next_edge(std::list<std::shared_ptr<Piece>>, int, int);
+        std::vector<std::vector<std::shared_ptr<Piece>>> get_current_solution() {
+            return solution;
+        }
+        bool solve();
     private:
         void initialize_solution_matrix() {
             for(int i = 0; i < size; i++) {
@@ -233,6 +255,20 @@ std::ostream& operator<<(std::ostream& os, const Piece& piece) {
     return os;
 }
 
+std::string piece_to_str(std::shared_ptr<Piece> piece) {
+    std::vector<Orientation> orientations;
+    for(int i = 0; i < Piece::num_of_edges; i++) {
+        orientations.push_back(static_cast<Orientation>(i));
+    }
+    std::string str;
+    str.append("[");
+    for(Orientation o : orientations) {
+        str.append(orientation_to_str(o) + ", ");
+    }
+    str.append("]");
+    return str;
+}
+
 void Puzzle::orient_top_left_corner(std::shared_ptr<Piece> piece) {
     if(!piece -> is_corner()) return;
     std::vector<Orientation> orientations;
@@ -286,6 +322,7 @@ std::list<std::shared_ptr<Piece>> Puzzle::get_piece_list_to_search(std::list<std
     return inside_pieces;
 }
 
+// find the matching piece within pieceToSearch and insert it at row, column
 bool Puzzle::fit_next_edge(std::list<std::shared_ptr<Piece>> pieces_to_search, int row, int column) {
     if(row == 0 && column == 0) {
         std::shared_ptr<Piece> piece = pieces_to_search.back();
@@ -309,15 +346,129 @@ bool Puzzle::fit_next_edge(std::list<std::shared_ptr<Piece>> pieces_to_search, i
     return true;
 }
 
+bool Puzzle::solve() {
+    std::list<std::shared_ptr<Piece>> corner_pieces;
+    std::list<std::shared_ptr<Piece>> border_pieces;
+    std::list<std::shared_ptr<Piece>> inside_pieces;
+    group_pieces(corner_pieces, border_pieces, inside_pieces);
+    // walk through puzzle, finding the piece that joins the previous one
+    for(int row = 0; row < size; row++) {
+        for(int column = 0; column < size; column++) {
+            std::list<std::shared_ptr<Piece>> pieces_to_search = get_piece_list_to_search(corner_pieces, border_pieces, inside_pieces, row, column);
+            if(!fit_next_edge(pieces_to_search, row, column)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}            
+
+Edge create_random_edge(std::string str) {
+
+}
+
+std::vector<Edge> create_edges(std::vector<std::vector<std::shared_ptr<Piece>>> puzzle, int column, int row) {
+    std::string key = column + ":" + row + ':';
+    Edge left = column == 0 ? Edge(Shape::FLAT, key + "h|e") : 
+                              Edge((puzzle[row][column - 1]) -> get_edge_with_orientation(Orientation::RIGHT).create_matching_edge());
+    Edge top = row == 0 ? Edge(Shape::FLAT, key + "v|e") : 
+                          Edge((puzzle[row - 1][column]) -> get_edge_with_orientation(Orientation::BOTTOM).create_matching_edge());
+    Edge right = column == puzzle[row].size() - 1 ? Edge(Shape::FLAT, key + "h|e") : create_random_edge(key + "h");
+    Edge bottom = row == puzzle.size() - 1 ? Edge(Shape::FLAT, key + "h|e") : create_random_edge(key + "v");
+    std::vector<Edge> edges = {left, top, right, bottom};
+    return edges;
+}
+
 std::list<std::shared_ptr<Piece>> ini_puzzle(int size) {
-    // todo
+    std::vector<std::vector<std::shared_ptr<Piece>>> puzzle;
+    for(int i = 0; i < size; i++) {
+        puzzle.push_back(std::vector<std::shared_ptr<Piece>>());
+    }
+    for(int row = 0; row < size; row++) {
+        for(int column = 0; column < size; column++) {
+            std::vector<Edge> edges = create_edges(puzzle, column, row);
+            puzzle[row][column] = std::make_shared<Piece>();
+            puzzle[row][column] -> initialize_edges(edges);
+        }
+    }
+    srand(time(0));
+    // shuffle and rotate pieces
+    std::list<std::shared_ptr<Piece>> pieces;
+    for(int row = 0; row < size; row++) {
+        for(int column = 0; column < size; column++) {
+            int rotations = rand() % 4;
+            std::shared_ptr<Piece> piece = puzzle[row][column];
+            piece -> rotate_edges_by(rotations);
+            int index = pieces.size() == 0 ? 0 : rand() % size;
+            std::list<std::shared_ptr<Piece>>::iterator it = pieces.begin();
+            for(int i = 0; i < index; i++) {
+                it++;
+            }
+            pieces.insert(it, piece);
+        }
+    }
+    return pieces;
+}
+
+std::string solution_to_str(std::vector<std::vector<std::shared_ptr<Piece>>> solution) {
+    std::string str;
+    for(int h = 0; h < solution.size(); h++) {
+        for(int w = 0; w < solution[h].size(); w++) {
+            std::shared_ptr<Piece> piece = solution[h][w];
+            if(piece == nullptr) {
+                str.append("null");
+            } else {
+                str.append(piece_to_str(piece));
+            }
+        }
+    }
+    return str;
+}
+
+bool validate(std::vector<std::vector<std::shared_ptr<Piece>>> solution) {
+    if(solution.empty()) return false;
+    for(int r = 0; r < solution.size(); r++) {
+        for(int c = 0; c < solution[r].size(); c++) {
+            std::shared_ptr<Piece> piece = solution[r][c];
+            if(piece == nullptr) return false;
+            if(c > 0) {
+                std::shared_ptr<Piece> left = solution[r][c-1];
+                if(!(left -> get_edge_with_orientation(Orientation::RIGHT).fits_with(piece -> get_edge_with_orientation(Orientation::LEFT)))) {
+                    return false;
+                }
+            }
+            if(c < solution[r].size() - 1) {
+                std::shared_ptr<Piece> right = solution[r][c+1];
+                if(!right -> get_edge_with_orientation(Orientation::LEFT).fits_with(piece -> get_edge_with_orientation(Orientation::RIGHT))) {
+                    return false;
+                }
+            }
+            if(r > 0) {
+                std::shared_ptr<Piece> top = solution[r - 1][c];
+                if(!(top -> get_edge_with_orientation(Orientation::BOTTOM).fits_with(piece -> get_edge_with_orientation(Orientation::TOP)))) {
+                    return false;
+                }
+            }
+            if(r < solution.size() - 1) {
+                std::shared_ptr<Piece> bottom = solution[r+1][c];
+                if(!(bottom->get_edge_with_orientation(Orientation::TOP).fits_with(piece -> get_edge_with_orientation(Orientation::BOTTOM)))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
 }
 
 bool test_size(int size) {
     std::list<std::shared_ptr<Piece>> pieces = ini_puzzle(size);
     Puzzle puzzle(size, pieces);
-    // puzzle.solve();
-    // todo
+    puzzle.solve();
+    std::vector<std::vector<std::shared_ptr<Piece>>> solution = puzzle.get_current_solution();
+    std::cout << solution_to_str(solution);
+    bool result = validate(solution);
+    std::cout << result << '\n';
+    return result;
 }
 
 /**
