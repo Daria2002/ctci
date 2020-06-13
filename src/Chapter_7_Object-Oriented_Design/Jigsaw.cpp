@@ -84,7 +84,11 @@ class Puzzle {
     private:
         void initialize_solution_matrix() {
             for(int i = 0; i < size; i++) {
-                solution.push_back(std::vector<std::shared_ptr<Piece>>());
+                std::vector<std::shared_ptr<Piece>> v;
+                for(int j = 0; j < size; j++) {
+                    v.push_back(std::make_shared<Piece>());
+                }
+                solution.push_back(v);
             }
         }
         std::vector<std::vector<std::shared_ptr<Piece>>> solution;
@@ -251,7 +255,7 @@ std::ostream& operator<<(std::ostream& os, const Piece& piece) {
         os << o;
         os << ", ";
     }
-    os << "]";
+    os << "]\n";
     return os;
 }
 
@@ -265,7 +269,7 @@ std::string piece_to_str(std::shared_ptr<Piece> piece) {
     for(Orientation o : orientations) {
         str.append(orientation_to_str(o) + ", ");
     }
-    str.append("]");
+    str.append("]\n");
     return str;
 }
 
@@ -364,7 +368,12 @@ bool Puzzle::solve() {
 }            
 
 Edge create_random_edge(std::string str) {
-
+    srand(time(0));
+    Shape type = Shape::INNER;
+    if(rand() % 1) {
+        type = Shape::OUTER;
+    }
+    return Edge(type, str);
 }
 
 std::vector<Edge> create_edges(std::vector<std::vector<std::shared_ptr<Piece>>> puzzle, int column, int row) {
@@ -382,7 +391,11 @@ std::vector<Edge> create_edges(std::vector<std::vector<std::shared_ptr<Piece>>> 
 std::list<std::shared_ptr<Piece>> ini_puzzle(int size) {
     std::vector<std::vector<std::shared_ptr<Piece>>> puzzle;
     for(int i = 0; i < size; i++) {
-        puzzle.push_back(std::vector<std::shared_ptr<Piece>>());
+        std::vector<std::shared_ptr<Piece>> v;
+        for(int j = 0; j < size; j++) {
+            v.push_back(std::make_shared<Piece>());
+        }
+        puzzle.push_back(v);
     }
     for(int row = 0; row < size; row++) {
         for(int column = 0; column < size; column++) {
