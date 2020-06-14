@@ -1,8 +1,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <memory>
-// #include "jdbc/mysql_driver.h"
-// #include "jdbc/cppconn/statement.h"
+#include <mysql-cppconn-8/jdbc/mysql_driver.h>
+#include <mysql-cppconn-8/jdbc/cppconn/statement.h>
 
 enum UserStatusType {
     Offline, Away, Idle, Available, Busy
@@ -36,7 +36,7 @@ class UserManager {
 };
 
 void test_private_chat() {
-
+    //TODO
 }
 
 void test_group_chat() {
@@ -49,12 +49,25 @@ void test_group_chat() {
  */
 int main() {
     std::cout << "===========\nChat Server\n===========\n";
+    sql::mysql::MySQL_Driver *driver;
+    sql::Connection *con;
+    sql::Statement *stmt;
+
+    driver = sql::mysql::get_mysql_driver_instance();
+    con = driver->connect("tcp://127.0.0.1:3306", "daria", "5555");
+    if(con->isValid()) {
+        std::cout << "Connection is valid\n";
+    } else {
+        std::cout << "Connection is invalid\n";
+    }
     test_private_chat();
     test_group_chat();
 }
 
 /**
  * example for db
+ * g++ -I/usr/include -I/usr/include/mysql-cppconn-8 test_db.cpp -lmysqlcppconn -o app 
+ * "/usr/include/mysql-cppconn-8"
 int main()
 {
     sql::mysql::MySQL_Driver *driver;
