@@ -83,8 +83,8 @@ class Message {
         Message(std::string c, std::time_t t) : content(c), time(t) {}
 };
 
-std::ostream& operator<<(std::ostream& os, const Message& mess) {
-    os << "==============\nTIME : " << mess.time << '\n' << mess.content << "==============\n";
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Message>& mess) {
+    os << "==============\nTIME : " << mess -> time << '\n' << mess -> content << '\n';
     return os;
 }
 
@@ -105,15 +105,6 @@ class Conversation {
             return id;
         }
 };
-
-std::ostream& operator<<(std::ostream& os, const Conversation& conversation) {
-    os << "********\nConversation between " << conversation.participants[0] << 
-    " and " << conversation.participants[1] << "\n********\n";
-    std::vector<std::shared_ptr<Message>> messages = conversation.get_messages();
-    for(std::shared_ptr<Message> message : messages) {
-        std::cout << message;
-    }
-}
 
 class PrivateChat : public Conversation {
     public:
@@ -142,11 +133,6 @@ class GroupChat : public Conversation {
             participants.push_back(user);
         }
 };
-
-std::ostream& operator<<(std::ostream& os, const PrivateChat& private_chat) {
-    os << static_cast<const Conversation &>(private_chat);
-    return os;
-}
 
 class User : public std::enable_shared_from_this<User> {
     public:
@@ -203,8 +189,31 @@ class User : public std::enable_shared_from_this<User> {
         std::unordered_map<int, std::shared_ptr<Request>> sent_add_req;
 };
 
-std::ostream& operator<<(std::ostream& os, const User& user) {
-    os << user.get_account_name();
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<User>& user) {
+    os << user -> get_account_name();
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<PrivateChat>& private_chat) {
+    os << "********Conversation between " << private_chat -> participants[0] << 
+    " and " << private_chat -> participants[1] << "********\n";
+    std::vector<std::shared_ptr<Message>> messages = private_chat -> get_messages();
+    for(std::shared_ptr<Message> message : messages) {
+        os << message;
+    }
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<GroupChat>& group_chat) {
+    os << "********Conversation between ";
+    for(std::shared_ptr<User> participant : group_chat -> participants) {
+        os << participant << ', ';
+    }
+    os << "********\n";
+    std::vector<std::shared_ptr<Message>> messages = group_chat -> get_messages();
+    for(std::shared_ptr<Message> message : messages) {
+        os << message;
+    }
     return os;
 }
 
