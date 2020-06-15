@@ -1,8 +1,9 @@
 #include <iostream>
 #include <unordered_map>
 #include <memory>
-#include <mysql-cppconn-8/jdbc/mysql_driver.h>
-#include <mysql-cppconn-8/jdbc/cppconn/statement.h>
+#include <string>
+// #include <mysql-cppconn-8/jdbc/mysql_driver.h>
+// #include <mysql-cppconn-8/jdbc/cppconn/statement.h>
 #include <ctime>
 #include <vector>
 #include <algorithm>
@@ -58,10 +59,10 @@ class Request {
         from_user(f_user), to_user(t_user), time(t) {
             status = RequestStatus::Unread;
         }
-        std::shared_ptr<User> get_from_user() {
+        std::shared_ptr<User> get_from_user() const {
             return from_user;
         }   
-        std::shared_ptr<User> get_to_user() {
+        std::shared_ptr<User> get_to_user() const {
             return to_user;
         }
         std::time_t time;
@@ -78,23 +79,37 @@ class Message {
         Message(std::string c, std::time_t t) : content(c), time(t) {}
 };
 
+std::ostream& operator<<(std::ostream& os, const Message& mess) {
+    os << "==============\nTIME : " << mess.time << '\n' << mess.content << "==============\n";
+    return os;
+}
+
 class Conversation {
     protected:
-        std::vector<std::shared_ptr<User>> participants;
         int id;
         std::vector<std::shared_ptr<Message>> messages;
     public:
-        std::vector<std::shared_ptr<Message>> get_messages() {
+        std::vector<std::shared_ptr<User>> participants;
+        std::vector<std::shared_ptr<Message>> get_messages() const {
             return messages;
         }
         bool add_message(std::shared_ptr<Message> mess) {
             messages.push_back(mess);
             return true;
         }
-        int get_id() {
+        int get_id() const {
             return id;
         }
 };
+
+std::ostream& operator<<(std::ostream& os, const Conversation& conversation) {
+    os << "********\nConversation between " << conversation.participants[0] << 
+    " and " << conversation.participants[1] << "\n********\n";
+    std::vector<std::shared_ptr<Message>> messages = conversation.get_messages();
+    for(std::shared_ptr<Message> message : messages) {
+        std::cout << message;
+    }
+}
 
 class PrivateChat : public Conversation {
     public:
@@ -102,7 +117,7 @@ class PrivateChat : public Conversation {
             participants.push_back(user1);
             participants.push_back(user2);
         }
-        bool get_other_participant(std::shared_ptr<User> primary, std::shared_ptr<User> other) {
+        bool get_other_participant(std::shared_ptr<User> primary, std::shared_ptr<User> other) const {
             if(participants[0] == primary) {
                 other = participants[1];
             } else if(participants[1] == primary) {
@@ -158,13 +173,13 @@ class User : std::enable_shared_from_this<User> {
                 sent_add_req.erase(req -> get_to_user() -> get_id());
             }
         }
-        std::string get_account_name() {
+        std::string get_account_name() const {
             return account_name;
         }
-        std::string get_full_name() {
+        std::string get_full_name() const {
             return full_name;
         }
-        int get_id() {
+        int get_id() const {
             return id;
         }
         void add_conversation(std::shared_ptr<PrivateChat>);
@@ -180,6 +195,11 @@ class User : std::enable_shared_from_this<User> {
         std::unordered_map<int, std::shared_ptr<Request>> received_add_req;
         std::unordered_map<int, std::shared_ptr<Request>> sent_add_req;
 };
+
+std::ostream& operator<<(std::ostream& os, const User& user) {
+    os << user.get_account_name();
+    return os;
+}
 
 // send friendship request
 void UserManager::add_user(std::shared_ptr<User> from_user, std::string to_account_name) {
@@ -226,12 +246,36 @@ void User::add_conversation(std::shared_ptr<GroupChat> conversation) {
     group_chats.push_back(conversation);
 }
 
-void test_private_chat() {
-    //TODO
-}
-
-void test_group_chat() {
-
+void simulation() {
+    // create 4 users
+    std::shared_ptr<User> user1 = std::make_shared<User>(1, "one", "one o");
+    std::shared_ptr<User> user2 = std::make_shared<User>(2, "two", "two t");
+    std::shared_ptr<User> user3 = std::make_shared<User>(3, "three", "three t");
+    std::shared_ptr<User> user4 = std::make_shared<User>(4, "four", "four f");
+    // private chat between user1 and user 2 and between user 2 and user 4
+    std::shared_ptr<PrivateChat> private_chat12 = std::make_shared<PrivateChat>(user1, user2);
+    user1 -> add_conversation(private_chat12);
+    user2 -> add_conversation(private_chat12);
+    std::shared_ptr<PrivateChat> private_chat24 = std::make_shared<PrivateChat>(user2, user4);
+    user2 -> add_conversation(private_chat24);
+    user4 -> add_conversation(private_chat24);
+    // group chat between all users and between everyone except one
+    std::shared_ptr<GroupChat> group_chat_all = std::make_shared<GroupChat>();
+    group_chat_all -> add_participant(user1);
+    group_chat_all -> add_participant(user2);
+    group_chat_all -> add_participant(user3);
+    group_chat_all -> add_participant(user4);
+    user1 -> add_conversation(group_chat_all);
+    user2 -> add_conversation(group_chat_all);
+    user3 -> add_conversation(group_chat_all);
+    user4 -> add_conversation(group_chat_all);
+    std::shared_ptr<GroupChat> group_chat234 = std::make_shared<GroupChat>();
+    group_chat_all -> add_participant(user2);
+    group_chat_all -> add_participant(user3);
+    group_chat_all -> add_participant(user4);
+    user2 -> add_conversation(group_chat234);
+    user3 -> add_conversation(group_chat234);
+    user4 -> add_conversation(group_chat234);
 }
 
 /**
@@ -240,19 +284,18 @@ void test_group_chat() {
  */
 int main() {
     std::cout << "===========\nChat Server\n===========\n";
-    sql::mysql::MySQL_Driver *driver;
-    sql::Connection *con;
-    sql::Statement *stmt;
+    // sql::mysql::MySQL_Driver *driver;
+    // sql::Connection *con;
+    // sql::Statement *stmt;
 
-    driver = sql::mysql::get_mysql_driver_instance();
-    con = driver->connect("tcp://127.0.0.1:3306", "daria", "5555");
-    if(con->isValid()) {
-        std::cout << "Connection is valid\n";
-    } else {
-        std::cout << "Connection is invalid\n";
-    }
-    test_private_chat();
-    test_group_chat();
+    // driver = sql::mysql::get_mysql_driver_instance();
+    // con = driver->connect("tcp://127.0.0.1:3306", "daria", "5555");
+    // if(con->isValid()) {
+    //     std::cout << "Connection is valid\n";
+    // } else {
+    //     std::cout << "Connection is invalid\n";
+    // }
+    simulation();
 }
 
 /**
