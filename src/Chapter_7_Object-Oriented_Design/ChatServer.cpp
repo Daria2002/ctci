@@ -23,6 +23,13 @@ class Message;
 class UserStatus;
 class System;
 
+class UserStatus {
+    public:
+        UserStatus(UserStatusType t, std::string mess) : type(t), message(mess) {}
+        std::string message;
+        UserStatusType type;
+};
+
 // singleton
 class UserManager {
     public:
@@ -31,35 +38,11 @@ class UserManager {
             return instance;
         }
         // send friendship request
-        void add_user(std::shared_ptr<User> from_user, std::string to_account_name) {
-            std::shared_ptr<User> to_user = users_by_account_name[to_account_name];
-            std::shared_ptr<Request> req = std::make_shared<Request>(from_user, to_user, time(0));
-            to_user -> received_add_request(req);
-            from_user -> sent_add_request(req);
-        }
-        void approve_add_request(std::shared_ptr<Request> request) {
-            request -> status = RequestStatus::Accepted;
-            std::shared_ptr<User> from = request -> get_from_user();
-            std::shared_ptr<User> to = request -> get_to_user();
-            from -> add_contact(to);
-            to -> add_contact(from);
-        }
-        void reject_add_request(std::shared_ptr<Request> request) {
-            request -> status = RequestStatus::Rejected;
-            std::shared_ptr<User> from = request -> get_from_user();
-            std::shared_ptr<User> to = request -> get_to_user();
-            from -> remove_add_req(to);
-            to -> remove_add_req(from);
-        }
-        void user_signed_on(std::string account_name) {
-            if(users_by_account_name.find(account_name) != users_by_account_name.end()) {
-                std::shared_ptr<User> user = users_by_account_name[account_name];
-                // continue..
-            }
-        }
-        void user_signed_off(std::string  account_name) {
-
-        }
+        void add_user(std::shared_ptr<User> from_user, std::string to_account_name);
+        void approve_add_request(std::shared_ptr<Request>);
+        void reject_add_request(std::shared_ptr<Request>);
+        void user_signed_on(std::string);
+        void user_signed_off(std::string);
     private:
         std::unordered_map<int, std::shared_ptr<User>> users_by_id; // maps from id to user
         std::unordered_map<std::string, std::shared_ptr<User>> users_by_account_name;
@@ -74,7 +57,7 @@ class Request {
             return from_user;
         }   
         std::shared_ptr<User> get_to_user() {
-            get_to_user;
+            return to_user;
         }
         RequestStatus status;
     private:
@@ -118,6 +101,37 @@ void test_private_chat() {
 }
 
 void test_group_chat() {
+
+}
+
+// send friendship request
+void UserManager::add_user(std::shared_ptr<User> from_user, std::string to_account_name) {
+    std::shared_ptr<User> to_user = users_by_account_name[to_account_name];
+    std::shared_ptr<Request> req = std::make_shared<Request>(from_user, to_user, time(0));
+    to_user -> received_add_request(req);
+    from_user -> sent_add_request(req);
+}
+void UserManager::approve_add_request(std::shared_ptr<Request> request) {
+    request -> status = RequestStatus::Accepted;
+    std::shared_ptr<User> from = request -> get_from_user();
+    std::shared_ptr<User> to = request -> get_to_user();
+    from -> add_contact(to);
+    to -> add_contact(from);
+}
+void UserManager::reject_add_request(std::shared_ptr<Request> request) {
+    request -> status = RequestStatus::Rejected;
+    std::shared_ptr<User> from = request -> get_from_user();
+    std::shared_ptr<User> to = request -> get_to_user();
+    from -> remove_add_req(to);
+    to -> remove_add_req(from);
+}
+void UserManager::user_signed_on(std::string account_name) {
+    if(users_by_account_name.find(account_name) != users_by_account_name.end()) {
+        std::shared_ptr<User> user = users_by_account_name[account_name];
+        // continue..
+    }
+}
+void user_signed_off(std::string  account_name) {
 
 }
 
