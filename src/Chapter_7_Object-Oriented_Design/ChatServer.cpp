@@ -7,6 +7,7 @@
 #include <ctime>
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 enum UserStatusType {
     Offline, Away, Idle, Available, Busy
@@ -76,6 +77,9 @@ class Message {
     public:
         std::string content;
         std::time_t time;
+        Message(std::string c) : content(c) {
+            time = std::time(0);
+        }
         Message(std::string c, std::time_t t) : content(c), time(t) {}
 };
 
@@ -117,7 +121,7 @@ class PrivateChat : public Conversation {
             participants.push_back(user1);
             participants.push_back(user2);
         }
-        bool get_other_participant(std::shared_ptr<User> primary, std::shared_ptr<User> other) const {
+        bool get_other_participant(std::shared_ptr<User> primary, std::shared_ptr<User>& other) const {
             if(participants[0] == primary) {
                 other = participants[1];
             } else if(participants[1] == primary) {
@@ -139,26 +143,32 @@ class GroupChat : public Conversation {
         }
 };
 
-class User : std::enable_shared_from_this<User> {
+std::ostream& operator<<(std::ostream& os, const PrivateChat& private_chat) {
+    os << static_cast<const Conversation &>(private_chat);
+    return os;
+}
+
+class User : public std::enable_shared_from_this<User> {
     public:
+        User() = default;
         User(int i, std::string account, std::string name) : id(i), account_name(account), full_name(name) {
             status = UserStatus();
         }
         void received_add_request(std::shared_ptr<Request> req) {
-            int sender_id = req -> get_from_user() -> get_id();
+            int sender_id = req -> get_from_user() -> id;
             if(received_add_req.find(sender_id) == received_add_req.end()) {
-                received_add_req[sender_id] = req;
+                received_add_req.insert(std::make_pair(sender_id, req));
             }
         }
         void sent_add_request(std::shared_ptr<Request> req) {
-            int receiver_id = req -> get_to_user() -> get_id();
+            int receiver_id = req -> get_to_user() -> id;
             if(sent_add_req.find(receiver_id) == sent_add_req.end()) {
-                sent_add_req[receiver_id] = req;
+                sent_add_req.insert(std::make_pair(receiver_id, req));
             }
         }
         bool add_contact(std::shared_ptr<User> new_contact) {
-            if(contacts.find(new_contact -> get_id()) != contacts.end()) {
-                contacts[new_contact -> get_id()] = new_contact;
+            if(contacts.find(new_contact -> id) != contacts.end()) {
+                contacts.insert(std::make_pair(new_contact -> id, new_contact));
                 return true;
             }
             return false;
@@ -168,9 +178,9 @@ class User : std::enable_shared_from_this<User> {
         }
         void remove_add_req(std::shared_ptr<Request> req) {
             if(req -> get_to_user() == shared_from_this()) {
-                received_add_req.erase(req -> get_from_user() -> get_id());
+                received_add_req.erase(req -> get_from_user() -> id);
             } else if(req -> get_from_user() == shared_from_this()) {
-                sent_add_req.erase(req -> get_to_user() -> get_id());
+                sent_add_req.erase(req -> get_to_user() -> id);
             }
         }
         std::string get_account_name() const {
@@ -179,16 +189,13 @@ class User : std::enable_shared_from_this<User> {
         std::string get_full_name() const {
             return full_name;
         }
-        int get_id() const {
-            return id;
-        }
         void add_conversation(std::shared_ptr<PrivateChat>);
         void add_conversation(std::shared_ptr<GroupChat>);
+        int id;
         UserStatus status;
     private:
         std::string account_name;
         std::string full_name;
-        int id;
         std::unordered_map<int, std::shared_ptr<PrivateChat>> private_chats;
         std::vector<std::shared_ptr<GroupChat>> group_chats;
         std::unordered_map<int, std::shared_ptr<User>> contacts;
@@ -226,20 +233,20 @@ void UserManager::user_signed_on(std::string account_name) {
     if(users_by_account_name.find(account_name) != users_by_account_name.end()) {
         std::shared_ptr<User> user = users_by_account_name[account_name];
         user -> status = UserStatus(UserStatusType::Available, "");
-        online_users[user -> get_id()] = user;
+        online_users.insert(std::make_pair(user -> id, user));
     }
 }
 void UserManager::user_signed_off(std::string  account_name) {
     if(users_by_account_name.find(account_name) != users_by_account_name.end()) {
         std::shared_ptr<User> user = users_by_account_name[account_name];
         user -> status = UserStatus(UserStatusType::Offline, "");
-        online_users.erase(user -> get_id());
+        online_users.erase(user -> id);
     }
 }
 void User::add_conversation(std::shared_ptr<PrivateChat> conversation) {
     std::shared_ptr<User> other_user;
     if(conversation -> get_other_participant(shared_from_this(), other_user)) {
-        private_chats[other_user -> get_id()] = conversation;
+        private_chats.insert(std::make_pair(other_user -> id, conversation));
     }
 }
 void User::add_conversation(std::shared_ptr<GroupChat> conversation) {
@@ -256,9 +263,9 @@ void simulation() {
     std::shared_ptr<PrivateChat> private_chat12 = std::make_shared<PrivateChat>(user1, user2);
     user1 -> add_conversation(private_chat12);
     user2 -> add_conversation(private_chat12);
-    std::shared_ptr<PrivateChat> private_chat24 = std::make_shared<PrivateChat>(user2, user4);
-    user2 -> add_conversation(private_chat24);
-    user4 -> add_conversation(private_chat24);
+    private_chat12 -> add_message(std::make_shared<Message>("hello"));
+    private_chat12 -> add_message(std::make_shared<Message>("hello, how are you?"));
+    std::cout << private_chat12 << '\n';
     // group chat between all users and between everyone except one
     std::shared_ptr<GroupChat> group_chat_all = std::make_shared<GroupChat>();
     group_chat_all -> add_participant(user1);
@@ -270,9 +277,9 @@ void simulation() {
     user3 -> add_conversation(group_chat_all);
     user4 -> add_conversation(group_chat_all);
     std::shared_ptr<GroupChat> group_chat234 = std::make_shared<GroupChat>();
-    group_chat_all -> add_participant(user2);
-    group_chat_all -> add_participant(user3);
-    group_chat_all -> add_participant(user4);
+    group_chat234 -> add_participant(user2);
+    group_chat234 -> add_participant(user3);
+    group_chat234 -> add_participant(user4);
     user2 -> add_conversation(group_chat234);
     user3 -> add_conversation(group_chat234);
     user4 -> add_conversation(group_chat234);
