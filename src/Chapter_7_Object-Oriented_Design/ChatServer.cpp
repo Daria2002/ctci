@@ -55,22 +55,27 @@ class UserManager {
 class Request {
     public:
         Request(std::shared_ptr<User> f_user, std::shared_ptr<User> t_user, std::time_t t) : 
-        from_user(f_user), to_user(t_user), time(t) {}
+        from_user(f_user), to_user(t_user), time(t) {
+            status = RequestStatus::Unread;
+        }
         std::shared_ptr<User> get_from_user() {
             return from_user;
         }   
         std::shared_ptr<User> get_to_user() {
             return to_user;
         }
+        std::time_t time;
         RequestStatus status;
     private:
         std::shared_ptr<User> from_user;
         std::shared_ptr<User> to_user;
-        std::time_t time;
 };
 
 class Message {
-
+    public:
+        std::string content;
+        std::time_t time;
+        Message(std::string c, std::time_t t) : content(c), time(t) {}
 };
 
 class Conversation {
@@ -92,7 +97,21 @@ class Conversation {
 };
 
 class PrivateChat : public Conversation {
-
+    public:
+        PrivateChat(std::shared_ptr<User> user1, std::shared_ptr<User> user2) {
+            participants.push_back(user1);
+            participants.push_back(user2);
+        }
+        bool get_other_participant(std::shared_ptr<User> primary, std::shared_ptr<User> other) {
+            if(participants[0] == primary) {
+                other = participants[1];
+            } else if(participants[1] == primary) {
+                other = participants[0];
+            } else {
+                return false;
+            }
+            return true;
+        }
 };
 
 class GroupChat : public Conversation {
@@ -198,10 +217,13 @@ void UserManager::user_signed_off(std::string  account_name) {
     }
 }
 void User::add_conversation(std::shared_ptr<PrivateChat> conversation) {
-    // todo
+    std::shared_ptr<User> other_user;
+    if(conversation -> get_other_participant(shared_from_this(), other_user)) {
+        private_chats[other_user -> get_id()] = conversation;
+    }
 }
 void User::add_conversation(std::shared_ptr<GroupChat> conversation) {
-    // todo
+    group_chats.push_back(conversation);
 }
 
 void test_private_chat() {
