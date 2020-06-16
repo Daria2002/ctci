@@ -2,12 +2,23 @@
 #include <unordered_map>
 #include <memory>
 #include <string>
-// #include <mysql-cppconn-8/jdbc/mysql_driver.h>
-// #include <mysql-cppconn-8/jdbc/cppconn/statement.h>
+#include <mysql-cppconn-8/jdbc/mysql_driver.h>
+#include <mysql-cppconn-8/jdbc/cppconn/statement.h>
+#include <mysql-cppconn-8/jdbc/cppconn/prepared_statement.h>
 #include <ctime>
 #include <vector>
 #include <algorithm>
 #include <utility>
+
+// singleton for sql connection
+class DBConnection {
+    public:
+        static sql::Connection* get_instance() {
+            static sql::mysql::MySQL_Driver *driver = sql::mysql::get_mysql_driver_instance();
+            static sql::Connection* con = driver->connect("tcp://127.0.0.1:3306", "daria", "5555");
+            return con;
+        }
+};
 
 enum UserStatusType {
     Offline, Away, Idle, Available, Busy
@@ -26,6 +37,15 @@ class PrivateChat;
 class Message;
 class UserStatus;
 class System;
+
+void sleepcp(int milliseconds) // Cross-platform sleep function
+{
+    clock_t time_end;
+    time_end = clock() + milliseconds * CLOCKS_PER_SEC/1000;
+    while (clock() < time_end)
+    {
+    }
+}
 
 class UserStatus {
     public:
@@ -93,22 +113,32 @@ class Conversation {
         int id;
         std::vector<std::shared_ptr<Message>> messages;
     public:
+        Conversation() {
+            id = object_order;
+            object_order++;
+        }
         std::vector<std::shared_ptr<User>> participants;
         std::vector<std::shared_ptr<Message>> get_messages() const {
             return messages;
         }
         bool add_message(std::shared_ptr<Message> mess) {
+            sql::PreparedStatement *pstmt = DBConnection::get_instance() -> prepareStatement("INSERT INTO ChatServer(message, group_id) VALUES (?, ?)");
+            pstmt -> setString(1, mess -> content);
+            pstmt -> setInt(2, id);
             messages.push_back(mess);
             return true;
         }
         int get_id() const {
             return id;
         }
+        static int object_order;
 };
+
+int Conversation::object_order = 0;
 
 class PrivateChat : public Conversation {
     public:
-        PrivateChat(std::shared_ptr<User> user1, std::shared_ptr<User> user2) {
+        PrivateChat(std::shared_ptr<User> user1, std::shared_ptr<User> user2) : Conversation() {
             participants.push_back(user1);
             participants.push_back(user2);
         }
@@ -126,6 +156,7 @@ class PrivateChat : public Conversation {
 
 class GroupChat : public Conversation {
     public:
+        GroupChat() : Conversation() {}
         void remove_participant(std::shared_ptr<User> user) {
             std::remove(participants.begin(), participants.end(), user);
         }
@@ -207,7 +238,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<PrivateChat>& p
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<GroupChat>& group_chat) {
     os << "********Conversation between ";
     for(std::shared_ptr<User> participant : group_chat -> participants) {
-        os << participant << ', ';
+        os << participant << ", ";
     }
     os << "********\n";
     std::vector<std::shared_ptr<Message>> messages = group_chat -> get_messages();
@@ -273,6 +304,7 @@ void simulation() {
     user1 -> add_conversation(private_chat12);
     user2 -> add_conversation(private_chat12);
     private_chat12 -> add_message(std::make_shared<Message>("hello"));
+    sleepcp(1000);
     private_chat12 -> add_message(std::make_shared<Message>("hello, how are you?"));
     std::cout << private_chat12 << '\n';
     // group chat between all users and between everyone except one
@@ -285,13 +317,10 @@ void simulation() {
     user2 -> add_conversation(group_chat_all);
     user3 -> add_conversation(group_chat_all);
     user4 -> add_conversation(group_chat_all);
-    std::shared_ptr<GroupChat> group_chat234 = std::make_shared<GroupChat>();
-    group_chat234 -> add_participant(user2);
-    group_chat234 -> add_participant(user3);
-    group_chat234 -> add_participant(user4);
-    user2 -> add_conversation(group_chat234);
-    user3 -> add_conversation(group_chat234);
-    user4 -> add_conversation(group_chat234);
+    group_chat_all -> add_message(std::make_shared<Message>("hello everyone in group chat"));
+    sleepcp(2000);
+    group_chat_all -> add_message(std::make_shared<Message>("how many participants are here?"));
+    std::cout << group_chat_all << '\n';
 }
 
 /**
@@ -300,17 +329,19 @@ void simulation() {
  */
 int main() {
     std::cout << "===========\nChat Server\n===========\n";
-    // sql::mysql::MySQL_Driver *driver;
-    // sql::Connection *con;
-    // sql::Statement *stmt;
+    sql::Statement *stmt;
+    sql::Connection *con = DBConnection::get_instance();
+    if(con->isValid()) {
+        std::cout << "Connection is valid\n";
+    } else {
+        std::cout << "Connection is invalid\n";
+    }
+    // create table
+    stmt = con -> createStatement();
+    stmt -> execute("USE ctci"); // ctci is db for ctci problems
+    stmt->execute("DROP TABLE IF EXISTS ChatServer");
+    stmt->execute("CREATE TABLE ChatServer(message varchar(1000), group_id INT)");
 
-    // driver = sql::mysql::get_mysql_driver_instance();
-    // con = driver->connect("tcp://127.0.0.1:3306", "daria", "5555");
-    // if(con->isValid()) {
-    //     std::cout << "Connection is valid\n";
-    // } else {
-    //     std::cout << "Connection is invalid\n";
-    // }
     simulation();
 }
 
@@ -342,4 +373,8 @@ int main()
     delete con;
     return 0;
 }
+*/
+
+/** TODO with db
+ * create table with columns: message, group id
 */
