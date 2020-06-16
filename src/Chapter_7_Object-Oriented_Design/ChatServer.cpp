@@ -125,6 +125,7 @@ class Conversation {
             sql::PreparedStatement *pstmt = DBConnection::get_instance() -> prepareStatement("INSERT INTO ChatServer(message, group_id) VALUES (?, ?)");
             pstmt -> setString(1, mess -> content);
             pstmt -> setInt(2, id);
+            pstmt -> execute();
             messages.push_back(mess);
             return true;
         }
