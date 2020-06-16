@@ -5,6 +5,7 @@
 #include <mysql-cppconn-8/jdbc/mysql_driver.h>
 #include <mysql-cppconn-8/jdbc/cppconn/statement.h>
 #include <mysql-cppconn-8/jdbc/cppconn/prepared_statement.h>
+#include <mysql-cppconn-8/jdbc/cppconn/resultset.h>
 #include <ctime>
 #include <vector>
 #include <algorithm>
@@ -230,9 +231,13 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<PrivateChat>& p
     os << "********Conversation between " << private_chat -> participants[0] << 
     " and " << private_chat -> participants[1] << "********\n";
     std::vector<std::shared_ptr<Message>> messages = private_chat -> get_messages();
-    // TODO: get messages, if message's id == private_chat.id print
-    for(std::shared_ptr<Message> message : messages) {
-        os << message;
+    sql::Statement *stmt = DBConnection::get_instance() -> createStatement();
+    stmt -> execute("SELECT * FROM ChatServer");
+    sql::ResultSet* result = stmt -> getResultSet();
+    while(result != nullptr && result -> next()) {
+        if(result -> getInt("group_id") == private_chat -> get_id()) {
+            os << result -> getString("message") << '\n';
+        }
     }
     return os;
 }
@@ -244,9 +249,13 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<GroupChat>& gro
     }
     os << "********\n";
     std::vector<std::shared_ptr<Message>> messages = group_chat -> get_messages();
-    // TODO: get messages, if message's id == private_chat.id print
-    for(std::shared_ptr<Message> message : messages) {
-        os << message;
+    sql::Statement *stmt = DBConnection::get_instance() -> createStatement();
+    stmt -> execute("SELECT * FROM ChatServer");
+    sql::ResultSet* result = stmt -> getResultSet();
+    while(result != nullptr && result -> next()) {
+        if(result -> getInt("group_id") == group_chat -> get_id()) {
+            os << result -> getString("message") << '\n';
+        }
     }
     return os;
 }
@@ -341,7 +350,7 @@ int main() {
     }
     // create table
     stmt = con -> createStatement();
-    stmt -> execute("USE ctci"); // ctci is db for ctci problems
+    stmt -> execute("USE ctci"); // ctci is db for ctci problems... this command sets ctci to be the current db
     stmt->execute("DROP TABLE IF EXISTS ChatServer");
     stmt->execute("CREATE TABLE ChatServer(message varchar(1000), group_id INT)");
 
