@@ -230,6 +230,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<PrivateChat>& p
     os << "********Conversation between " << private_chat -> participants[0] << 
     " and " << private_chat -> participants[1] << "********\n";
     std::vector<std::shared_ptr<Message>> messages = private_chat -> get_messages();
+    // TODO: get messages, if message's id == private_chat.id print
     for(std::shared_ptr<Message> message : messages) {
         os << message;
     }
@@ -243,6 +244,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<GroupChat>& gro
     }
     os << "********\n";
     std::vector<std::shared_ptr<Message>> messages = group_chat -> get_messages();
+    // TODO: get messages, if message's id == private_chat.id print
     for(std::shared_ptr<Message> message : messages) {
         os << message;
     }
