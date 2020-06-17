@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <array>
 
 class Game;
 class Player;
@@ -10,7 +11,6 @@ class Game;
 
 enum Color {
     white, black
-    
 };  
 
 class Game {
@@ -19,22 +19,61 @@ class Game {
         static constexpr int columns = 10;
         Game() {
             board = std::make_shared<Board>(rows, columns);
+            players[0] = std::make_shared<Player>(Color::black);
+            players[1] = std::make_shared<Player>(Color::white);
         }
         Game& get_instance() {
             static Game g;
             return g;
         }
+        std::shared_ptr<Board> get_board() {
+            return board;
+        }
     private:
-        std::vector<std::shared_ptr<Player>> players;
+        std::array<std::shared_ptr<Player>, 2> players;
         std::shared_ptr<Board> board;
+};
+
+class Player {
+    public:
+        Player(Color col) : c(col) {
+
+        }
+    private:
+        Color c;
 };
 
 class Board {
     public:
-        Board(int rows, int columns) {
-            // TODO ini board
+        Board(int r, int c) : rows(r), columns(c) {
+            for(int i = 0; i < r; i++) {
+                std::vector<std::shared_ptr<Piece>> v;
+                for(int j = 0; j < c; j++) {
+                    v.push_back(std::make_shared<Piece>());
+                }
+                board.push_back(v);
+            }
+        }
+        // initialize center black and white pieces
+        void initialize() {
+            board[rows/2 - 1][columns/2 - 1] = std::make_shared<Piece>(Color::black);
+            board[rows/2][columns/2] = std::make_shared<Piece>(Color::black);
+            board[rows/2 - 1][columns/2] = std::make_shared<Piece>(Color::white);
+            board[rows/2][columns/2 - 1] = std::make_shared<Piece>(Color::white);
         }
     private:
+        std::vector<std::vector<std::shared_ptr<Piece>>> board;
+        int black_count = 0;
+        int white_count = 0;
+        int rows, columns;
+};
+
+class Piece {
+    public:
+        Piece() = default;
+        Piece(Color col) : c(col) {}
+    private:
+        Color c;
 };
 
 /**
