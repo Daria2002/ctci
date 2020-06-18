@@ -2,6 +2,8 @@
 #include <vector>
 #include <memory>
 #include <array>
+#include <cstdlib>
+#include <ctime>
 
 class Game;
 class Player;
@@ -10,7 +12,7 @@ class Board;
 class Game;
 
 enum Direction {
-    right, left, top, down
+    right, left, up, down
 };  
 
 enum Color {
@@ -44,10 +46,26 @@ class Board {
             white_count = 2;
         }
         bool place_color(int row, int column, Color color) {
-            if(board[row][column] != nullptr) {
+            if(board[row][column] != nullptr) { // position is already taken
                 return false;
             }
-            // TODO
+            // attempt to capture each of the four directions
+            std::array<int, 4> res;
+            res[0] = flip_section(row - 1, column, color, Direction::up);
+            res[1] = flip_section(row + 1, column, color, Direction::down);
+            res[2] = flip_section(row, column - 1, color, Direction::left);
+            res[3] = flip_section(row, column + 1, color, Direction::right);
+            int flipped = 0; // num of flipped pieces
+            for(int r : res) {
+                if(r > 0) {
+                    flipped += r;
+                }
+            }
+            if(flipped <= 0) {
+                return false;
+            }
+            board[row][column] = std::make_shared<Piece>(color);
+            update_score(color, flipped + 1);
             return true;
         }
         int get_score(Color color) {
@@ -65,9 +83,7 @@ class Board {
             white_count += new_pieces;
             black_count -= new_pieces - 1;
         }
-        int flip_section(int row, int column, Color color, Direction direction) {
-            // TODO
-        }
+        int flip_section(int, int, Color, Direction);
         void print_board();
     private:
         std::vector<std::vector<std::shared_ptr<Piece>>> board;
@@ -90,7 +106,7 @@ class Game {
             static Game g;
             return g;
         }
-        std::shared_ptr<Board> get_board() {
+        std::shared_ptr<Board> get_board() const {
             return board;
         }
     private:
@@ -102,16 +118,23 @@ class Player {
     public:
         Player() = default;
         Player(Color col) : color(col) {}
-        int get_score() {
+        int get_score() const {
             return Game::get_instance().get_board() -> get_score(color);
         }
-        Color get_color() {
+        Color get_color() const {
             return color;
+        }
+        std::string get_color_str() const {
+            return (color == Color::white ? "white" : "black");
         }
         bool play_piece(int, int);
     private:
         Color color;
 };
+
+inline bool operator==(const Player& p1, const Player& p2) {
+    return p1.get_color() == p2.get_color();
+}
 
 class Piece {
     public:
@@ -120,7 +143,7 @@ class Piece {
         void flip() {
             color = color == Color::black ? Color::white : Color::black;
         }
-        Color get_color() {
+        Color get_color() const {
             return color;
         }
     private:
@@ -144,6 +167,42 @@ void Board::print_board() {
         }
         std::cout << '\n';
     }
+}
+
+int Board::flip_section(int row, int column, Color color, Direction direction) {
+    int r = 0;
+    int c = 0;
+    switch (direction)
+    {
+    case Direction::up:
+        r = -1;
+        break;
+    case Direction::down:
+        r = 1;
+        break;
+    case Direction::left:
+        c = -1;
+        break;
+    case Direction::right:
+        c = 1;
+        break;
+    default:
+        break;
+    }
+    // out of bounds
+    if(row < 0 || row >= board.size() || column < 0 || column >= board[row].size() || board[row][column] == nullptr) {
+        return -1;
+    }
+    // same color, nothing to flip
+    if(board[row][column] -> get_color() == color) {
+        return 0;
+    }
+    int flipped = flip_section(row + r, column + c, color, direction);
+    if(flipped < 0) {
+        return -1;
+    }
+    board[row][column] -> flip();
+    return flipped + 1;
 }
 
 class Location {
@@ -190,7 +249,14 @@ class Simulator {
             }
         }
         void shuffle() {
-            // TODO
+            srand(time(0));
+            for(int i = 0; i < remaining_positions.size(); i++) {
+                int rand_index = rand() % (remaining_positions.size() - 1);
+                Location rand_loc = remaining_positions[rand_index];
+                Location current = remaining_positions[i];
+                remaining_positions[rand_index] = current;
+                remaining_positions[i] = rand_loc;
+            }
         }
         bool is_over() {
             // if one of the players has no more valid moves
@@ -201,7 +267,25 @@ class Simulator {
             return (players[0].get_score() == 0 || players[1].get_score() == 0);
         }
         bool play_random() {
-            // TODO
+            std::shared_ptr<Board> board = Game::get_instance().get_board();
+            shuffle();
+            last_player = (last_player == players[0] ? players[1] : players[0]);
+            std::string col = last_player.get_color_str();
+            // go through all remaining positions until piece is not set on board
+            // piece is set on board if setting that piece is valid move
+            // move is valid if at least one of the opponent's pieces is captured after 
+            // setting a piece on board
+            for(int i = 0; i < remaining_positions.size(); i++) {
+                Location loc = remaining_positions[i];
+                bool success = last_player.play_piece(loc.get_row(), loc.get_column());
+                if(success) {
+                    std::cout << "Success " << col << " move at (" << loc.get_row() << ", " << loc.get_column() << ")\n";
+                    board -> print_board();
+                    print_scores();
+                    return true;
+                }
+            }
+            std::cout << "Game over. No valid moves found for " << col << ".\n";
             return false;
         }
         void print_scores() {
@@ -227,9 +311,6 @@ int main() {
     game.get_board() -> initialize();
     game.get_board() -> print_board();
     Simulator simulator = Simulator::get_instance();
-    while(!simulator.is_over() && simulator.play_random()) {
-
-    }
-    simulator.print_scores();
+    while(!simulator.is_over() && simulator.play_random()) {}
     // TODO: store results in db
 }
