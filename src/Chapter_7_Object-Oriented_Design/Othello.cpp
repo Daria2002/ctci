@@ -23,6 +23,16 @@ enum Color {
     white, black
 };  
 
+// singleton for sql connection
+class DBConn {
+    public:
+        static sql::Connection* get_instance() {
+            static sql::mysql::MySQL_Driver *driver = sql::mysql::get_mysql_driver_instance();
+            static sql::Connection* con = driver -> connect("tcp://127.0.0.1:3306", "daria", "5555");
+            return con;
+        }
+};
+
 std::ostream& operator<<(std::ostream& os, const Color& color) {
     os << (color == Color::white ? "white" : "black");
     return os;
@@ -46,8 +56,8 @@ class Board {
             board[rows/2][columns/2] = std::make_shared<Piece>(Color::black);
             board[rows/2 - 1][columns/2] = std::make_shared<Piece>(Color::white);
             board[rows/2][columns/2 - 1] = std::make_shared<Piece>(Color::white);
-            black_count = 2;
-            white_count = 2;
+            ini_db(Color::white, 2);
+            ini_db(Color::black, 2);
         }
         bool place_color(int row, int column, Color color) {
             if(board[row][column] != nullptr) { // position is already taken
@@ -73,26 +83,53 @@ class Board {
             return true;
         }
         int get_score(Color color) {
-            return color == Color::white ? white_count : black_count;
+            return color == Color::white ? get_from_db_score(Color::white) : get_from_db_score(Color::black);
         }
         // i.e. we add one black piece and after flipping pieces that are captured
         // there are x black pieces added and x - 1 white pieces removed (replaced with black piece) 
         // x - 1 because one black piece is added on board (it's not flipped from captured white piece)
         void update_score(Color new_color, int new_pieces) {
+            int black_count = get_from_db_score(Color::black);
+            int white_count = get_from_db_score(Color::white);
             if(new_color == Color::black) {
-                black_count += new_pieces;
                 white_count -= new_pieces - 1;
-                return;
-            }    
-            white_count += new_pieces;
-            black_count -= new_pieces - 1;
+                black_count += new_pieces;
+            } else {
+                white_count += new_pieces;
+                black_count -= new_pieces - 1;
+            }
+            update_db(Color::white, white_count);
+            update_db(Color::black, black_count);
         }
         int flip_section(int, int, Color, Direction);
         void print_board();
     private:
+        void ini_db(Color color, int count) {
+            sql::PreparedStatement *pstmt = DBConn::get_instance() -> prepareStatement("INSERT INTO Othello(color, score) VALUES (?, ?)");
+            pstmt -> setString(1, get_color_str(color));
+            pstmt -> setInt(2, count);
+            pstmt -> execute();
+        }
+        int get_from_db_score(Color c) {  
+            sql::PreparedStatement *pstmt = DBConn::get_instance() -> prepareStatement("SELECT * FROM Othello WHERE color = ?");
+            pstmt -> setString(1, get_color_str(c));
+            pstmt -> execute();
+            sql::ResultSet* result = pstmt -> getResultSet();
+            while(result != nullptr && result -> next()) {
+                return result -> getInt("score");
+            }
+            return 0;
+        }
+        void update_db(Color color, int count) {
+            sql::PreparedStatement *pstmt = DBConn::get_instance() -> prepareStatement("UPDATE Othello SET score = ? WHERE color = ?");
+            pstmt -> setInt(1, count);
+            pstmt -> setString(2, get_color_str(color));
+            pstmt -> execute();
+        }
+        std::string get_color_str(Color c) const {
+            return (c == Color::white ? "white" : "black");
+        }
         std::vector<std::vector<std::shared_ptr<Piece>>> board;
-        int black_count = 0;
-        int white_count = 0;
         int rows = 0;
         int columns = 0;
 };
@@ -302,15 +339,20 @@ class Simulator {
         Player last_player;
 };
 
-// singleton for sql connection
-class DBConn {
-    public:
-        static sql::Connection* get_instance() {
-            static sql::mysql::MySQL_Driver *driver = sql::mysql::get_mysql_driver_instance();
-            static sql::Connection* con = driver -> connect("tcp://127.0.0.1:3306", "daria", "5555");
-            return con;
-        }
-};
+void set_db() {
+    sql::Statement *stmt;
+    sql::Connection *con = DBConn::get_instance();
+    if(con -> isValid()) {
+        std::cout << "Connection is valid\n";
+    } else {
+        std::cout << "Connection is invalid\n";
+    }
+    // create table
+    stmt = con -> createStatement();
+    stmt -> execute("USE ctci"); // ctci is db for ctci problems... this command sets ctci to be the current db
+    stmt -> execute("DROP TABLE IF EXISTS Othello");
+    stmt -> execute("CREATE TABLE Othello(color varchar(1000), score INT)");
+}
 
 /**
  * Othello is played as follows: Each Othello piece is white on one side and black on the other. 
@@ -321,10 +363,10 @@ class DBConn {
  * Implement the object-oriented design for Othello.
  */
 int main() {
+    set_db();
     Game game = Game::get_instance();
     game.get_board() -> initialize();
     game.get_board() -> print_board();
     Simulator simulator = Simulator::get_instance();
     while(!simulator.is_over() && simulator.play_random()) {}
-    // TODO: store results in db
 }
