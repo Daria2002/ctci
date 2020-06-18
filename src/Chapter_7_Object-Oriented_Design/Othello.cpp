@@ -4,6 +4,10 @@
 #include <array>
 #include <cstdlib>
 #include <ctime>
+#include <mysql-cppconn-8/jdbc/mysql_driver.h>
+#include <mysql-cppconn-8/jdbc/cppconn/statement.h>
+#include <mysql-cppconn-8/jdbc/cppconn/prepared_statement.h>
+#include <mysql-cppconn-8/jdbc/cppconn/resultset.h>
 
 class Game;
 class Player;
@@ -296,6 +300,16 @@ class Simulator {
         std::array<Player, 2> players;
         std::vector<Location> remaining_positions;
         Player last_player;
+};
+
+// singleton for sql connection
+class DBConn {
+    public:
+        static sql::Connection* get_instance() {
+            static sql::mysql::MySQL_Driver *driver = sql::mysql::get_mysql_driver_instance();
+            static sql::Connection* con = driver -> connect("tcp://127.0.0.1:3306", "daria", "5555");
+            return con;
+        }
 };
 
 /**
