@@ -3,6 +3,7 @@
 #include <ctime>
 #include <memory>
 #include <vector>
+#include <string>
 
 class Game;
 class Board;
@@ -101,12 +102,96 @@ class Board {
                 }
             }
         }
+        bool in_bounds(int row, int column) {
+            return row >= 0 && row < n_rows && column >= 0 && column < n_columns;
+        }
         void set_numbered_cells() {
+            std::vector<std::vector<int>> offsets = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}; 
+            for(std::shared_ptr<Cell>& bomb : bombs) {
+                int row = bomb -> row;
+                int col = bomb -> column;
+                for(std::vector<int>& offset : offsets) { // for every surranding cell
+                    int r = row + offset[0]; // make surranding cell row
+                    int c = col + offset[1]; // make surranding cell column
+                    if(in_bounds(r, c)) {
+                        cells[r][c] -> num++;
+                    }
+                }
+            }
+        }
+        void print_board(bool show_real) {
+            std::cout << "\n    ";
+            for(int i = 0; i < n_columns; i++) {
+                std::cout << i << " ";
+            }
+            std::cout << '\n';
+            for(int i = 0; i < n_columns; i++) {
+                std::cout << "--";
+            }
+            std::cout << '\n';
+            for(int r = 0; r < n_rows; r++) {
+                std::cout << r << "| ";
+                for(int c = 0; c < n_columns; c++) {
+                    if(show_real) {
+                        std::cout << cells[r][c] -> get_real_state();
+                    } else {
+                        std::cout << cells[r][c] -> get_revealed_state();
+                    }
+                }
+                std::cout << '\n';
+            }
+        }
+        bool flip_cell(std::shared_ptr<Cell> cell) {
+            if(!cell -> is_exposed && !cell -> is_guess) {
+                cell -> flip();
+                num_of_unexposed--;
+                return true;
+            }
+            return false;
+        }
+        void expand_blank(std::shared_ptr<Cell> cell) {
             // TODO
         }
+        std::shared_ptr<Cell> get_cell_at_location(std::shared_ptr<UserPlay>);
+        std::shared_ptr<UserPlayResult> play_flip(std::shared_ptr<UserPlay>);
         std::vector<std::vector<std::shared_ptr<Cell>>> cells;
         std::vector<std::shared_ptr<Cell>> bombs;
 };
+
+class Game {
+    public:
+        enum GameState {
+            won, lost, playing
+        };
+};
+
+struct UserPlayResult {
+    bool successful_move;
+    Game::GameState state;
+};
+
+class UserPlay {
+    public:
+        int row, col;
+        bool is_guess;
+        UserPlay(int r, int c, bool guess) : row(r), col(c), is_guess(guess) {}
+        UserPlay from_string(std::string input) {
+            // TODO
+        }
+};
+
+std::shared_ptr<UserPlayResult> play_flip(std::shared_ptr<UserPlay> play) {
+    // TODO
+}
+
+std::shared_ptr<Cell> Board::get_cell_at_location(std::shared_ptr<UserPlay> play) {
+    int row = play -> row;
+    int col = play -> col;
+    if(!in_bounds(row, col)){
+        return nullptr;
+    }
+    return cells[row][col];
+}
 
 /**
  * Design and implement a text-based Minesweeper game. Minesweeper is the classic 
