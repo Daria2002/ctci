@@ -1,4 +1,8 @@
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <memory>
+#include <vector>
 
 class Game;
 class Board;
@@ -38,6 +42,10 @@ class Cell {
             }
             return "? ";
         }
+        void set_row_and_col(int r, int c) {
+            row = r;
+            column = c;
+        }
         int column, row;
         bool is_bomb, is_exposed, is_guess;
         int num;
@@ -56,9 +64,48 @@ class Board {
             set_numbered_cells();
             num_of_unexposed = n_rows * n_columns - n_bombs;
         }
-        void ini_board();
-        void shuffle_board();
-        void set_numbered_cells();
+        void ini_board() {
+            for(int i = 0; i < n_rows; i++) {
+                std::vector<std::shared_ptr<Cell>> row_i;
+                for(int j = 0; j < n_columns; j++) {
+                    row_i.push_back(std::make_shared<Cell>(i, j));
+                }
+                cells.push_back(row_i);
+            }
+            for(int i = 0; i < n_bombs; i++) {
+                int r = i/n_columns;
+                int c = (i - r*n_columns) % n_columns;
+                bombs.push_back(cells[r][c]);
+                bombs[i] -> set_bomb(true);
+            }
+        }
+        void shuffle_board() {
+            int n_cells = n_rows * n_columns;
+            srand(time(0));
+            for(int index1 = 0; index1 < n_cells; index1++) {
+                int index2 = index1 + rand() % (n_cells - index1);
+                if(index1 != index2) {
+                    // get cell at index1
+                    int row1 = index1 / n_columns;
+                    int column1 = (index1 - row1*n_columns) % n_columns;
+                    std::shared_ptr<Cell> cell1 = cells[row1][column1];
+                    // get cell at index2
+                    int row2 = index2 / n_columns;
+                    int column2 = (index2 - row2*n_columns) % n_columns;
+                    std::shared_ptr<Cell> cell2 = cells[row2][column2];
+                    // swap
+                    cells[row1][column1] = cell2;
+                    cell2 -> set_row_and_col(row1, column1);
+                    cells[row2][column2] = cell1;
+                    cell2 -> set_row_and_col(row2, column2);
+                }
+            }
+        }
+        void set_numbered_cells() {
+            // TODO
+        }
+        std::vector<std::vector<std::shared_ptr<Cell>>> cells;
+        std::vector<std::shared_ptr<Cell>> bombs;
 };
 
 /**
@@ -73,5 +120,4 @@ class Board {
  * (Tip for the reader: if you're not familiar with this game, please play a few rounds online first.) 
  */
 int main() {
-
 }
