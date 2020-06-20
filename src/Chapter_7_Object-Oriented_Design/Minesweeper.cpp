@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <list>
 
 class Game;
 class Board;
@@ -42,6 +43,9 @@ class Cell {
                 return "B ";
             }
             return "? ";
+        }
+        bool is_blank() {
+            return num == 0;
         }
         void set_row_and_col(int r, int c) {
             row = r;
@@ -150,7 +154,24 @@ class Board {
             return false;
         }
         void expand_blank(std::shared_ptr<Cell> cell) {
-            // TODO
+            std::vector<std::vector<int>> offsets = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}; 
+            std::list<std::shared_ptr<Cell>> to_be_explored;
+            to_be_explored.push_back(cell);
+            while (!to_be_explored.empty())
+            {
+                std::shared_ptr<Cell> current = to_be_explored.back();
+                to_be_explored.pop_back();
+                for(std::vector<int> offset : offsets) {
+                    int r = current->row + offset[0];
+                    int c = current->column + offset[1];
+                    if(in_bounds(r, c)) {
+                        std::shared_ptr<Cell> neighbor = cells[r][c];
+                        if(flip_cell(neighbor) && neighbor->is_blank()) {
+                            to_be_explored.push_back(neighbor);
+                        }
+                    }
+                }
+            }
         }
         std::shared_ptr<Cell> get_cell_at_location(std::shared_ptr<UserPlay>);
         std::shared_ptr<UserPlayResult> play_flip(std::shared_ptr<UserPlay>);
@@ -165,9 +186,14 @@ class Game {
         };
 };
 
-struct UserPlayResult {
-    bool successful_move;
-    Game::GameState state;
+class UserPlayResult {
+    public:
+        UserPlayResult(bool sm, Game::GameState s) {
+            successful_move = sm;
+            state = s;
+        }
+        bool successful_move;
+        Game::GameState state;
 };
 
 class UserPlay {
@@ -180,8 +206,25 @@ class UserPlay {
         }
 };
 
-std::shared_ptr<UserPlayResult> play_flip(std::shared_ptr<UserPlay> play) {
-    // TODO
+std::shared_ptr<UserPlayResult> Board::play_flip(std::shared_ptr<UserPlay> play) {
+    std::shared_ptr<Cell> cell = get_cell_at_location(play);
+    if(cell == nullptr) {
+        return std::make_shared<UserPlayResult>(false, Game::GameState::playing);
+    }
+    if(play -> is_guess) {
+        bool guess_res = cell -> toggle_guess();
+        return std::make_shared<UserPlayResult>(guess_res, Game::GameState::playing);
+    }
+    bool res = flip_cell(cell);
+    if(cell->is_bomb) {
+        return std::make_shared<UserPlayResult>(res, Game::GameState::lost);
+    } else if(cell->is_blank()) {
+        expand_blank(cell);
+    }
+    if(num_of_unexposed == 0) {
+        return std::make_shared<UserPlayResult>(res, Game::GameState::won);
+    }
+    return std::make_shared<UserPlayResult>(res, Game::GameState::playing);
 }
 
 std::shared_ptr<Cell> Board::get_cell_at_location(std::shared_ptr<UserPlay> play) {
