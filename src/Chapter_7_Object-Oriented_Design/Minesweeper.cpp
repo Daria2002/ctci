@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include <list>
+#include <string>
+#include <sstream>
 
 class Game;
 class Board;
@@ -34,7 +36,7 @@ class Cell {
         std::string get_real_state() {
             if(is_bomb) return "* ";
             else if(num > 0) return std::to_string(num) + " ";
-            return " ";
+            return "  "; // blank space and one space distance between consecutive columns
         }
         std::string get_revealed_state() {
             if(is_exposed) {
@@ -124,11 +126,11 @@ class Board {
             }
         }
         void print_board(bool show_real) {
-            std::cout << "\n    ";
+            std::cout << "\n   ";
             for(int i = 0; i < n_columns; i++) {
                 std::cout << i << " ";
             }
-            std::cout << '\n';
+            std::cout << "\n  ";
             for(int i = 0; i < n_columns; i++) {
                 std::cout << "--";
             }
@@ -179,52 +181,104 @@ class Board {
         std::vector<std::shared_ptr<Cell>> bombs;
 };
 
+enum GameState {
+    won, lost, playing
+};
+
 class Game {
     public:
-        enum GameState {
-            won, lost, playing
-        };
+        int rows, columns, bombs;
+        std::shared_ptr<Board> board;
+        GameState game_state;
+        Game() = default;
+        Game(int r, int c, int b) : rows(r), columns(c), bombs(b) {
+            game_state = GameState::playing;
+        }
+        bool ini() {
+            if(board == nullptr) {
+                board = std::make_shared<Board>(rows, columns, bombs);
+                board -> print_board(true); // show real board
+                return true;
+            }
+            return false; // already initialized
+        }
+        bool start() {
+            if(board == nullptr) {
+                ini();
+            }
+            return play_game();
+        }
+        bool play_game();
+        void print_game_state() {
+            if(game_state == GameState::lost) {
+                board -> print_board(true);
+                std::cout << "FAIL\n";
+            } else if(game_state == GameState::won) {
+                board -> print_board(true);
+                std::cout << "WIN\n";
+            } else {
+                std::cout << "Number of unexposed elements: " << board -> num_of_unexposed << '\n';
+                board -> print_board(false);
+            }
+        }
 };
 
 class UserPlayResult {
     public:
-        UserPlayResult(bool sm, Game::GameState s) {
-            successful_move = sm;
-            state = s;
-        }
+        UserPlayResult(bool sm, GameState s) : successful_move(sm), state(s) {}
         bool successful_move;
-        Game::GameState state;
+        GameState state;
 };
 
-class UserPlay {
+void split(const std::string& str, std::vector<std::string>& cont, char delim = ' ')
+{
+    std::stringstream ss(str);
+    std::string token;
+    while (std::getline(ss, token, delim)) {
+        cont.push_back(token);
+    }
+}
+
+class UserPlay : public std::enable_shared_from_this<UserPlay> {
     public:
         int row, col;
         bool is_guess;
+        UserPlay() = default;
         UserPlay(int r, int c, bool guess) : row(r), col(c), is_guess(guess) {}
-        UserPlay from_string(std::string input) {
-            // TODO
-        }
 };
+
+static std::shared_ptr<UserPlay> from_string(std::string input) {
+    bool isguess = false;
+    if(input.size() > 0 && input[0] == 'B') {
+        isguess = true;
+        input = input.substr(1);
+    }
+    std::vector<std::string> parts;
+    split(input, parts, ' ');
+    int r = std::stoi(parts[0]);
+    int c = std::stoi(parts[1]);
+    return std::make_shared<UserPlay>(r, c, isguess);
+}
 
 std::shared_ptr<UserPlayResult> Board::play_flip(std::shared_ptr<UserPlay> play) {
     std::shared_ptr<Cell> cell = get_cell_at_location(play);
     if(cell == nullptr) {
-        return std::make_shared<UserPlayResult>(false, Game::GameState::playing);
+        return std::make_shared<UserPlayResult>(false, GameState::playing);
     }
     if(play -> is_guess) {
         bool guess_res = cell -> toggle_guess();
-        return std::make_shared<UserPlayResult>(guess_res, Game::GameState::playing);
+        return std::make_shared<UserPlayResult>(guess_res, GameState::playing);
     }
     bool res = flip_cell(cell);
     if(cell->is_bomb) {
-        return std::make_shared<UserPlayResult>(res, Game::GameState::lost);
+        return std::make_shared<UserPlayResult>(res, GameState::lost);
     } else if(cell->is_blank()) {
         expand_blank(cell);
     }
     if(num_of_unexposed == 0) {
-        return std::make_shared<UserPlayResult>(res, Game::GameState::won);
+        return std::make_shared<UserPlayResult>(res, GameState::won);
     }
-    return std::make_shared<UserPlayResult>(res, Game::GameState::playing);
+    return std::make_shared<UserPlayResult>(res, GameState::playing);
 }
 
 std::shared_ptr<Cell> Board::get_cell_at_location(std::shared_ptr<UserPlay> play) {
@@ -234,6 +288,29 @@ std::shared_ptr<Cell> Board::get_cell_at_location(std::shared_ptr<UserPlay> play
         return nullptr;
     }
     return cells[row][col];
+}
+
+bool Game::play_game() {
+    print_game_state();
+    std::string input;
+    while (game_state == GameState::playing)
+    {
+        std::getline(std::cin, input);
+        if(input == "exit") {
+            return false;
+        }
+        std::shared_ptr<UserPlay> play = from_string(input);
+        if(play == nullptr) {
+            continue;
+        }
+        std::shared_ptr<UserPlayResult> result = board -> play_flip(play);
+        if(result -> successful_move) {
+            game_state = result -> state;
+        } else {
+            std::cout << "Cell (" << play -> row << ", " << play -> col << ") is not possible to flip.\n";
+        }
+        print_game_state();
+    }
 }
 
 /**
@@ -248,4 +325,7 @@ std::shared_ptr<Cell> Board::get_cell_at_location(std::shared_ptr<UserPlay> play
  * (Tip for the reader: if you're not familiar with this game, please play a few rounds online first.) 
  */
 int main() {
+    Game game(7, 7, 3);
+    game.ini();
+    game.start();
 }
