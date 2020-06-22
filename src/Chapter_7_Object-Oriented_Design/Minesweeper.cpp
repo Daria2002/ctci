@@ -4,8 +4,6 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <list>
-#include <string>
 #include <sstream>
 
 class Game;
@@ -47,15 +45,16 @@ class Cell {
             return "? ";
         }
         bool is_blank() {
-            return num == 0;
+            return num == 0 && !is_bomb;
         }
         void set_row_and_col(int r, int c) {
             row = r;
             column = c;
         }
         int column, row;
-        bool is_bomb, is_exposed, is_guess;
-        int num;
+        bool is_bomb, is_exposed;
+        bool is_guess = false;
+        int num = 0;
 };
 
 class Board {
@@ -104,7 +103,7 @@ class Board {
                     cells[row1][column1] = cell2;
                     cell2 -> set_row_and_col(row1, column1);
                     cells[row2][column2] = cell1;
-                    cell2 -> set_row_and_col(row2, column2);
+                    cell1 -> set_row_and_col(row2, column2);
                 }
             }
         }
@@ -157,18 +156,21 @@ class Board {
         }
         void expand_blank(std::shared_ptr<Cell> cell) {
             std::vector<std::vector<int>> offsets = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}}; 
-            std::list<std::shared_ptr<Cell>> to_be_explored;
+            std::vector<std::shared_ptr<Cell>> to_be_explored;
             to_be_explored.push_back(cell);
+            std::shared_ptr<Cell> neighbor;
+            std::shared_ptr<Cell> current;
             while (!to_be_explored.empty())
             {
-                std::shared_ptr<Cell> current = to_be_explored.back();
+                current = to_be_explored.back();
                 to_be_explored.pop_back();
+                current -> is_exposed = true;
                 for(std::vector<int> offset : offsets) {
                     int r = current->row + offset[0];
                     int c = current->column + offset[1];
                     if(in_bounds(r, c)) {
-                        std::shared_ptr<Cell> neighbor = cells[r][c];
-                        if(flip_cell(neighbor) && neighbor->is_blank()) {
+                        neighbor = cells[r][c];
+                        if(neighbor -> is_blank() && flip_cell(neighbor)) {
                             to_be_explored.push_back(neighbor);
                         }
                     }
@@ -251,7 +253,7 @@ static std::shared_ptr<UserPlay> from_string(std::string input) {
     bool isguess = false;
     if(input.size() > 0 && input[0] == 'B') {
         isguess = true;
-        input = input.substr(1);
+        input = input.substr(2);
     }
     std::vector<std::string> parts;
     split(input, parts, ' ');
@@ -261,10 +263,10 @@ static std::shared_ptr<UserPlay> from_string(std::string input) {
 }
 
 std::shared_ptr<UserPlayResult> Board::play_flip(std::shared_ptr<UserPlay> play) {
-    std::shared_ptr<Cell> cell = get_cell_at_location(play);
-    if(cell == nullptr) {
+    if(in_bounds(play -> row, play -> col) == false) {
         return std::make_shared<UserPlayResult>(false, GameState::playing);
     }
+    std::shared_ptr<Cell> cell = cells[play -> row][play -> col];
     if(play -> is_guess) {
         bool guess_res = cell -> toggle_guess();
         return std::make_shared<UserPlayResult>(guess_res, GameState::playing);
@@ -279,15 +281,6 @@ std::shared_ptr<UserPlayResult> Board::play_flip(std::shared_ptr<UserPlay> play)
         return std::make_shared<UserPlayResult>(res, GameState::won);
     }
     return std::make_shared<UserPlayResult>(res, GameState::playing);
-}
-
-std::shared_ptr<Cell> Board::get_cell_at_location(std::shared_ptr<UserPlay> play) {
-    int row = play -> row;
-    int col = play -> col;
-    if(!in_bounds(row, col)){
-        return nullptr;
-    }
-    return cells[row][col];
 }
 
 bool Game::play_game() {
@@ -311,6 +304,7 @@ bool Game::play_game() {
         }
         print_game_state();
     }
+    return true;
 }
 
 /**
@@ -328,4 +322,5 @@ int main() {
     Game game(7, 7, 3);
     game.ini();
     game.start();
+    return 0;
 }
