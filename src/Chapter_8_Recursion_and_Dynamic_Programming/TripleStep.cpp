@@ -1,11 +1,31 @@
 #include <iostream>
+#include <unordered_map>
 
-int brute_force_solution(int n) {
-
+int count_ways_brute_force(int n) {
+    if(n < 0) return 0;
+    if(n == 0) return 1;
+    return count_ways_brute_force(n-1) + count_ways_brute_force(n-2) + count_ways_brute_force(n-3);
 }
 
-int memoization(int n) {
+// The number of ways will quickly overflow the bounds of an integer and using long will delay
+// but not completely solve the issue. BigInteger uses std::string to store big int and it's 
+// better approach to introduce big int instead of int for number of ways
+int count_ways_memoization(int n, std::unordered_map<int, int>& memo) {
+    if(n < 0) return 0;
+    if(n == 0) return 1;
+    if(memo[n] > -1) {
+        return memo[n];
+    }
+    memo[n] = count_ways_memoization(n - 1, memo) + count_ways_memoization(n - 2, memo) + count_ways_memoization(n - 3, memo);
+    return memo[n];
+}
 
+int count_ways_memoization(int n) {
+    std::unordered_map<int, int> memo;
+    for(int i = 1; i <= n; i++) {
+        memo[i] = -1;
+    }
+    return count_ways_memoization(n, memo);
 }
 
 /**
@@ -25,5 +45,5 @@ int main() {
     int n;
     std::cout << "Enter n-number of stairs?\n";
     std::cin >> n;
-    std::cout << "Number of possible ways = " << (method == 1 ? brute_force_solution(n) : memoization(n)) << '\n';
+    std::cout << "Number of possible ways = " << (method == 1 ? count_ways_brute_force(n) : count_ways_memoization(n)) << '\n';
 }
