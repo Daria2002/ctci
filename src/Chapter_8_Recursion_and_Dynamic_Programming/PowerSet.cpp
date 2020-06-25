@@ -22,9 +22,28 @@ std::vector<std::vector<char>> power_set_recursion(std::vector<char> set) {
     return power_set_recursion(set, 0);
 }
 
+std::vector<char> convert_int_to_char_vector(int num, std::vector<char> set) {
+    std::vector<char> v;
+    int index = 0;
+    // condition i > 0 is ok because this loop changes v only for 
+    // values that has bit set to 1
+    for(int i = num; i > 0; i >>= 1) {
+        if(i & 1 == 1) {
+            v.push_back(set[index]);
+        }
+        index++;
+    }
+    return v;
+}
+
+// binary representation: every num is in the set(1) or it is not(0).
+// n numbers -> 2^n combinations (2 states for every num)
+// generate 2^n binary numbers and translate the binary num into a set 
 std::vector<std::vector<char>> power_set_combinatorics(std::vector<char> set) {
     std::vector<std::vector<char>> subsets;
-    // todo
+    for(int i = 0; i < (1 << set.size()); i++) {
+        subsets.push_back(convert_int_to_char_vector(i, set));
+    }
     return subsets;
 }
 
@@ -47,7 +66,7 @@ std::ostream& operator<<(std::ostream& os, std::vector<std::vector<char>> subset
 int main() {
     std::cout << "=========\nPower Set\n=========\n";
     std::cout << "Enter 1 to solve problem using recursion or any other number to solve using combinatorics.\n";
-    std::vector<char> set = {'a', 'b'};
+    std::vector<char> set = {'a', 'b', 'c', 'd'};
     int method;
     std::cin >> method;
     std::vector<std::vector<char>> subsets;
