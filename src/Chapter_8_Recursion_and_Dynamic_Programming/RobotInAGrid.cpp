@@ -2,6 +2,7 @@
 #include <vector>
 #include <ctime>
 #include <random>
+#include <algorithm>
 
 class Point {
     public:
@@ -22,6 +23,10 @@ bool find_a_path(std::vector<Point>& points, int r, int c, std::vector<std::vect
     return false;
 }
 
+inline bool operator==(const Point& p1, const Point& p2) {
+    return (p1.col == p2.col) && (p1.row == p2.row);
+}
+
 std::vector<Point> find_a_path(std::vector<std::vector<bool>> maze) {
     std::vector<Point> points;
     if(maze.empty() || maze.size() == 0) return points;
@@ -29,14 +34,29 @@ std::vector<Point> find_a_path(std::vector<std::vector<bool>> maze) {
     return points;
 }
 
-bool find_a_path_dp(std::vector<Point>& points, int r, int c, std::vector<std::vector<bool>> maze) {
-    
+bool is_failed_point(const std::vector<Point>& failed_points, const Point p) {
+    return std::find(failed_points.begin(), failed_points.end(), p) != failed_points.end();
+}
+
+bool find_a_path_dp(std::vector<Point>& points, int r, int c, std::vector<std::vector<bool>> maze, std::vector<Point> failed_points) {
+    // return false if point is out of bounds or is obstacle or failed point
+    if(r < 0 || c < 0 || !maze[r][c] || is_failed_point(points, Point(r, c))) {
+        return false;
+    }
+    bool is_start = (r == 0) && (c == 0);
+    if(is_start || find_a_path_dp(points, r - 1, c, maze, failed_points) || find_a_path_dp(points, r, c - 1, maze, failed_points)) {
+        points.push_back(Point(r, c));
+        return true;
+    }
+    failed_points.push_back(Point(r, c));
+    return false;   
 }
 
 std::vector<Point> find_a_path_dp(std::vector<std::vector<bool>> maze) {
     std::vector<Point> points;
     if(maze.empty() || maze.size() == 0) return points;
-    std::cout << "Path is " << (find_a_path_dp(points, maze.size() - 1, maze[0].size() - 1, maze) ? "" : "not ") << "found.\n";
+    std::vector<Point> failed_points;
+    std::cout << "Path is " << (find_a_path_dp(points, maze.size() - 1, maze[0].size() - 1, maze, failed_points) ? "" : "not ") << "found.\n";
     return points;
 }
 
