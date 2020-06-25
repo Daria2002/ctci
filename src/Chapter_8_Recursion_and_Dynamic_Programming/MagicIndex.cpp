@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 int magic_index_bf(int arr[], int size) {
     for(int i = 0; i < size; i++) {
@@ -28,9 +29,23 @@ int magic_index_optimized(int arr[], int size) {
     return magic_index_optimized(arr, 0, size - 1);
 }
 
-int magic_index_not_distict_el(int arr[]) {
-    // todo
-    return 2;
+int magic_index_not_distict_el(int arr[], int start, int stop) {
+    if(stop < start) return -1;
+    int mid =  (start + stop) / 2;
+    if(mid == arr[mid]) return mid;
+    int index = magic_index_not_distict_el(arr, 0, std::min(mid - 1, arr[mid]));
+    if(index != -1) {
+        return index;
+    }
+    index = magic_index_not_distict_el(arr, std::max(mid + 1, arr[mid]), stop);
+    if(index != -1) {
+        return index;
+    }
+    return -1;
+}
+
+int magic_index_not_distict_el(int arr[], int size) {
+    return magic_index_not_distict_el(arr, 0, size - 1);
 }
 
 /**
@@ -41,8 +56,8 @@ int magic_index_not_distict_el(int arr[]) {
  * What if the values are not distinct?
  */ 
 int main() {
-    constexpr int size = 5;
-    int arr[size] = {-40, 1, 5, 6, 9};
+    constexpr int size = 11;
+    int arr[size] = {-10, -5, 2, 2, 2, 3, 4, 5, 9, 12, 13};
     int index, method;
     std::cout << "Enter 1 for brute force, 2 for optimized or any other number for "
                  "algorithm that can handle elements that are not distinct\n";
@@ -56,7 +71,7 @@ int main() {
         index = magic_index_optimized(arr, size);
         break;
     default:
-        index = magic_index_not_distict_el(arr);
+        index = magic_index_not_distict_el(arr, size);
         break;
     }
     if(index == -1) {
