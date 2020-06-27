@@ -4,32 +4,48 @@
 int product_recursion1(int smaller, int bigger) {
     if(smaller == 0) return 0;
     if(smaller == 1) return bigger;
-    // TODO
-    return 0;
+    int half = smaller >> 1; // divide by 2
+    int first_half = product_recursion1(half, bigger);
+    int second_half = smaller % 2 ? product_recursion1(smaller - half, bigger) : first_half;
+    return first_half + second_half;
 }
 
 int product1(int first, int second) {
     return product_recursion1(first < second ? first : second, first > second ? first : second);
 }
 
-int product_recursion2(int smaller, int bigger) {
-    // TODO
-    return 0;
+int product_recursion2(int smaller, int bigger, std::vector<int>& memo) {
+    if(smaller == 0) return 0;
+    if(smaller == 1) return bigger;
+    if(memo[smaller] != -1) return memo[smaller];
+    int half = smaller >> 1; // divide by 2
+    int first_half = product_recursion2(half, bigger, memo);
+    int second_half = smaller % 2 ? product_recursion2(smaller - half, bigger, memo) : first_half;
+    memo[smaller] = first_half + second_half;
+    return memo[smaller];
 }
 
 int product2(int first, int second) {
-    // TODO
-    return 0;
+    std::vector<int> memo;
+    for(int i = 0; i <= first; i++) {
+        memo.push_back(-1);
+    }
+    return product_recursion2(first < second ? first : second, first > second ? first : second, memo);
 }
 
 int product_recursion3(int smaller, int bigger) {
-    // TODO
-    return 0;
+    if(smaller == 0) return 0;
+    if(smaller == 1) return bigger;
+    int half = smaller >> 1;
+    int first_half = product_recursion3(half, bigger);
+    if(smaller % 2) {
+        return first_half + first_half + bigger;
+    } 
+    return first_half + first_half;
 }
 
 int product3(int first, int second) {
-    // TODO
-    return 0;
+    return product_recursion3(first < second ? first : second, first > second ? first : second);
 }
 
 
