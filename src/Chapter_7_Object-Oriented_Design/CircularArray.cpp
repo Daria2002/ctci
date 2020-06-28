@@ -17,7 +17,7 @@ class CircularArray {
             head = convert(shift_right);
         }
         T get(int i) {
-            return items[convert[i]];
+            return items[convert(i)];
         }
         void set(int i, T item) {
             items[convert(i)] = item;
