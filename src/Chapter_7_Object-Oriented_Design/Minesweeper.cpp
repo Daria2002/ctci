@@ -319,6 +319,7 @@ bool Game::play_game() {
  * (Tip for the reader: if you're not familiar with this game, please play a few rounds online first.) 
  */
 int main() {
+    std::cout << "Minesweeper\ni.e. input: 0 0 or B 0 0\n________________________\n";
     Game game(7, 7, 3);
     game.ini();
     game.start();
