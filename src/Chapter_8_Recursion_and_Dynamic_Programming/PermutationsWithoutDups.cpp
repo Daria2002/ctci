@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <algorithm>
+#include <vector>
 
 void permutations2(std::string str, std::string prefix, const int size) {
     if(prefix.size() == size) {
@@ -18,12 +19,20 @@ void permutations2(std::string str) {
     permutations2(str, "", str.size());
 }
 
-void permutations1(std::string str, std::string prefix, const int size) {
-    // TODO
-}
-
-void permutations1(std::string str) {
-    // TODO
+std::vector<std::string> permutations1(std::string str) {
+    std::vector<std::string> permutations;
+    if(str.empty()) {
+        permutations.push_back("");
+        return permutations;
+    }
+    char first = str[0];
+    std::vector<std::string> words = permutations1(str.substr(1));
+    for(std::string word : words) {
+        for(int i = 0; i <= word.size(); i++) {
+            permutations.push_back(word.substr(0, i) + first + word.substr(i));
+        }
+    }
+    return permutations;
 }
 
 bool has_unique_characters(std::string str) {
@@ -35,6 +44,12 @@ bool has_unique_characters(std::string str) {
         hash_table.insert(str[i]);
     }
     return true;
+}
+
+void print_permutations(std::vector<std::string> permutations) {
+    for(std::string permutation : permutations) {
+        std::cout << permutation << '\n';
+    }
 }
 
 /**
@@ -52,7 +67,7 @@ int main() {
         switch (method)
         {
         case 1:
-            permutations1(str);
+            print_permutations(permutations1(str));
             break;
         default:
             permutations2(str);
