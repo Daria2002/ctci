@@ -64,9 +64,18 @@ void display(const std::vector<std::vector<Color>>& screen) {
     }
 }
 
-bool fill(std::vector<std::vector<Color>>& screen, Point point, const Color& new_color, const Color& old_color) {
-    // TODO
-    return false;
+/**
+ * Return true if point is valid, otherwise false
+ */
+bool fill(std::vector<std::vector<Color>>& screen, Point point, const Color new_color, const Color old_color) {
+    if(point.row < 0 || point.row >= screen.size() || point.column < 0 || point.column >= screen[0].size()) return false;
+    if(screen[point.row][point.column] != old_color) return true; // don't change color
+    screen[point.row][point.column] = new_color;
+    fill(screen, Point(point.row - 1, point.column), new_color, old_color);
+    fill(screen, Point(point.row + 1, point.column), new_color, old_color);
+    fill(screen, Point(point.row, point.column - 1), new_color, old_color);
+    fill(screen, Point(point.row, point.column + 1), new_color, old_color);
+    return true;
 }
 
 bool fill(std::vector<std::vector<Color>>& screen, Point point, const Color& new_color) {
