@@ -1,8 +1,29 @@
 #include <iostream>
 #include <unordered_set>
+#include <vector>
+
+void parens_optimized(std::unordered_set<std::string>& set, 
+    int left_remaining, int right_remaining, std::vector<char> str, int index) {
+        if(left_remaining < 0 || right_remaining < left_remaining) {
+            return;
+        }
+        if(left_remaining == 0 && right_remaining == 0) {
+            std::string s(str.begin(), str.end());
+            set.insert(s);
+        } else {
+            str[index] = '(';
+            parens_optimized(set, left_remaining - 1, right_remaining, str, index + 1);
+            str[index] = ')';
+            parens_optimized(set, left_remaining, right_remaining - 1, str, index + 1);
+        }
+}
 
 std::unordered_set<std::string> parens_optimized(int n) {
-    // TODO
+    std::vector<char> str;
+    for(int i = 0; i < 2*n; i++) str.push_back(' ');
+    std::unordered_set<std::string> set;
+    parens_optimized(set, n, n, str, 0);
+    return set;
 }
 
 std::unordered_set<std::string> parens(int n) {
