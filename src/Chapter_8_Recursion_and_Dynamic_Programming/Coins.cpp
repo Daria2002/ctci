@@ -9,7 +9,15 @@ enum Money {
 };
 
 int number_of_ways(int n, std::vector<Money> money, int index) {
-    // TODO
+    int num_of_ways = 0;
+    int val = money[index];
+    if(index == money.size() - 1) {
+        return (n % val == 0 ? 1 : 0);
+    }
+    for(int i = 0; i <= n; i += val) {
+        num_of_ways += number_of_ways(n - i, money, index + 1);
+    }
+    return num_of_ways;
 }
 
 int number_of_ways(int n, std::vector<Money> money) {
