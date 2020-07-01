@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 enum Money {
     Quarters = 25, 
@@ -24,12 +25,37 @@ int number_of_ways(int n, std::vector<Money> money) {
     return number_of_ways(n, money, 0);
 }
 
-int number_of_ways_optimal(int n, std::vector<Money> money, int index) {
-    // TODO
+bool in_map(int n, int i, std::vector<std::vector<int>> map) {
+    std::vector<int> v = map[n];
+    return v[i] != -1;
+}
+
+int number_of_ways_optimal(int n, std::vector<Money> money, std::vector<std::vector<int>> map, int index) {
+    int val = money[index];
+    if(in_map(n, index, map)) {
+        return map[n][index];
+    }
+    int num_of_ways = 0;
+    if(index == money.size() - 1) {
+        return (n % val == 0 ? 1 : 0); 
+    }
+    for(int i = 0; i <= n; i += val) {
+        num_of_ways += number_of_ways(n - i, money, index + 1);
+    } 
+    map[n][index] = num_of_ways;
+    return num_of_ways;
 }
 
 int number_of_ways_optimal(int n, std::vector<Money> money) {
-    return number_of_ways_optimal(n, money, 0);
+    std::vector<std::vector<int>> map;
+    for(int i = 0; i <= n; i++) {
+        std::vector<int> v;
+        for(int j = 0; j < money.size(); j++) {
+            v.push_back(-1);
+        }
+        map.push_back(v);
+    }
+    return number_of_ways_optimal(n, money, map, 0);
 }
 
 /**
