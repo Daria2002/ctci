@@ -1,15 +1,48 @@
 #include <iostream>
 
+bool string_to_bool(std::string str) {
+    return str == "1" ? true : false;
+}
+
 int count_eval_bf(std::string expression, bool result) {
-    // TODO
-    return 0;
+    if(expression.size() == 0) return 0;
+    if(expression.size() == 1) return string_to_bool(expression) == result ? 1 : 0;
+
+    int ways = 0;
+    for(int i = 1; i < expression.size(); i += 2) { // split with operator
+        char op = expression[i];
+        std::string left = expression.substr(0, i);
+        std::string right = expression.substr(i + 1);
+        int left_true = count_eval_bf(left, true);
+        int left_false = count_eval_bf(left, false);
+        int right_true = count_eval_bf(right, true);
+        int right_false = count_eval_bf(right, false);
+        int total = (left_false + left_true) * (right_false + right_true);
+        int total_true = 0;
+        switch (op)
+        {
+        case '^':
+            total_true = left_true * right_false + left_false * right_true;
+            break;
+        case '&':
+            total_true = left_true * right_true;
+            break;
+        default: // | (OR)
+            total_true = left_true * right_false + left_false * right_true + 
+                         left_true * right_true;
+            break;
+        }
+        int count = result ? total_true : total - total_true;
+        ways += count;
+    }
+
+    return ways;
 }
 
 int count_eval_optimal(std::string expression, bool result) {
     // TODO
     return 0;
 }
-
 
 /**
  * Given a boolean expression consisting of the symbols 0 (false), 1 (true), & (AND), | (OR), and ^(XOR), 
