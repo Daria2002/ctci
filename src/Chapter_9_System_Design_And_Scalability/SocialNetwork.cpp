@@ -147,6 +147,52 @@ std::unordered_map<int, Person> initialize_network() {
     return people;
 }
 
+
+/**
+ * Solution for handling the milions of users.
+ * step 1: int machine_index = getMachineIDForUser(personID);
+ * step 2: go to machine_index
+ * step 3: Person friend = getPersonWithID(person_id)
+ */
+class Server;
+class Machine; 
+
+/**
+ * Class Machine represents a single machine
+ */
+class Machine {
+    public:
+        Machine() = default;
+        Machine(int _machine_id) : machine_id(_machine_id) {}
+        Person get_person_with_id(int id) {
+            return people[id];
+        }
+        std::unordered_map<int, Person> people;
+    private:
+        int machine_id;
+};
+
+/**
+ * Class Server holds a list of all the machines
+ */
+class Server {
+    public:
+        std::unordered_map<int, Machine> machines;
+        std::unordered_map<int, int> person_to_machine_map;
+        Machine get_machine(int machine_id) {
+            return machines[machine_id];
+        }
+        int get_machine_id_for_user(int person_id) {
+            int machine_id = person_to_machine_map[person_id];
+            return machine_id;
+        }
+        Person get_person_with_id(int person_id) {
+            int machine_id = person_to_machine_map[person_id];
+            Machine machine = machines[machine_id];
+            return machine.get_person_with_id(person_id);
+        }
+};
+
 /**
  * How would you design the data structures for a very large social network like Facebook or Linkedln? 
  * Describe how you would design an algorithm to show the shortest path between two people 
