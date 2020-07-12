@@ -17,10 +17,10 @@ int main() {
                  "  and look for duplicates.\n"
                  "Solution #2: Multiple Machines\n"
                  "  Instead of saving URL to x file, it's saved in machine x.\n"
-                 "  Pro for using multiple machines is that we can parallelize the\n"
+                 "  Pro of using multiple machines is that we can parallelize the\n"
                  "  operation, such that all 4000 chunks are processed simultaneously\n"
                  "  which can result in a faster solution for large amounts of data.\n"
-                 "  Con for using multiple machines is that we are relying on 4000 different\n"
+                 "  Con of using multiple machines is that we are relying on 4000 different\n"
                  "  machines to operate perfectly. That may not be realistic and there should be\n"
                  "  considered how to handle failture. The complexity of the system have\n"
                  "  increased by involving so many machines.\n";
