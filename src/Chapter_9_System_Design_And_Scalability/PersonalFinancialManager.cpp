@@ -35,5 +35,18 @@ int main() {
                  "    but we wouldn't want a low priority tasks to \"starve\" because there is always higher priority tasks. There will probably be a large\n "
                  "    number of inactive users - users who signed up once and then haven't touched the system since. The syste should entirely remove them or\n"
                  "    deprioritize their accounts. The biggest bottleneck in system like this is a massive amount of data that needs to be pulled and analyzed.\n"
-                 "    ";
+                 "    As soon as we get a transaction for a user, we can categorize it and integrate and integrate this data. It might not be very efficient because\n"
+                 "    a lots of transactions are coming in at once. We should not use a standard db because we certainly don't want to do a bunch of joins.\n"
+                 "    It may be better to store the transactions to a set of flat text files. If we're assuming a lot of users, then there will be a lot of duplicates\n"
+                 "    across the sellers. If we group the transaction files by seller's name, we can take advantage of these duplicates. The categorizer can do something\n"
+                 "    like this: raw transaction data, grouped by seller -> categorized data, grouped by user -> update categorized transactions\n"
+                 "                                                                           |\n"
+                 "                                                          merge & group by user & category\n"
+                 "                                                                           |\n"
+                 "                                                                   update budgets\n"
+                 "    Categorizer gets the raw transaction data, grouped by seller. It picks the appropriate category for the seller(which might be stored in a cache\n"
+                 "    for the most common sellers), and then applies that category to all those transactions. After applying the category, it re-groups all the transactions\n"
+                 "    by user. Those transactions are inserted into the database for this user. The categorizer takes the data grouped by user and merges it across categories\n"
+                 "    and updates the budget. Most of these tasks will be handled in simple log files, only final data(the categorized transactions and budget analysis) will\n"
+                 "    be stored in a db. That will minimize reading and writing in db.\n";
 }
