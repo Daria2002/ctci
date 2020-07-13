@@ -29,7 +29,7 @@ int main() {
                  "    category, and stores the user's budget. The frontend pulls data from both categorized transactions datastore as well as from the\n"
                  "    budget datastore. A user could also interact with the frontend by changing the budget or the categorization of their transactions.\n"
                  "Step 4: Identify the Key Issues\n"
-                 "  - This is data-heavy system and since we want it to feel snappy (sharp, clever) and responsive we'll want as much processing as possible\n"
+                 "  - This is data-heavy system and since we want it to feel snappy (quick) and responsive we'll want as much processing as possible\n"
                  "    to be asynchronous. There should be at least one task queue where we can queue up work that needs to be done (pulling in new bank data,\n"
                  "    re-analyzing budgets, and categorizing new bank data). A task queue system should be able to prioritize some task types over others,"
                  "    but we wouldn't want a low priority tasks to \"starve\" because there is always higher priority tasks. There will probably be a large\n "
