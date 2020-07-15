@@ -21,6 +21,7 @@ int binary_search(Listy listy, int element, int start, int end) {
         else if(listy.elementAt(mid) < element) return binary_search(listy, element, start, mid_index - 1);
         else return binary_search(listy, element, mid_index + 1, end);
     }
+    return -1;
 }
 
 int search(Listy listy, int element) {
