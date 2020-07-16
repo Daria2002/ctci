@@ -17,6 +17,7 @@ foreach( testsourcefile ${ctci_SOURCES} )
     string( REPLACE ".cpp" "" testname ${testname} )
 
     add_executable( ${testname} ${testsourcefile} )
+    target_compile_features(${testname} PRIVATE cxx_std_17)
     target_link_libraries(${testname} Threads::Threads mysqlcppconn)
 
 endforeach( testsourcefile ${ctci_SOURCES} )
