@@ -9,6 +9,7 @@ void swap(std::array<int, 5>& arr, int l, int r) {
     arr[r] = tmp;
 }
 
+// O(n log n)
 void sort_valley_peak_suboptimal(std::array<int, 5>& arr) {
     std::sort(arr.begin(), arr.end());
     for(int i = 1; i < arr.size(); i += 2) swap(arr, i - 1, i);
@@ -24,6 +25,7 @@ int max_index(std::array<int, 5>& arr, int previous, int current, int next) {
     return (max == prev_val ? previous : next);
 }
 
+// O(n)
 void sort_valley_peak_optimal(std::array<int, 5>& arr) {
     for(int i = 1; i < arr.size(); i += 2) {
         int biggest_index = max_index(arr, i - 1, i, i + 1);
