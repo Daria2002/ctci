@@ -40,7 +40,7 @@ class SmartPointer {
                 // delete is used for the mem allocated using new or for a NULL ptr
                 // free is used for the mem allocated using malloc or for a NULL ptr
                 free(ref_count);
-                free(ref);
+                delete ref;
                 ref = NULL;
                 ref_count = NULL;
             }
@@ -61,8 +61,7 @@ int main() {
     std::cout << 
     "Smart pointers provide safety via automatic memory managment. They avoid\n"
     "issues like dangling pointers, memory leaks and allocation failures.\n";
-    int num = 5;
-    int* x = &num;
+    int* x = new int(5);
     SmartPointer<int> sptr = SmartPointer<int>(x);
     std::cout << "Smart pointer value = " << sptr.getValue() << '\n';
 }
