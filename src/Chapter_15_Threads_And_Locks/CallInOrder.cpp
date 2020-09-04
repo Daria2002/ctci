@@ -7,6 +7,16 @@ class MyMutex {
         void unlock() {}
 };
 
+class MySemaphore {
+    public:
+        // num specifies the initial count (the number of threads
+        // that can access a shared resource at any one time)
+        MySemaphore(int num) : count(num) {}
+        void acquire() {}
+        void release() {}
+        int count;
+};
+
 class FooBad {
     public:
         int pause_time = 100;
@@ -58,7 +68,11 @@ class FooBad {
 
 class Foo {
     public:
-        Foo() {}
+        MySemaphore s1 = MySemaphore(1);
+        MySemaphore s2 = MySemaphore(1);
+        Foo() {
+            
+        }
         void first() {}
         void second() {}
         void third() {}
