@@ -71,11 +71,49 @@ class Foo {
         MySemaphore s1 = MySemaphore(1);
         MySemaphore s2 = MySemaphore(1);
         Foo() {
+            try {
+                s1.acquire();
+                s2.acquire();
+            }
+            catch(const std::exception& e)
+            {
+            }
+        }
+        void first() {
+            try {
+                // do the work
+                s1.release();
+            }
+            catch(const std::exception& e)
+            {
+            }
+        }
+        void second() {
+            try
+            {
+                s1.acquire();
+                s1.release();
+                // do the work
+                s2.release();
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
             
         }
-        void first() {}
-        void second() {}
-        void third() {}
+        void third() {
+            try
+            {
+                s2.acquire();
+                s2.release();
+                // do the work
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+        }
 };
 
 /**
