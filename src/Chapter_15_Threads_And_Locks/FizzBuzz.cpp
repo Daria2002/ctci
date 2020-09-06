@@ -2,6 +2,7 @@
 #include <thread>
 #include <vector>
 #include <mutex>
+#include <functional>
 
 // a mutex is a lockable object that is designed to signal when critical sections of code need exclusive
 // access, preventing other threads with the same protection from executing concurrently and access the
@@ -50,9 +51,18 @@ void Number(bool div_3, bool div_5, int max) {
     }
 }
 
-void FB(bool div_3, bool div_5, int max, std::string to_print) {
-    // TODO: change params
-    std::cout << "FB\n";
+void FB(const std::function<bool(int)>& compare_f, const std::function<void()>& print_f, int max) {
+    while (true)
+    {
+        std::lock_guard<std::mutex> lck(current_mutex);
+        if(current > max) {
+            return;
+        }
+        if(compare_f(current)) {
+            print_f();
+            current++;
+        }
+    }
 }
 
 /**
@@ -82,7 +92,10 @@ int main() {
         threads.push_back(std::thread(FizzBuzz, false, true, max, "Buzz"));
         threads.push_back(std::thread(Number, false, false, max));
     } else {
-        threads.push_back(std::thread(FB, true, true, max, "FizzBuzz"));
+        threads.push_back(std::thread(FB, [](int a){return a % 3 == 0 && a % 5 == 0;}, [](){std::cout << "FizzBuzz\n";}, max));
+        threads.push_back(std::thread(FB, [](int a){return a % 3 == 0 && a % 5 != 0;}, [](){std::cout << "Fizz\n";}, max));
+        threads.push_back(std::thread(FB, [](int a){return a % 3 != 0 && a % 5 == 0;}, [](){std::cout << "Buzz\n";}, max));
+        threads.push_back(std::thread(FB, [](int a){return a % 3 != 0 && a % 5 != 0;}, [](){std::cout << current << '\n';}, max));
     }
     for(std::thread& th : threads) if(th.joinable()) th.join();
 }
