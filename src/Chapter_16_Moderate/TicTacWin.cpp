@@ -236,7 +236,9 @@ void simulate_3x3_method() {
     std::vector<std::vector<Piece>> board = initialize_3x3_board();
     std::cout << "Simulating method for 3x3 board:\n";
     print_board(board);
-    std::cout << "Winner = " << piece_to_str(hasWon_3x3(board));
+    Piece winner = hasWon_3x3(board);
+    if(winner == Piece::Empty) std::cout << "There is no winner.\n";
+    else std::cout << "Winner = " << piece_to_str(winner) << '\n';
 }
 
 /**
