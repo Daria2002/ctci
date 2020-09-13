@@ -75,7 +75,7 @@ bool has_won_row(Piece& winner, const std::vector<std::vector<Piece>>& board) {
 
 bool has_won_column(Piece& winner, const std::vector<std::vector<Piece>>& board) {
     bool has_solution = true;
-    for(int column = 0; column = board[0].size(); column++) {
+    for(int column = 0; column < board[0].size(); column++) {
         for(int row = 0; row < board.size(); row++) {
             if(board[0][column] != board[row][column]) {
                 has_solution = false;
@@ -89,7 +89,11 @@ bool has_won_column(Piece& winner, const std::vector<std::vector<Piece>>& board)
         winner = board[0][column];  
         return true;
     }
-    winner = Piece::Empty; 
+    if(has_solution) {
+        winner = board[board.size() - 1][board[0].size() - 1];
+        return true;
+    }
+    winner = Piece::Empty;
     return false;
 }
 
