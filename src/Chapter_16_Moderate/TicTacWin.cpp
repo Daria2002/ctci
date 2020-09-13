@@ -89,38 +89,39 @@ bool has_won_column(Piece& winner, const std::vector<std::vector<Piece>>& board)
         winner = board[0][column];  
         return true;
     }
-    if(has_solution) {
-        winner = board[board.size() - 1][board[0].size() - 1];
-        return true;
-    }
     winner = Piece::Empty;
     return false;
 }
 
 bool has_won_diagonal(Piece& winner, const std::vector<std::vector<Piece>>& board) {
     int start = 0;
-    int end = board[0].size();
-    for(int i = start; i < board.size(); i++) {
-        for(int j = i; j < board[0].size(); j++) {
-            // check first diagonal
-            if(board[start][start] != board[i][j]) {
-                return false;
-            }
-            // check second diagonal
-            if(board[board.size() - 1 - start][board.size() - 1 - start] != board[board.size() - 1 - i][board.size() - 1 - j]) {
-                return false;
-            }
+    int end = board.size() - 1;
+    bool first = true;
+    bool second = true;
+    for(int i = 0; i < board.size() && (first || second); i++) {
+        // check first diagonal
+        if(first && board[start][start] != board[i][i]) {
+            first = false;
         }
-        winner = board[start][start] == board[end][end] ? board[start][start] : board[start][end];
+        // check second diagonal
+        if(second && board[start][end] != board[start + i][end - i]) {
+            second = false;
+        }
+    }
+    if(first || second) { // winner found
+        winner = first ? board[start][start] : board[start][end];
         return true;
     }
+    winner = Piece::Empty;
+    return false;
 }
 
 Piece get_winner(const std::vector<std::vector<Piece>>& board) {
     Piece winner;
-    if(has_won_row(winner, board)) return winner;
-    if(has_won_column(winner, board)) return winner;
-    if(has_won_diagonal(winner, board)) return winner;
+    if(has_won_row(winner, board) && winner != Piece::Empty) return winner;
+    if(has_won_column(winner, board) && winner != Piece::Empty) return winner;
+    if(has_won_diagonal(winner, board) && winner != Piece::Empty) return winner;
+    std::cout << "There is no winner.\n";
     return Piece::Empty;
 }
 
@@ -185,7 +186,6 @@ void hasWon_multiple_times() {
     if(board_int_hashtable.find(board_to_remember) != board_int_hashtable.end()) { // board to remember should be in the hashtable
         std::cout << "iteration no. " << iteration << ", board:\n";
         print_board(board_to_remember);
-        std::cout << "Board to remember is in the hashtable.\n";
         winner = int_piece_hashtable[board_int_hashtable[board_to_remember]];
         std::cout << "winner = " << piece_to_str(winner) << '\n';
     } else {    
