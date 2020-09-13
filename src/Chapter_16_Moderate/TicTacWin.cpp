@@ -63,7 +63,7 @@ bool has_won_row(Piece& winner, const std::vector<std::vector<Piece>>& board) {
                 break;
             }
         }
-        if(!has_solution) has_solution = true;
+        if(!has_solution || row[0] == Piece::Empty) has_solution = true;
         else {
             winner = row[0];
             return true;
@@ -82,7 +82,7 @@ bool has_won_column(Piece& winner, const std::vector<std::vector<Piece>>& board)
                 break;
             }
         }
-        if(!has_solution) {
+        if(!has_solution || board[0][column] == Piece::Empty) {
             has_solution = true;
             continue;
         }
@@ -213,13 +213,11 @@ Piece hasWon_3x3(std::vector<std::vector<Piece>> board) {
         if(hasWinner(board[i][0], board[i][1], board[i][2])) return board[i][0];
         // check columns 
         if(hasWinner(board[0][i], board[1][i], board[2][i])) return board[0][i];
-        // check 1st diagonal
-        if(hasWinner(board[0][0], board[1][1], board[2][2])) return board[0][0];
-        // check 2nd diagonal        
-        if(hasWinner(board[0][2], board[1][1], board[2][0])) return board[0][2];
-        // no winner
-        return Piece::Empty;
     }
+    // check 1st diagonal
+    if(hasWinner(board[0][0], board[1][1], board[2][2])) return board[0][0];
+    // check 2nd diagonal        
+    if(hasWinner(board[0][2], board[1][1], board[2][0])) return board[0][2];
     // no winner
     return Piece::Empty;
 }
@@ -234,13 +232,19 @@ std::vector<std::vector<int>> initialize_NxN_board(const int n) {
     return board;
 }
 
+void simulate_3x3_method() {
+    std::vector<std::vector<Piece>> board = initialize_3x3_board();
+    std::cout << "Simulating method for 3x3 board:\n";
+    print_board(board);
+    std::cout << "Winner = " << piece_to_str(hasWon_3x3(board));
+}
+
 /**
  * Tic Tac Win: Design an algorithm to figure out if someone has won a game of tic-tac-toe.
  */
 int main() {
     srand((unsigned) time(0));
     auto method = 1;
-    Piece winner;
     std::cout << "Enter 1 to id hasWon is called many times, 2 if we know the last move,\n"
     "3 if solution should be designed for just a 3x3 board and any other number if solution\n"
     "should be designed for an NxN board.\n", std::cin >> method;
@@ -248,11 +252,10 @@ int main() {
         // i.e. as part of a tic-tac-toe website, do some preprocessing
         hasWon_multiple_times(); 
     } else if(method == 2) {
-        winner = hasWon_last_move();
+        hasWon_last_move();
     } else if(method == 3) {
-        std::vector<std::vector<Piece>> board = initialize_3x3_board();
-        winner = hasWon_3x3(board);
+        simulate_3x3_method();
     } else {
-        winner = hasWon_NxN();
+        hasWon_NxN();
     }
 }
