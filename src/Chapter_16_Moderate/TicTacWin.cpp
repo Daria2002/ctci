@@ -74,13 +74,23 @@ bool has_won_row(Piece& winner, const std::vector<std::vector<Piece>>& board) {
 }
 
 bool has_won_column(Piece& winner, const std::vector<std::vector<Piece>>& board) {
+    bool has_solution = true;
     for(int column = 0; column = board[0].size(); column++) {
         for(int row = 0; row < board.size(); row++) {
-            if(board[0][column] != board[row][column]) return false;
+            if(board[0][column] != board[row][column]) {
+                has_solution = false;
+                break;
+            }
+        }
+        if(!has_solution) {
+            has_solution = true;
+            continue;
         }
         winner = board[0][column];  
         return true;
     }
+    winner = Piece::Empty; 
+    return false;
 }
 
 bool has_won_diagonal(Piece& winner, const std::vector<std::vector<Piece>>& board) {
@@ -144,13 +154,13 @@ void hasWon_multiple_times() {
     // hashtable where key is int value of the board and value is the winner
     std::unordered_map<int, Piece> int_piece_hashtable;
     std::vector<std::vector<Piece>> board = initialize_3x3_board();
+    int iteration = 0;
+    std::cout << "iteration no. " << iteration++ << ", board:\n";
+    print_board(board);
     Piece winner = get_winner(board);
     int board_value = convertBoardToInt(board);
     board_int_hashtable[board] = board_value;
     int_piece_hashtable[board_value] = winner;
-    int iteration = 0;
-    std::cout << "iteration no. " << iteration++ << ", board:\n";
-    print_board(board);
     std::cout << "winner = " << piece_to_str(winner) << '\n';
     std::vector<std::vector<Piece>> board_to_remember = board;
     while(iteration < number_of_times) {
@@ -161,18 +171,18 @@ void hasWon_multiple_times() {
             winner = int_piece_hashtable[board_int_hashtable[board]];
         } else { // new input, calculate and add in hash table
             winner = get_winner(board);
-            int board_value = convertBoardToInt(board);
+            board_value = convertBoardToInt(board);
             board_int_hashtable[board] = board_value;
             int_piece_hashtable[board_value] = winner;
         }
         std::cout << "winner = " << piece_to_str(winner) << '\n';
     }
-    // check the first board, that we already calculated for sure
+    // check the first board, that we already calculated for sure 
     if(board_int_hashtable.find(board_to_remember) != board_int_hashtable.end()) { // board to remember should be in the hashtable
         std::cout << "iteration no. " << iteration << ", board:\n";
         print_board(board_to_remember);
         std::cout << "Board to remember is in the hashtable.\n";
-        winner = int_piece_hashtable[board_int_hashtable[board]];
+        winner = int_piece_hashtable[board_int_hashtable[board_to_remember]];
         std::cout << "winner = " << piece_to_str(winner) << '\n';
     } else {    
         std::cout << "Something is wrong because board to remember is not in the hashtable.\n";
