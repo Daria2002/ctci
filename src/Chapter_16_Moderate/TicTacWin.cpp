@@ -133,18 +133,7 @@ std::vector<std::vector<Piece>> initialize_3x3_board() {
     std::vector<Piece> row;
     for(int i = 0; i < n; i++) {
         for(int j = 0; j < n; j++) {
-            rand_num = rand() % options;
-            switch (rand_num) {
-                case 0:
-                    row.push_back(Piece::Empty);
-                    break;
-                case 1:
-                    row.push_back(Piece::Red);
-                    break;
-                default:
-                    row.push_back(Piece::Blue);
-                    break;
-            }
+            row.push_back(Piece(rand() % options));
         }
         board.push_back(row);
         row.clear();
@@ -201,10 +190,7 @@ Piece hasWon_last_move() {
 
 // returns true if all Pieces have same value, but different than empty
 bool hasWinner(Piece p1, Piece p2, Piece p3) {
-    if(p1 == Piece::Empty) {
-        return false;
-    }
-    return p1 == p2 && p2 == p3;
+    return p1 == Piece::Empty ? false : (p1 == p2 && p2 == p3);
 }
 
 Piece hasWon_3x3(std::vector<std::vector<Piece>> board) {
@@ -222,14 +208,65 @@ Piece hasWon_3x3(std::vector<std::vector<Piece>> board) {
     return Piece::Empty;
 }
 
-Piece hasWon_NxN() {
+Piece nested_for_loops_nxn(std::vector<std::vector<Piece>> board) {
+    // todo
     return Piece::Empty;
 }
 
-std::vector<std::vector<int>> initialize_NxN_board(const int n) {
-    std::vector<std::vector<int>> board;
-    
+Piece increment_decrement_nxn(std::vector<std::vector<Piece>> board) {
+    // todo
+    return Piece::Empty;
+}
+
+Piece iterator_nxn(std::vector<std::vector<Piece>> board) {
+    // todo
+    return Piece::Empty;
+}
+
+Piece hasWon_NxN(std::vector<std::vector<Piece>> board, const int method) {
+    switch (method)
+    {
+    case 1:
+        return nested_for_loops_nxn(board);
+    case 2:
+        return increment_decrement_nxn(board);
+    default:
+        return iterator_nxn(board);
+    }
+}
+
+std::vector<std::vector<Piece>> initialize_NxN_board(const int n) {
+    std::cout << "Initializing " << n << "x" << n << " board\n";
+    constexpr auto options = 3;
+    std::vector<std::vector<Piece>> board;
+    std::vector<Piece> row_elements;
+    for(int row = 0; row < n; row++) {
+        for(int column = 0; column < n; column++) {
+            row_elements.push_back(Piece(rand() % options));
+        }
+        board.push_back(row_elements);
+        row_elements.clear();
+    }
     return board;
+}
+
+void simulate_NxN_method() {
+    constexpr auto number_of_simulations = 5;
+    constexpr auto max_n = 4;
+    constexpr auto min_n = 2;
+    std::vector<std::vector<Piece>> board;
+    Piece winner;
+    auto method = 1;
+    std::cout << "Enter 1 to solve NxN board using Nested For-Loops, 2 for Increment\n"
+                 "and Decrement Function and any other number for solution using Iterator.\n";
+    std::cin >> method;
+    for(int i = 0; i < number_of_simulations; i++) {
+        std::cout << "Iteration no. " << i << '\n';
+        board = initialize_NxN_board(rand() % (max_n - min_n) + min_n);
+        print_board(board);
+        winner = hasWon_NxN(board, method);
+        std::cout << "Winner is = " << piece_to_str(winner) << '\n';
+    }
 }
 
 void simulate_3x3_method() {
@@ -258,6 +295,6 @@ int main() {
     } else if(method == 3) {
         simulate_3x3_method();
     } else {
-        hasWon_NxN();
+        simulate_NxN_method();
     }
 }
