@@ -209,7 +209,43 @@ Piece hasWon_3x3(std::vector<std::vector<Piece>> board) {
 }
 
 Piece nested_for_loops_nxn(std::vector<std::vector<Piece>> board) {
-    // todo
+    int size = board.size();
+    if(board[0].size() != size ) return Piece::Empty;
+    Piece first;
+    // check rows
+    for(int i = 0; i < size; i++) {
+        first = board[i][0];
+        if(first == Piece::Empty) continue;
+        for(int j = 1; j < size; j++) {
+            if(first != board[i][j]) break; // breaks if any el not equal to first
+            else if(j == size - 1) return first; // executes only if current el is the last one, and it is equal to the first
+        }
+    }
+    // check columns
+    for(int i = 0; i < size; i++) {
+        first = board[0][i];
+        if(first != Piece::Empty) continue;
+        for(int j = 1; j < size; j++) {
+            if(board[j][i] != first) break;
+            if(j == size - 1) return first;
+        }
+    }
+    // check diagonal1
+    first = board[0][0];
+    if(first != Piece::Empty) {
+        for(int i = 1; i < size; i++) {
+            if(board[i][i] != first) break;
+            else if(i == size - 1) return first;
+        }
+    }
+    // check diagonal2
+    first = board[0][size - 1];
+    if(first != Piece::Empty) {
+        for(int i = 1; i < size; i++) {
+            if(board[i][size - i - 1] != first) break;
+            else if(i == size - 1) return first;
+        }
+    }
     return Piece::Empty;
 }
 
