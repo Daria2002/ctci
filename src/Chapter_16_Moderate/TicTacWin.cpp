@@ -249,8 +249,47 @@ Piece nested_for_loops_nxn(std::vector<std::vector<Piece>> board) {
     return Piece::Empty;
 }
 
+class Check {
+    public:
+        int column, row;
+        Check() = default;
+        Check(int r, int c, int rowI, int columnI) : 
+        row(r), column(c), row_increment(rowI), column_increment(columnI) {}
+        void increment() {
+            row += row_increment;
+            column += column_increment;
+        }
+        bool in_bounds(int size) const {
+            return row >= 0 && row < size && column >= 0 && column < size;
+        }
+        private:
+            int row_increment, column_increment;
+};
+
+Piece hasWon(std::vector<std::vector<Piece>> board, Check instruction) {
+    Piece first = board[instruction.row][instruction.column];
+    while (instruction.in_bounds(board.size()))
+    {
+        if(board[instruction.row][instruction.column] != first) return Piece::Empty;
+        instruction.increment();
+    }
+    return first;
+}
+
 Piece increment_decrement_nxn(std::vector<std::vector<Piece>> board) {
-    // todo
+    if(board.size() != board[0].size()) return Piece::Empty;
+    const int size = board.size();
+    std::vector<Check> instructions; // to be checked
+    for(int i = 0; i < size; i++) {
+        instructions.push_back(Check(0, i, 1, 0)); // checking each column
+        instructions.push_back(Check(i, 0, 0, 1)); // checking each row
+    }
+    instructions.push_back(Check(0, 0, 1, 1)); // check first diagonal
+    instructions.push_back(Check(0, size - 1, 1, -1)); // check second diagonal
+    for(Check instruction : instructions) {
+        Piece winner = hasWon(board, instruction);
+        if(winner != Piece::Empty) return winner;
+    }
     return Piece::Empty;
 }
 
