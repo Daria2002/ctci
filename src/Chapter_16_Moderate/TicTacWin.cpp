@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
+#include <list>
 
 // there are 3^9 = 20000 tic-tac-toe boards -> tic-tac-toe boards can be represented
 // as an int
@@ -154,7 +155,7 @@ void hasWon_multiple_times() {
     int board_value = convertBoardToInt(board);
     board_int_hashtable[board] = board_value;
     int_piece_hashtable[board_value] = winner;
-        std::cout << ((winner == Piece::Empty) ? "There is no winner.\n" : "winner = " + piece_to_str(winner) + '\n');
+    std::cout << ((winner == Piece::Empty) ? "There is no winner.\n" : "winner = " + piece_to_str(winner) + '\n');
     std::vector<std::vector<Piece>> board_to_remember = board;
     while(iteration < number_of_times) {
         board = initialize_3x3_board();
@@ -181,10 +182,50 @@ void hasWon_multiple_times() {
     }
 }
 
+Piece hasWon_last_move(std::vector<std::vector<Piece>> board, int row, int column) {
+    // TODO: to be implemented
+}
+
+std::vector<std::vector<Piece>> initialize_empty_board(const int size) {
+    std::vector<std::vector<Piece>> board;
+    for(int i = 0; i < size; i++) {
+        std::vector<Piece> row;
+        for(int j = 0; j < size; j++) {
+            row.push_back(Piece::Empty);
+        }
+        board.push_back(row);
+    }
+    return board;
+}
+
+bool is_finished(const std::vector<int>& taken_indices, const int num_of_el) {
+    return taken_indices.size() == num_of_el;
+}
+
 // if we know the very last move that was made (and we've been checking for a winner up until 
 // now), then we only need the row, column and diagonal that overlaps with this position
 Piece hasWon_last_move() {
-    return Piece::Empty;
+    Piece winner;
+    constexpr int size = 3;
+    int position_index;
+    int num_of_elements = size * size; // 1st el in the 2nd row has index 3
+    std::vector<int> taken_indices;
+    std::vector<std::vector<Piece>> board = initialize_empty_board(size);
+    int iteration = 0;
+    while (winner == Piece::Empty && !is_finished(taken_indices, num_of_elements))
+    {
+        position_index = rand() % num_of_elements;
+        while (std::find(taken_indices.begin(), taken_indices.end(), position_index) != taken_indices.end())
+        {
+            position_index = rand() % num_of_elements;
+        }
+        taken_indices.push_back(position_index);
+        board[position_index / size][position_index % size] = Piece(iteration % 2 + 1); // iterative red and blue moves 
+        iteration++;
+        print_board(board);
+        winner = hasWon_last_move(board, position_index / size, position_index % size);
+    }
+    std::cout << ((winner == Piece::Empty) ? "There is no winner.\n" : "winner = " + piece_to_str(winner) + '\n');
 }
 
 // returns true if all Pieces have same value, but different than empty
@@ -293,7 +334,7 @@ Piece increment_decrement_nxn(std::vector<std::vector<Piece>> board) {
 }
 
 Piece iterator_nxn(std::vector<std::vector<Piece>> board) {
-    // todo
+    // TODO: to be implemented
     return Piece::Empty;
 }
 
@@ -336,10 +377,10 @@ void simulate_NxN_method() {
     std::cin >> method;
     for(int i = 0; i < number_of_simulations; i++) {
         std::cout << "Iteration no. " << i << '\n';
-        board = initialize_NxN_board(rand() % (max_n - min_n) + min_n);
+        board = initialize_NxN_board(rand() % (max_n - min_n + 1) + min_n);
         print_board(board);
         winner = hasWon_NxN(board, method);
-        std::cout << "Winner is = " << piece_to_str(winner) << '\n';
+        std::cout << ((winner == Piece::Empty) ? "There is no winner.\n" : "winner = " + piece_to_str(winner) + '\n');
     }
 }
 
@@ -348,8 +389,7 @@ void simulate_3x3_method() {
     std::cout << "Simulating method for 3x3 board:\n";
     print_board(board);
     Piece winner = hasWon_3x3(board);
-    if(winner == Piece::Empty) std::cout << "There is no winner.\n";
-    else std::cout << "Winner = " << piece_to_str(winner) << '\n';
+    std::cout << ((winner == Piece::Empty) ? "There is no winner.\n" : "winner = " + piece_to_str(winner) + '\n');
 }
 
 /**
