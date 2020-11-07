@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
+#include <algorithm>
 #include <list>
 
 // there are 3^9 = 20000 tic-tac-toe boards -> tic-tac-toe boards can be represented
@@ -182,8 +183,45 @@ void hasWon_multiple_times() {
     }
 }
 
-Piece hasWon_last_move(std::vector<std::vector<Piece>> board, int row, int column) {
-    // TODO: to be implemented
+bool has_won_row(const std::vector<std::vector<Piece>>& board, int row) {
+    for(int column = 1; column < board[row].size(); column++) {
+        if(board[row][column] != board[row][0]) return false;
+    }
+    return true;
+}
+
+bool has_won_column(const std::vector<std::vector<Piece>>& board, int column) {
+    for(int row = 1; row < board.size(); row++) {
+        if(board[row][column] != board[0][column]) return false;
+    }
+    return true;
+}
+
+bool has_won_diagonal(const std::vector<std::vector<Piece>>& board, int direction) {
+    int row = 0; 
+    int column = direction == 1 ? 0 : board.size() - 1;
+    Piece first = board[0][column];
+    for(int i = 0; i < board.size(); i++) {
+        if(board[row][column] != first) return false;
+        row++;
+        column += direction;
+    }
+    return true;
+}
+
+Piece hasWon_last_move(const std::vector<std::vector<Piece>>& board, int row, int column) {
+    Piece piece = board[row][column];
+    if(piece == Piece::Empty) return Piece::Empty;
+    if(has_won_row(board, row) || has_won_column(board, column)) {
+        return piece;
+    }
+    if(row == column && has_won_diagonal(board, 1)) {
+        return piece;
+    }
+    if(row == (board.size() - column - 1) && has_won_diagonal(board, -1)) {
+        return piece;
+    }
+    return Piece::Empty;
 }
 
 std::vector<std::vector<Piece>> initialize_empty_board(const int size) {
@@ -198,21 +236,21 @@ std::vector<std::vector<Piece>> initialize_empty_board(const int size) {
     return board;
 }
 
-bool is_finished(const std::vector<int>& taken_indices, const int num_of_el) {
-    return taken_indices.size() == num_of_el;
+bool is_finished(const int iteration, const int num_of_el) {
+    return iteration == num_of_el;
 }
 
 // if we know the very last move that was made (and we've been checking for a winner up until 
 // now), then we only need the row, column and diagonal that overlaps with this position
-Piece hasWon_last_move() {
-    Piece winner;
+void hasWon_last_move() {
+    Piece winner = Piece::Empty;
     constexpr int size = 3;
-    int position_index;
+    int position_index = 0;
     int num_of_elements = size * size; // 1st el in the 2nd row has index 3
     std::vector<int> taken_indices;
     std::vector<std::vector<Piece>> board = initialize_empty_board(size);
-    int iteration = 0;
-    while (winner == Piece::Empty && !is_finished(taken_indices, num_of_elements))
+    int iteration = 1;
+    while (winner == Piece::Empty && !is_finished(iteration, num_of_elements))
     {
         position_index = rand() % num_of_elements;
         while (std::find(taken_indices.begin(), taken_indices.end(), position_index) != taken_indices.end())
@@ -221,9 +259,10 @@ Piece hasWon_last_move() {
         }
         taken_indices.push_back(position_index);
         board[position_index / size][position_index % size] = Piece(iteration % 2 + 1); // iterative red and blue moves 
-        iteration++;
+        std::cout << "\nIteration no. " << iteration << '\n';
         print_board(board);
         winner = hasWon_last_move(board, position_index / size, position_index % size);
+        iteration++;
     }
     std::cout << ((winner == Piece::Empty) ? "There is no winner.\n" : "winner = " + piece_to_str(winner) + '\n');
 }
