@@ -372,8 +372,55 @@ Piece increment_decrement_nxn(std::vector<std::vector<Piece>> board) {
     return Piece::Empty;
 }
 
+class Position {
+    public:
+        int _row;
+        int _column;
+        Position(int row, int column) : _row(row), _column(column) {}
+};
+
+class PositionIterator {
+    public:
+        PositionIterator(Position position, int row_increment, int column_increment, int size) :
+        _position(position), _row_increment(row_increment), _column_increment(column_increment), _size(size) {}
+        Position next() {
+            // TODO
+        }
+        bool hasNext() {
+            // TODO
+        }
+    private:
+        Position _position;
+        int _row_increment;
+        int _column_increment;
+        int _size;
+};
+
+Piece hasWon_iterator(std::vector<std::vector<Piece>> board, PositionIterator iterator) {
+    Position firstPosition = iterator.next();
+    Piece first = board[firstPosition._row][firstPosition._column];
+    while (iterator.hasNext())
+    {
+        Position position = iterator.next();
+        if(board[position._row][position._column] != first) return Piece::Empty;
+    }
+    return Piece::Empty;
+}
+
 Piece iterator_nxn(std::vector<std::vector<Piece>> board) {
-    // TODO: to be implemented
+    if(board.size() != board[0].size()) return Piece::Empty;
+    int size = board.size();
+    std::vector<PositionIterator> instructions;
+    for(int i = 0; i < size; i++) {
+        instructions.push_back(PositionIterator(Position(0, i), 1, 0, size)); // check each column
+        instructions.push_back(PositionIterator(Position(i, 0), 0, 1, size)); // check each row
+    }
+    instructions.push_back(Position(0, 0), 1, 1, size); // check first diagonal
+    instructions.push_back(Position(0, size - 1), 1, -1, size); // check second diagonal
+    for(PositionIterator iterator : instructions) {
+        Piece winner = hasWon_iterator(board, iterator);
+        if(winner != Piece::Empty) return winner;
+    }
     return Piece::Empty;
 }
 
