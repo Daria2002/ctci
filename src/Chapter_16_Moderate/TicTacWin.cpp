@@ -384,10 +384,11 @@ class PositionIterator {
         PositionIterator(Position position, int row_increment, int column_increment, int size) :
         _position(position), _row_increment(row_increment), _column_increment(column_increment), _size(size) {}
         Position next() {
-            // TODO
+            Position position(_position._row + _row_increment, _position._column + _column_increment);
+            return position;
         }
         bool hasNext() {
-            // TODO
+            return (_position._row + _row_increment < _size && _position._column + _column_increment < _size);
         }
     private:
         Position _position;
@@ -415,8 +416,8 @@ Piece iterator_nxn(std::vector<std::vector<Piece>> board) {
         instructions.push_back(PositionIterator(Position(0, i), 1, 0, size)); // check each column
         instructions.push_back(PositionIterator(Position(i, 0), 0, 1, size)); // check each row
     }
-    instructions.push_back(Position(0, 0), 1, 1, size); // check first diagonal
-    instructions.push_back(Position(0, size - 1), 1, -1, size); // check second diagonal
+    instructions.push_back(PositionIterator(Position(0, 0), 1, 1, size)); // check first diagonal
+    instructions.push_back(PositionIterator(Position(0, size - 1), 1, -1, size)); // check second diagonal
     for(PositionIterator iterator : instructions) {
         Piece winner = hasWon_iterator(board, iterator);
         if(winner != Piece::Empty) return winner;
