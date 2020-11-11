@@ -384,8 +384,12 @@ class PositionIterator {
         PositionIterator(Position position, int row_increment, int column_increment, int size) :
         _position(position), _row_increment(row_increment), _column_increment(column_increment), _size(size) {}
         Position next() {
-            Position position(_position._row + _row_increment, _position._column + _column_increment);
-            return position;
+            _position._row += _row_increment;
+            _position._column += _column_increment;
+            return _position;
+        }
+        Position current() {
+            return _position;
         }
         bool hasNext() {
             return (_position._row + _row_increment < _size && _position._column + _column_increment < _size);
@@ -398,14 +402,14 @@ class PositionIterator {
 };
 
 Piece hasWon_iterator(std::vector<std::vector<Piece>> board, PositionIterator iterator) {
-    Position firstPosition = iterator.next();
+    Position firstPosition = iterator.current();
     Piece first = board[firstPosition._row][firstPosition._column];
     while (iterator.hasNext())
     {
         Position position = iterator.next();
         if(board[position._row][position._column] != first) return Piece::Empty;
     }
-    return Piece::Empty;
+    return first;
 }
 
 Piece iterator_nxn(std::vector<std::vector<Piece>> board) {
@@ -453,7 +457,7 @@ std::vector<std::vector<Piece>> initialize_NxN_board(const int n) {
 }
 
 void simulate_NxN_method() {
-    constexpr auto number_of_simulations = 5;
+    constexpr auto number_of_simulations = 10;
     constexpr auto max_n = 4;
     constexpr auto min_n = 2;
     std::vector<std::vector<Piece>> board;
