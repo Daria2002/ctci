@@ -82,30 +82,46 @@ int smallestDifferenceOptimal(int a[], int size_a, int b[], int size_b) {
 }
 
 int find_closest_el(int a[], int low, int high, int b_el) {
-    int diff = abs(a[(high - low) / 2] - b_el);
-    int diff_before = abs(a[(high - low) / 2 + 1] - b_el);
-    int diff_after = abs(a[(high - low) / 2 - 1] - b_el);
-    if(diff < diff_before && diff < diff_after) {
-        return a[(high - low) / 2];
-    } else if(diff > diff_before) {
-        return find_closest_el(a, low, (high - low) / 2 - 1, b_el);
+    if(high >= low) {
+        int index_mid = (high - low) / 2;
+        int diff_mid = abs(a[index_mid] - b_el);
+        int diff_mid_minus_1 = std::numeric_limits<int>::max();
+        if(index_mid - 1 >= low) {
+            diff_mid_minus_1 = abs(a[index_mid - 1] - b_el);
+        }
+        int diff_mid_plus_1 = std::numeric_limits<int>::max();
+        if(index_mid + 1 <= high) {
+            diff_mid_plus_1 = abs(a[index_mid + 1] - b_el);
+        }
+        // call find_closest_el for plus or minus (depends which is smaller) or return diff_mid   
+        if(diff_mid < diff_mid_minus_1 && diff_mid < diff_mid_plus_1) {
+            return diff_mid;
+        } else if(diff_mid > diff_mid_minus_1) {
+            return find_closest_el(a, low, index_mid - 1, b_el);
+        } else {
+            find_closest_el(a, index_mid + 1, high, b_el);
+        }      
     }
-    // else
-    return find_closest_el(a, (high - low) / 2 + 1, high, b_el);
+    return std::numeric_limits<int>::max();
 }
 
 /**
  * Optimal if arrays are significantly different in size
  */
 int smallestDifferenceOptimalSize(int a[], int size_a, int b[], int size_b) {
-    int smallest_diff;
+    int smallest_diff = std::numeric_limits<int>::max();
     if(size_a < size_b) {
         sort(a, size_a);
         for(int i = 0; i < size_b; i++) {
             int closest_el = find_closest_el(a, 0, size_a - 1, b[i]);
+            if(closest_el < smallest_diff) smallest_diff = closest_el;
         }
     } else {
-        sort(a, size_a);
+        sort(b, size_b);
+        for(int i = 0; i < size_a; i++) {
+            int closest_el = find_closest_el(b, 0, size_b - 1, a[i]);
+            if(closest_el < smallest_diff) smallest_diff = closest_el;
+        }
     }
     return smallest_diff;
 }
