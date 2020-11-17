@@ -151,6 +151,8 @@ int get_max_alive_year(std::vector<int> delta) {
 
 /**
  * More optimal: get rid of the sorting step
+ * Complexity: O(R + P)
+ * O(R + P) might be faster than O(PlogP), but speeds cannot be compared directly
  */
 int max_alive_year_more_optimal(std::vector<Person> people, int min, int max) {
     std::vector<int> population_change = get_population_change(people, min, max);
