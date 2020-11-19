@@ -40,7 +40,13 @@ std::unordered_set<int> diving_board_memoization(int k, const int shorter, const
 }
 
 std::unordered_set<int> diving_board_optimal(int k, const int shorter, const int longer) {
-
+    std::unordered_set<int> lengths;
+    for(int n_shorter = 0; n_shorter <= k; n_shorter++) {
+        int n_longer = k - n_shorter;
+        int length = n_shorter * shorter + n_longer * longer;
+        lengths.emplace(length);
+    }
+    return lengths;
 }
 
 void print_lengths(const std::unordered_set<int>& lengths, const int k) {
