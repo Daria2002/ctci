@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstdlib> // rand, srand
 #include <ctime> // time
+#include <limits>
 
 std::vector<int> ini_elements(int n, int max) 
 {
@@ -82,10 +83,42 @@ Range sub_sort(std::vector<int> elements)
     return Range(left_index, right_index);
 }
 
+int find_right_seq_start(std::vector<int> elements) 
+{
+    int max = std::numeric_limits<int>::max();
+    int last_index = 0;
+    for(int i = 0; i < elements.size(); i++) 
+    {
+        if(max > elements[i]) 
+        {
+            last_index = i;
+        }
+        max = std::max(max, elements[i]);
+    }
+
+    return last_index;
+}
+
+int find_left_seq_end(std::vector<int> elements) 
+{
+    int min = std::numeric_limits<int>::min();
+    int last_index = 0;
+    for(int i = elements.size() - 1; i >= 0; i--) 
+    {
+        if(min > elements[i])
+        {
+            last_index = i;
+        }
+        min = std::min(elements[i], min);
+    }
+    return last_index;
+}
+
 Range sub_sort_better(std::vector<int> elements) 
 {
-    // todo
-    return Range(-1, -1);
+    int left_seq_end = find_right_seq_start(elements);
+    int right_seq_end = find_left_seq_end(elements);
+    return Range(left_seq_end, right_seq_end);
 }
 
 template <class T>
