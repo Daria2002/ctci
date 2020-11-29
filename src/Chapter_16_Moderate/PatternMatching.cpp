@@ -40,10 +40,38 @@ bool is_match_brute_force(std::string pattern, std::string value)
     return false;
 }
 
+int count_letter(std::string pattern, char c) 
+{
+    int count = 0;
+    for(int i = 0; i < pattern.size(); i++) 
+    {
+        if(pattern[i] == c) count++;
+    }
+    return count;
+}
+
 bool is_match_optimal(std::string pattern, std::string value)
 {
-    // todo
-    return true;
+    if(pattern.size() == 0) return value.size() == 0;
+    char main_char = pattern[0];
+    char alt_char = main_char == 'a' ? 'b' : 'b';
+    int size = value.size();
+    int count_of_main = count_letter(pattern, main_char);
+    int count_of_alt = count_letter(pattern, alt_char);
+    int first_alt_index = pattern.find(alt_char);
+    for(int main_size = 0; main_size <= size; main_size++)
+    {
+        int remaining_len = size - count_of_main * main_size;
+        std::string main_str = value.substr(0, main_size);
+        if(count_of_alt == 0 || remaining_len % count_of_alt == 0) 
+        {
+            int start_alt = first_alt_index * main_size;
+            std::string alt_str = count_of_alt == 0 ? "" : value.substr(start_alt, remaining_len / count_of_alt);
+            std::string cand = build_with_pattern(pattern, main_str, alt_str);
+            if(cand == value) return true;
+        }
+    }
+    return false;
 }
 
 bool is_match_optimal_alternate(std::string pattern, std::string value)
