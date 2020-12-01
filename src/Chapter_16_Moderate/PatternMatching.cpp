@@ -122,10 +122,7 @@ bool is_match_optimal_alternate(std::string pattern, std::string value)
         {
             int alt_start_index = main_size * first_alt_pattern;
             int alt_size = count_alt == 0 ? 0 : rem_len / count_alt;
-            if(matches(pattern, value, main_size, alt_size, alt_start_index)) 
-            {
-                return true;
-            }
+            if(matches(pattern, value, main_size, alt_size, alt_start_index)) return true;
         }
     }
     return false;
