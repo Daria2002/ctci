@@ -1,9 +1,10 @@
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <ctime>
 #include <cstdlib>
 
-std::vector<std::vector<char>> t9_letters = {{}, {'a', 'b', 'c'}, {'d', 'e', 'f'},
+std::vector<std::vector<char>> t9_letters = {{}, {}, {'a', 'b', 'c'}, {'d', 'e', 'f'},
                                             {'g', 'h', 'i'}, {'j', 'k', 'l'}, {'m', 'n', 'o'},
                                             {'p', 'q', 'r', 's'}, {'t', 'u', 'v'}, {'w', 'x', 'y', 'z'}};
 std::vector<std::string> word_set = {"life", "live", "home", "have", "must", "four", "five", "miss", "note",
@@ -15,11 +16,20 @@ std::vector<std::string> word_set = {"life", "live", "home", "have", "must", "fo
 "dead", "deep", "lips", "eyes", "nail", "head", "hand", "shoe", "hair", "bags", "seat", "sits", "slim", "runs",
 "keys", "door", "sofa", "dear", "best", "more", "many", "mock", "opts", "pens", "rise", "rose", "path", "file"};
                                             
-std::vector<std::string> get_valid_words_brute_force(std::string number, int index, std::string prefix, std::vector<std::string> valid_words)
+void get_valid_words_brute_force(std::string number, int index, std::string prefix, std::vector<std::string>& valid_words)
 {
-    std::vector<std::string> valid_words;
-    // todo: recursion
-    return valid_words;
+    if(index == number.size())
+    {
+        if(std::find(word_set.begin(), word_set.end(), prefix) != word_set.end())
+            valid_words.push_back(prefix);
+        return;
+    }
+    int digit = number[index] - '0';
+    std::vector<char> letters = t9_letters[digit];
+    for(char letter : letters)
+    {
+        get_valid_words_brute_force(number, index + 1, prefix + letter, valid_words);
+    }
 }
 
 std::vector<std::string> get_valid_words_brute_force(std::string number)
@@ -64,9 +74,19 @@ int main()
 {
     srand(time(NULL));
     std::string test_numbers;
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 1000; i++)
     {
         test_numbers = get_random_str();
-        get_valid_words_brute_force(test_numbers);
+        std::vector<std::string> valid_words = get_valid_words_brute_force(test_numbers);
+        if(valid_words.size() > 0)
+        {
+            std::cout << "Input = " << test_numbers << '\n';
+            std::cout << "Output = ";
+            for(int i = 0; i < valid_words.size(); i++)
+            {
+                std::cout << valid_words[i] << ", ";
+            }
+            std::cout << '\n';
+        }
     }
 }
