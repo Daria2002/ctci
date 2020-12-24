@@ -3,6 +3,7 @@
 #include <vector>
 #include <ctime>
 #include <cstdlib>
+#include "trie/Trie.hpp"
 
 std::vector<std::vector<char>> t9_letters = {{}, {}, {'a', 'b', 'c'}, {'d', 'e', 'f'},
                                             {'g', 'h', 'i'}, {'j', 'k', 'l'}, {'m', 'n', 'o'},
@@ -36,6 +37,46 @@ std::vector<std::string> get_valid_words_brute_force(std::string number)
 {
     std::vector<std::string> valid_words;
     get_valid_words_brute_force(number, 0, "", valid_words);
+    return valid_words;
+}
+
+void get_valid_words_optimal(std::string number, int index, std::string prefix, 
+Trie*& node, std::vector<std::string>& results)
+{
+    if(index == number.length())
+    {
+        if(node->is_leaf)
+        {
+            results.push_back(prefix);
+        }
+        return;
+    }
+    char digit = number[index] - '0';
+    std::vector<char> letters = t9_letters[digit];
+    if(letters.size() > 0)
+    {
+        for(char letter : letters)
+        {
+            Trie* child = node->get_child(letter);
+            if(child != nullptr)
+            {
+                get_valid_words_optimal(number, index + 1, prefix + letter, child, results);
+            }
+        }
+    }
+}
+
+std::vector<std::string> get_valid_words_optimal(std::string number, Trie*& head)
+{
+    std::vector<std::string> valid_words;
+    get_valid_words_optimal(number, 0, "", head, valid_words);
+    return valid_words;
+}
+
+std::vector<std::string> get_valid_words_more_optimal(std::string number)
+{
+    std::vector<std::string> valid_words;
+    // todo
     return valid_words;
 }
 
@@ -74,10 +115,33 @@ int main()
 {
     srand(time(NULL));
     std::string test_numbers;
+    int method;
+    std::cout << "Enter 1 to solve using brute force, 2 to solve using optimal approach\n"
+    "and any other number for solution using even more optimal approach.\n";
+    std::cin >> method;
+    Trie* head = new Trie();
+    if(method == 2)
+    {
+        for(std::string word : word_set)
+        {
+            head -> insert(word);
+        }
+    }
     for(int i = 0; i < 1000; i++)
     {
         test_numbers = get_random_str();
-        std::vector<std::string> valid_words = get_valid_words_brute_force(test_numbers);
+        std::vector<std::string> valid_words;
+        switch (method)
+        {
+        case 1:
+            valid_words = get_valid_words_brute_force(test_numbers);
+            break;
+        case 2:
+            valid_words = get_valid_words_optimal(test_numbers, head);
+            break;
+        default:
+            valid_words = get_valid_words_more_optimal(test_numbers);
+        }
         if(valid_words.size() > 0)
         {
             std::cout << "Input = " << test_numbers << '\n';
