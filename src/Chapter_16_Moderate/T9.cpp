@@ -3,6 +3,7 @@
 #include <vector>
 #include <ctime>
 #include <cstdlib>
+#include <unordered_map>
 #include "trie/Trie.hpp"
 
 std::vector<std::vector<char>> t9_letters = {{}, {}, {'a', 'b', 'c'}, {'d', 'e', 'f'},
@@ -73,11 +74,51 @@ std::vector<std::string> get_valid_words_optimal(std::string number, Trie*& head
     return valid_words;
 }
 
+std::string convert_to_t9(std::string word, std::unordered_map<char, char> letter_to_number_map)
+{
+    std::string t9;
+    for(char c : word)
+    {
+        char digit = letter_to_number_map[c];
+        t9 += digit;
+    }
+    return t9;
+}
+
+std::unordered_map<char, char> create_letter_to_number_map()
+{
+    std::unordered_map<char, char> number_map;
+    for(int i = 0; i < t9_letters.size(); i++)
+    {
+        std::vector<char> letters = t9_letters[i];
+        if(letters.size() > 0)
+        {
+            for(char letter : letters)
+            {
+                char c = i + '0';
+                number_map[letter] = c;
+            }
+        }
+    }
+    return number_map;
+}   
+
+std::unordered_map<std::string, std::vector<std::string>> initialize_dictionary()
+{
+    std::unordered_map<std::string, std::vector<std::string>> dictionary;
+    std::unordered_map<char, char> letter_to_number_map = create_letter_to_number_map();
+    for(std::string word : word_set)
+    {
+        std::string numbers = convert_to_t9(word, letter_to_number_map);
+        dictionary[numbers].push_back(word);
+    }
+    return dictionary;
+}
+
 std::vector<std::string> get_valid_words_more_optimal(std::string number)
 {
-    std::vector<std::string> valid_words;
-    // todo
-    return valid_words;
+    std::unordered_map<std::string, std::vector<std::string>> dictionary = initialize_dictionary(); // pre-computation
+    return dictionary[number]; // word lookup
 }
 
 std::string get_random_str()
