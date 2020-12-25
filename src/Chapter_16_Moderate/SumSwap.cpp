@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <numeric>
+#include <unordered_set>
+#include <algorithm>
 
 int sum(const std::vector<int>& v)
 {
@@ -43,11 +45,25 @@ std::vector<int> sum_swap_brute_force(const std::vector<int>& v1, const std::vec
     return {};
 }
 
+std::unordered_set<int> get_contents(std::vector<int> v)
+{
+    std::unordered_set<int> hash_map;
+    for(int el : v) hash_map.insert(el);
+    return hash_map;
+}
+
 std::vector<int> sum_swap_optimal(std::vector<int> v1, std::vector<int> v2)
 {
-    std::vector<int> swap_values;
-    // todo
-    return swap_values;
+    Target target = target_value(v1, v2);
+    if(!target.possible_to_swap) return {};
+    int target_val = target.value;
+    int sum_diff = target.sum_diff;
+    std::unordered_set<int> b_table = get_contents(v2);
+    for(int a : v1)
+    {
+        if(target_val + a + a == sum_diff && b_table.count(target_val + a) > 0) return {a, target_val + a};
+    }
+    return {};
 }
 
 std::vector<int> sum_swap_alternate(std::vector<int> v1, std::vector<int> v2)
