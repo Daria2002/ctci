@@ -16,7 +16,6 @@ struct Target
     int sum_diff;
 };
 
-
 Target target_value(const std::vector<int>& v1, const std::vector<int>& v2)
 {
     int sum1 = sum(v1);
