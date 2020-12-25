@@ -68,9 +68,28 @@ std::vector<int> sum_swap_optimal(std::vector<int> v1, std::vector<int> v2)
 
 std::vector<int> sum_swap_alternate(std::vector<int> v1, std::vector<int> v2)
 {
-    std::vector<int> swap_values;
-    // todo
-    return swap_values;
+    Target target = target_value(v1, v2);
+    if(!target.possible_to_swap) return {};
+    int target_val = target.value;
+    int sum_diff = target.sum_diff;
+    std::sort(v1.begin(), v1.end());
+    std::sort(v2.begin(), v2.end());
+    int a = 0;
+    int b = 0;
+    while (a < v1.size() && b < v2.size())
+    {   
+        int diff = v2[b] - v1[a];
+        if(diff == target_val) return {v1[a], v2[b]};
+        else if(diff < target_val)
+        {
+            b++;
+        }
+        else
+        {
+            a++;
+        }
+    }
+    return {};
 }
 
 /**
