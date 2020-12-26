@@ -13,7 +13,7 @@ enum Orientation
     left, up, right, down
 };
 
-Orientation get_turn(Orientation o, bool clockwise)
+Orientation get_turn(const Orientation& o, const bool clockwise)
 {
     if(o == Orientation::left) return clockwise ? Orientation::up : Orientation::down;
     else if(o == Orientation::right) return clockwise ? Orientation::down : Orientation::up;
@@ -21,7 +21,7 @@ Orientation get_turn(Orientation o, bool clockwise)
     else if(o == Orientation::down) return clockwise ? Orientation::left : Orientation::right;
 }
 
-std::string orientation_to_str(Orientation o)
+std::string orientation_to_str(const Orientation& o)
 {
     if(o == Orientation::left) return "left";
     else if(o == Orientation::right) return "right";
@@ -35,7 +35,7 @@ class Ant
         Position position = Position(0, 0);
         Orientation orientation = Orientation::right; 
 
-        void turn(bool clockwise)
+        void turn(const bool clockwise)
         {
             orientation = get_turn(orientation, clockwise);
         }
@@ -60,7 +60,7 @@ class Ant
             }
         }
 
-        void adjust_position(int shift_row, int shift_column)
+        void adjust_position(const int shift_row, const int shift_column)
         {
             position.row += shift_row;
             position.column += shift_column;
@@ -79,8 +79,8 @@ class Grid
             grid = std::vector<std::vector<bool>> { std::vector<bool> { false } };
         }
 
-        void copyWithShift(std::vector<std::vector<bool>> old_grid,
-        std::vector<std::vector<bool>>& new_grid, int shift_row, int shift_column)
+        void copyWithShift(const std::vector<std::vector<bool>>& old_grid,
+        std::vector<std::vector<bool>>& new_grid, const int shift_row, const int shift_column) const
         {
             for(int r = 0; r < old_grid.size(); r++)
             {
@@ -91,7 +91,7 @@ class Grid
             }
         }
 
-        void ensure_fit(Position position)
+        void ensure_fit(const Position& position)
         {
             int shift_row = 0;
             int shift_column = 0;
@@ -137,7 +137,7 @@ class Grid
             }
         }
 
-        void flip(Position position)
+        void flip(const Position& position)
         {
             grid[position.row][position.column] = grid[position.row][position.column] ? false : true;
         }
@@ -150,7 +150,7 @@ class Grid
             ensure_fit(ant.position);
         }
 
-        void print()
+        void print() const
         {
             for(int r = 0; r < grid.size(); r++)
             {
@@ -163,7 +163,7 @@ class Grid
         }
 };
 
-void printKMovesResizableArray(int K)
+void printKMovesResizableArray(const int K)
 {
     Grid grid;
     for(int i = 0; i < K; i++)
@@ -175,7 +175,7 @@ void printKMovesResizableArray(int K)
     }
 }
 
-void printKMovesHashSet(int K)
+void printKMovesHashSet(const int K)
 {
     // todo
 }
