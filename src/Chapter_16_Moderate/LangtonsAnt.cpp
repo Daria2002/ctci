@@ -10,6 +10,11 @@ class Position
         Position() = default;
 };
 
+inline bool operator==(const Position& p1, const Position& p2)
+{
+    return p1.column == p2.column && p1.row == p2.row;
+}
+
 enum Orientation
 {
     left, up, right, down
@@ -72,7 +77,7 @@ class Ant
 class Grid
 {
     public:
-        // white field - false, black - true
+        // white - false, black - true
         std::vector<std::vector<bool>> grid;
         Ant ant;
 
@@ -160,11 +165,11 @@ class Grid
                 {
                     if(r == ant.position.row && c == ant.position.column)
                     {
-                        std::cout << orientation_to_str(ant.orientation) << ' ';
+                        std::cout << orientation_to_str(ant.orientation);
                     }
                     else
                     {
-                        std::cout << grid[r][c] << ' ';
+                        std::cout << (grid[r][c] ? 'B' : 'W');
                     }
                 }
                 std::cout << '\n';
@@ -200,14 +205,66 @@ class Board
         Position top_left = Position(0, 0);
         Position bottom_right = Position(0, 0);
 
-        void print()
-        {
-            // todo 
-        }
-
         void move()
         {
-            // todo
+            ant.turn(!is_black(ant.position));
+            flip(ant.position);
+            ant.move();
+            ensure_fit(ant.position);
+        }
+
+        void flip(const Position& position)
+        {
+            // if black, remove from black set, otherwise add in black set
+            if(is_black(position))
+            {
+                black_cells.erase(black_cells.find(position));
+            }
+            else
+            {
+                black_cells.insert(position);
+            }
+        }
+
+        void ensure_fit(const Position& position)
+        {
+            int row = position.row;
+            int column = position.column;
+            // update top_left and bottom_right, if necessary
+            top_left.column = std::min(column, top_left.column);
+            top_left.row = std::min(row, top_left.row);
+            bottom_right.column = std::max(column, bottom_right.column);
+            bottom_right.row = std::max(row, bottom_right.row);
+        }
+
+        void print() const
+        {
+            for(int r = top_left.row; r <= bottom_right.row; r++)
+            {
+                for(int c = top_left.column; c <= bottom_right.column; c++)
+                {
+                    if(ant.position.column == c && ant.position.row == r)
+                    {
+                        std::cout << orientation_to_str(ant.orientation);
+                    }
+                    else
+                    {
+                        std::cout << (is_black(r, c) ? 'B' : 'W');
+                    }
+                }
+                std::cout << '\n';
+            } 
+        }
+    
+    private:
+        bool is_black(const Position& position) const
+        {
+            return is_black(position.row, position.column);
+        }
+
+        bool is_black(int row, int column) const
+        {
+            return black_cells.find(Position(row, column)) != black_cells.end();
         }
 };
 
@@ -246,6 +303,9 @@ int main()
     std::cout << "Enter K:\n";
     int K;
     std::cin >> K;
-    if(method == 1) printKMovesResizableArray(K);
-    else printKMovesHashSet(K);
+    // if(method == 1) printKMovesResizableArray(K);
+    // else printKMovesHashSet(K);
+
+    printKMovesResizableArray(K);
+    printKMovesHashSet(K);
 }
