@@ -1,11 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <unordered_set>
 
 class Position
 {
     public:
         int row, column;
         Position(int r, int c) : row(r), column(c) {}
+        Position() = default;
 };
 
 enum Orientation
@@ -23,10 +25,10 @@ Orientation get_turn(const Orientation& o, const bool clockwise)
 
 std::string orientation_to_str(const Orientation& o)
 {
-    if(o == Orientation::left) return "left";
-    else if(o == Orientation::right) return "right";
-    else if(o == Orientation::up) return "up";
-    else if(o == Orientation::down) return "down";
+    if(o == Orientation::left) return "<";
+    else if(o == Orientation::right) return ">";
+    else if(o == Orientation::up) return "^";
+    else if(o == Orientation::down) return "ˇ";
 }
 
 class Ant
@@ -156,7 +158,14 @@ class Grid
             {
                 for(int c = 0; c < grid[0].size(); c++)
                 {
-                    std::cout << grid[r][c] << ' ';
+                    if(r == ant.position.row && c == ant.position.column)
+                    {
+                        std::cout << orientation_to_str(ant.orientation) << ' ';
+                    }
+                    else
+                    {
+                        std::cout << grid[r][c] << ' ';
+                    }
                 }
                 std::cout << '\n';
             }
@@ -175,9 +184,43 @@ void printKMovesResizableArray(const int K)
     }
 }
 
+struct Hash
+{
+    std::size_t operator()(const Position& position) const
+    {
+        return position.row * position.column;
+    }
+};
+
+class Board
+{
+    public: 
+        std::unordered_set<Position, Hash> black_cells;
+        Ant ant;
+        Position top_left = Position(0, 0);
+        Position bottom_right = Position(0, 0);
+
+        void print()
+        {
+            // todo 
+        }
+
+        void move()
+        {
+            // todo
+        }
+};
+
 void printKMovesHashSet(const int K)
 {
-    // todo
+    Board board;
+    for(int i = 0; i < K; i++)
+    {
+        std::cout << "K = " << i << '\n';
+        board.print();
+        board.move();
+        std::cout << '\n';
+    }
 }
 
 /**
