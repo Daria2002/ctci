@@ -35,37 +35,17 @@ class LRUCache
 
         void removeFromLinkedList(LinkedListNode*& node)
         {
-            // std::cout << "remove from ll\n";
-            if(node == nullptr) 
-            {
-                // std::cout << "node == nullptr\n";
-                return;
-            }
+            if(node == nullptr) return;
             linked_list_size--;
-            if(node->prev != nullptr) 
-            {
-                // std::cout << "node->prev != nullptr\n";
-                node->prev->next = node->next;
-            }
-            if(node->next != nullptr) 
-            {
-                // std::cout << "node->next != nullptr\n";
-                node->next->prev = node->prev;
-            }
-            if(tail != nullptr && node->key == tail->key)
-            {
-                // std::cout << "node == tail\n";
-                tail = node->prev;
-            }
-            if(head != nullptr && node->key == head->key) 
-            {
-                // std::cout << "node == head\n";
-                head = node->next;
-            }
+            if(node->prev != nullptr) node->prev->next = node->next;
+            if(node->next != nullptr) node->next->prev = node->prev;
+            if(tail != nullptr && node->key == tail->key) tail = node->prev;
+            if(head != nullptr && node->key == head->key) head = node->next;
         }
 
         void insertAtFrontOfLinkedList(LinkedListNode* node)
         {
+            removeKey(node->key);
             if(tail != nullptr && (linked_list_size >= max_size))
             {
                 removeKey(tail->key);
@@ -116,36 +96,17 @@ int main()
     srand(time(NULL));
     constexpr int max_size = 5;
     LRUCache cache(5);
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 15; i++)
     {
         int key = rand() % 5;
-        std::cout << "\nll size = " << cache.linked_list_size << '\n';
-        std::cout << "Key = " << key << '\n';
-        if(std::string value = cache.getValue(key); value != "")
-        {
-            LinkedListNode* node = new LinkedListNode(key, value);
-            cache.insertAtFrontOfLinkedList(node);
-        }
-        else
+        std::cout << "random retrieved key = " << key << '\n';
+        std::string value = cache.getValue(key); 
+        if(value.empty())
         {
             value += key + 'a';
             value += key + 'b';
-            cache.setKeyValue(key, value);
         }  
-    
-        if(cache.head != nullptr && cache.tail != nullptr)
-            std::cout << "head key = " << cache.head->key << ", tail key = " << cache.tail->key << '\n';
-        else 
-            std::cout << "sth == nullptr\n";
-            
-        std::cout << "Linked list: ";
-        LinkedListNode* node = cache.head;
-        while (node != nullptr)
-        {
-            std::cout << node->key << ", ";
-            node = node->next;
-        }
-
+        cache.setKeyValue(key, value);
     }
     std::cout << "\nLinked list:\n";
     LinkedListNode* node = cache.head;
