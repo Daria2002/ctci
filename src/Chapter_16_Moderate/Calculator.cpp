@@ -3,15 +3,16 @@
 #include <vector>
 #include <limits>
 #include <algorithm>
+#include <stack>
+
+enum Operator
+{
+    ADD, SUBTRACT, MULTIPLY, DIVIDE, BLANK
+};
 
 class Term
 {
     public:
-        enum Operator
-        {
-            ADD, SUBTRACT, MULTIPLY, DIVIDE, BLANK
-        };
-
         Term() = default;
 
         Term(double v, Operator o) : value(v), op(o) {}
@@ -83,12 +84,12 @@ class Term
         Operator op = Operator::BLANK;
 };
 
-double apply_op(double left, Term::Operator op, double right)
+double apply_op(double left, Operator op, double right)
 {
-    if(op == Term::ADD) return left + right;
-    else if(op == Term::SUBTRACT) return left - right;
-    else if(op == Term::MULTIPLY) return left * right;
-    else if(op == Term::DIVIDE) return left / right;
+    if(op == Operator::ADD) return left + right;
+    else if(op == Operator::SUBTRACT) return left - right;
+    else if(op == Operator::MULTIPLY) return left * right;
+    else if(op == Operator::DIVIDE) return left / right;
     return right;
 }
 
@@ -116,8 +117,8 @@ double solve1(std::string equation)
         Term next = (i + 1 < terms.size() ? terms[i + 1] : Term());
         // apply the current term to processing
         processing = collapse_term(processing, current);
-        if(next.get_value() == std::numeric_limits<int>::min() || next.get_operator() == Term::ADD 
-        || next.get_operator() == Term::SUBTRACT)
+        if(next.get_value() == std::numeric_limits<int>::min() || next.get_operator() == Operator::ADD || 
+        next.get_operator() == Operator::SUBTRACT)
         {
             result = apply_op(result, processing.get_operator(), processing.get_value());
             processing = Term();
@@ -126,11 +127,91 @@ double solve1(std::string equation)
     return result;
 }
 
+int priority_of_operator(Operator op)
+{
+    if(op == Operator::ADD || op == Operator::SUBTRACT) return 1;
+    else if(op == Operator::MULTIPLY || op == Operator::DIVIDE) return 2;
+    return 0;
+}
+
+void collapse_top(Operator future_top, std::stack<double>& number_stack, std::stack<Operator>& operator_stack)
+{
+    while (operator_stack.size() >= 1 && number_stack.size() >= 2)
+    {
+        Operator op = operator_stack.top();
+        if(priority_of_operator(future_top) <= priority_of_operator(op))
+        {
+            double second = number_stack.top();
+            number_stack.pop();
+            double first = number_stack.top();
+            number_stack.pop();
+            operator_stack.pop();
+            double collapsed = apply_op(first, op, second);
+            number_stack.push(collapsed);
+            op = operator_stack.top();
+        }
+        else
+        {
+            break;
+        }
+    }
+}
+
+Operator parse_next_operator(std::string equation, int offset)
+{
+    if(offset < equation.length())
+    {
+        char op = equation[offset];
+        switch (op)
+        {
+        case '+': return Operator::ADD;
+        case '-': return Operator::SUBTRACT;
+        case '/': return Operator::DIVIDE;
+        case '*': return Operator::MULTIPLY;
+        }
+    }
+    return Operator::BLANK;
+}
+
+int parse_next_number(std::string equation, int offset)
+{
+    std::string str = "";
+    while (offset < equation.length() && equation[offset] >= '0' && equation[offset] <= '9')
+    {
+        str += equation[offset];
+        offset++;
+    }
+    return std::stoi(str);
+}
+
 double solve2(std::string equation)
 {
-    double result = 0;
-    // todo
-    return result;
+    std::stack<double> number_stack;
+    std::stack<Operator> operator_stack;
+    for(int i = 0; i < equation.length(); i++)
+    {
+        try
+        {
+            // get number and push
+            int value = parse_next_number(equation, i);
+            number_stack.push(value);
+            // move to the operator
+            i += std::to_string(value).length();
+            if(i >= equation.length()) break;
+            // get operator, collapse top as needed, push operator
+            Operator op = parse_next_operator(equation, i);
+            collapse_top(op, number_stack, operator_stack);
+            operator_stack.push(op);
+        }
+        catch(const std::exception& e)
+        {
+            return std::numeric_limits<int>::min();
+        }
+    }
+    // final collapse
+    collapse_top(Operator::BLANK, number_stack, operator_stack);
+    if(number_stack.size() == 1 && operator_stack.size() == 0) return number_stack.top();
+    return 0;
 }
 
 /**
