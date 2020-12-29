@@ -3,22 +3,22 @@
 
 int add1(int first, int second)
 {
-    std::bitset<32> first_bit(first);
-    std::bitset<32> second_bit(second);
-    std::bitset<32> add_without_carry = first_bit ^ second_bit;
-    std::cout << "first bit = " << first_bit << '\n';
-    std::cout << "second bit = " << second_bit << '\n';
-    std::cout << "xor = " << add_without_carry << '\n';
-    std::bitset<32> carry = (first_bit & second_bit) << 1;
-    std::bitset<32> result = add_without_carry ^ carry;
-    return (int)result.to_ulong();
+    if(second == 0) return first;
+    int add_without_carry = first ^ second;
+    int carry = (first & second) << 1;
+    return add1(add_without_carry, carry);
 }
 
 int add2(int first, int second)
 {
-    int result;
-    // todo
-    return result;
+    while (second != 0)
+    {
+        int sum = first ^ second;
+        int carry = (first & second) << 1;
+        first = sum;
+        second = carry;
+    }
+    return first;
 }
 
 /**
