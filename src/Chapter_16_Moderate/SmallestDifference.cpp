@@ -13,7 +13,7 @@ int smallestDifferenceBruteForce(int a[], int size_a, int b[], int size_b) {
     int smallest_diff = std::numeric_limits<int>::max();
     for(int i = 0; i < size_a; i++) {
         for(int j = 0; j < size_b; j++) {
-            smallest_diff = std::min(smallest_diff, abs(a[i] - b[j]));
+            smallest_diff = std::min(smallest_diff, std::abs(a[i] - b[j]));
         }
     }
     return smallest_diff;
@@ -73,7 +73,7 @@ int smallestDifferenceOptimal(int a[], int size_a, int b[], int size_b) {
     int index_b = 0;
     int smallest_diff = std::numeric_limits<int>::max();
     while(index_a < size_a && index_b < size_b) {
-        int diff = abs(a[index_a] - b[index_b]);
+        int diff = std::abs(a[index_a] - b[index_b]);
         smallest_diff = std::min(smallest_diff, diff);
         if(a[index_a] < b[index_b]) index_a++;
         else index_b++;
@@ -84,14 +84,14 @@ int smallestDifferenceOptimal(int a[], int size_a, int b[], int size_b) {
 int find_closest_el(int a[], int low, int high, int b_el) {
     if(high >= low) {
         int index_mid = (high - low) / 2;
-        int diff_mid = abs(a[index_mid] - b_el);
+        int diff_mid = std::abs(a[index_mid] - b_el);
         int diff_mid_minus_1 = std::numeric_limits<int>::max();
         if(index_mid - 1 >= low) {
-            diff_mid_minus_1 = abs(a[index_mid - 1] - b_el);
+            diff_mid_minus_1 = std::abs(a[index_mid - 1] - b_el);
         }
         int diff_mid_plus_1 = std::numeric_limits<int>::max();
         if(index_mid + 1 <= high) {
-            diff_mid_plus_1 = abs(a[index_mid + 1] - b_el);
+            diff_mid_plus_1 = std::abs(a[index_mid + 1] - b_el);
         }
         // call find_closest_el for plus or minus (depends which is smaller) or return diff_mid   
         if(diff_mid < diff_mid_minus_1 && diff_mid < diff_mid_plus_1) {

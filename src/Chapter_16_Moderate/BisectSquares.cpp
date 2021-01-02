@@ -27,10 +27,10 @@ Point extend(Point mid1, Point mid2, double size) {
     double slope = (mid1._y - mid2._y) / (mid1._x - mid2._x);
     double x1 = 0;
     double y1 = 0;
-    if(abs(slope) == 1) {
+    if(std::abs(slope) == 1) {
         x1 = mid1._x + x_dir * size / 2.0;
         y1 = mid1._y + y_dir * size / 2.0;
-    } else if(abs(slope) < 1) {
+    } else if(std::abs(slope) < 1) {
         x1 = mid1._x + x_dir * size / 2.0;
         y1 = slope * (x1 - mid1._x) + mid1._y;
     } else {
@@ -56,7 +56,7 @@ class Square {
 
         double size() 
         {
-            return abs(_right - _left);
+            return std::abs(_right - _left);
         }
 
         Line cut(Square other) 

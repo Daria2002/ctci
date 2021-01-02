@@ -17,7 +17,7 @@ class Line {
         bool infinite_slope = false;
         Line() = default;
         Line(GraphPoint p1, GraphPoint p2) {
-            if(abs(p1._x - p2._x) > epsilon) { // x's are different
+            if(std::abs(p1._x - p2._x) > epsilon) { // x's are different
                 slope = (p1._y - p2._y) / (p1._x - p2._x);
                 intercept = p1._y - slope * p1._x;
             } else {
@@ -36,7 +36,7 @@ class Line {
             return ((double) r) * epsilon;
         }
         bool is_equivalent(double a, double b) {
-            return abs(a - b) < epsilon;
+            return std::abs(a - b) < epsilon;
         }
         bool is_equivalent(Line l) {
             if(is_equivalent(l.slope, slope) && is_equivalent(l.intercept, intercept) && l.infinite_slope == infinite_slope) {
