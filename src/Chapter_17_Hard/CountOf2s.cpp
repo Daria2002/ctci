@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 
 int count_2s(int input)
 {
@@ -21,10 +22,35 @@ int count_2s_bf(int input)
     return count;
 }
 
+int count_2s_at_digit(int number, int d)
+{
+    int power_of_10 = std::pow(10, d);
+    int next_power_of_10 = power_of_10 * 10;
+    int right = number % power_of_10;
+    int round_down = number - number % next_power_of_10;
+    int round_up = round_down + next_power_of_10;
+    int digit = (number / power_of_10) % 10;
+    if(digit < 2)
+    {
+        return round_down / 10; // 1/10 numbers in rounded number are 2
+    }
+    else if(digit > 2)
+    {
+        return round_up / 10;
+    }
+    // digit == 2
+    return round_down / 10 + right + 1;
+}
+
 int count_2s_improved(int input)
 {
-    // todo
-    return 0;
+    int count = 0;
+    int len = std::to_string(input).size();
+    for(int digit = 0; digit < len; digit++)
+    {
+        count += count_2s_at_digit(input, digit);
+    }
+    return count;
 }
 
 /**
