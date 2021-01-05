@@ -81,22 +81,14 @@ void mergeClasses(
     std::unordered_map<std::string, NameSet>& groups, 
     const std::vector<std::pair<std::string, std::string>>& synonyms)
 {
-    for(auto group : groups)
-    {
-        std::cout << "group name = " << group.first << '\n';
-        std::cout << "group size = " << group.second.size() << '\n';
-    }
     for(std::pair<std::string, std::string> synonym : synonyms)
     {
         std::string name1 = synonym.first;
-        std::cout << "name1 = " << name1 << '\n';
         std::string name2 = synonym.second;
-        std::cout << "name2 = " << name2 << '\n';
         NameSet set1 = (groups.count(name1) ? groups.at(name1) : NameSet());
         NameSet set2 = (groups.count(name2) ? groups.at(name2) : NameSet());
         if(set1 != set2 && set1.size() > 0 && set2.size() > 0)
         {
-            std::cout << "merge\n";
             // merge smaller set into the bigger one
             NameSet smaller = (set2.size() < set1.size() ? set2 : set1);
             NameSet bigger = (set2.size() < set1.size() ? set1 : set2);
@@ -109,17 +101,16 @@ void mergeClasses(
             {
                 groups[name] = bigger;
             }
+            // update other names that are in the same set
+            for(auto& group : groups)
+            {
+                if(other_names.find(group.first) == other_names.end() && 
+                group.second.get_root_name() == bigger.get_root_name())
+                {
+                    groups[group.first] = bigger;
+                }
+            }
         }
-        else 
-        {
-            std::cout << "cannot merge\n";
-        }
-    }
-    std::cout << "after\n";
-    for(auto group : groups)
-    {
-        std::cout << "group name = " << group.first << '\n';
-        std::cout << "group size = " << group.second.size() << '\n';
     }
 }
 
