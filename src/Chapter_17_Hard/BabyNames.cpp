@@ -1,6 +1,7 @@
 #include <iostream>
-#include <unordered_map>
+#include <map>
 #include <vector>
+#include <algorithm>
 #include <unordered_set>
 
 class NameSet
@@ -51,10 +52,10 @@ inline bool operator!=(const NameSet& set1, const NameSet& set2) {
     return !(set1 == set2);
 }
 
-std::unordered_map<std::string, int> convertToMap(
-    const std::unordered_map<std::string, NameSet>& groups)
+std::map<std::string, int> convertToMap(
+    const std::map<std::string, NameSet>& groups)
 {
-    std::unordered_map<std::string, int> list;
+    std::map<std::string, int> list;
     for(const auto pair : groups)
     {
         NameSet group = pair.second;
@@ -63,10 +64,10 @@ std::unordered_map<std::string, int> convertToMap(
     return list;
 }
 
-std::unordered_map<std::string, NameSet> construct_groups(
-    const std::unordered_map<std::string, int>& name_freq)
+std::map<std::string, NameSet> construct_groups(
+    const std::map<std::string, int>& name_freq)
 {
-    std::unordered_map<std::string, NameSet> groups;
+    std::map<std::string, NameSet> groups;
     for(const auto pair : name_freq)
     {
         std::string name = pair.first;
@@ -78,7 +79,7 @@ std::unordered_map<std::string, NameSet> construct_groups(
 }
 
 void mergeClasses(
-    std::unordered_map<std::string, NameSet>& groups, 
+    std::map<std::string, NameSet>& groups, 
     const std::vector<std::pair<std::string, std::string>>& synonyms)
 {
     for(std::pair<std::string, std::string> synonym : synonyms)
@@ -114,27 +115,144 @@ void mergeClasses(
     }
 }
 
-std::unordered_map<std::string, int> name_freq_bf(
-    std::unordered_map<std::string, int> name_freq, 
+std::map<std::string, int> name_freq_bf(
+    std::map<std::string, int> name_freq, 
     std::vector<std::pair<std::string, std::string>> synonyms)
 {
-    std::unordered_map<std::string, NameSet> groups = construct_groups(name_freq);
+    std::map<std::string, NameSet> groups = construct_groups(name_freq);
     mergeClasses(groups, synonyms);
     return convertToMap(groups);
 }
 
-std::unordered_map<std::string, int> name_freq_improved(
-    std::unordered_map<std::string, int> name_freq, 
-    std::vector<std::pair<std::string, std::string>> synonyms)
+class Node
 {
-    std::unordered_map<std::string, int> map;
-    // todo
+    public:
+        Node() = default;
+        Node(std::string n, int f) : name(n), freq(f) {}
+        int freq;
+        std::string name;
+        bool visited = false;
+        std::vector<Node> neighbours;
+};
+
+inline bool operator==(const Node& n1, const Node& n2)
+{
+    return n1.name == n2.name;
+}
+
+class Graph
+{
+    public:
+        Graph() = default;
+
+        void create_node(std::string name, int freq)
+        {
+            nodes.push_back(Node(name, freq));
+        }
+
+        void add_edge(std::string name1, std::string name2)
+        {
+            int i1 = -1;
+            int i2 = -1;
+            for(int i = 0; i < nodes.size(); i++)
+            {
+                if(nodes[i].name != name1 && nodes[i].name != name2) continue;
+                if(i1 == -1) i1 = i;
+                else 
+                {
+                    i2 = i;
+                    break;
+                }
+            }
+            if(i1 == -1 || i2 == -1) return;
+            Node& node1 = nodes[i1];
+            Node& node2 = nodes[i2];
+            if(std::find(node1.neighbours.begin(), node1.neighbours.end(), node2) == node1.neighbours.end())
+            {
+                node1.neighbours.push_back(node2);
+            }
+            if(std::find(node2.neighbours.begin(), node2.neighbours.end(), node1) == node2.neighbours.end())
+            {
+                node2.neighbours.push_back(node1);
+            }
+        }
+
+        std::vector<Node> nodes;
+};
+
+Graph construct_graph(const std::map<std::string, int>& name_freq)
+{
+    Graph graph;
+    for(const auto entry: name_freq)
+    {
+        std::string name = entry.first;
+        int freq = entry.second;
+        graph.create_node(name, freq);
+    }
+    return graph;
+}
+
+void connect_edges(Graph& graph, const std::vector<std::pair<std::string, std::string>>& synonyms)
+{   
+    for(const auto entry : synonyms)
+    {
+        graph.add_edge(entry.first, entry.second);
+    }
+}
+
+void update_graph(Graph& graph, const std::string& node_name)
+{
+    for(int i = 0; i < graph.nodes.size(); i++)
+    {
+        if(graph.nodes[i].name == node_name)
+        {
+            graph.nodes[i].visited = true;
+        }
+    }
+}
+
+// depth-first search to calculate total freq
+// mark all nodes of this component as visited 
+int get_component_freq(Node& node, Graph& graph)
+{
+    if(node.visited) return 0; 
+    node.visited = true;
+    int sum = node.freq;
+    for(int i = 0; i < node.neighbours.size(); i++)
+    {
+        sum += node.neighbours[i].freq;
+        node.neighbours[i].visited = true;
+        update_graph(graph, node.neighbours[i].name);
+    }
+    return sum;
+}
+
+std::map<std::string, int> get_true_freq(Graph graph)
+{
+    std::map<std::string, int> map;
+    for(Node& node : graph.nodes)
+    {
+        if(!node.visited)
+        {
+            map[node.name] = get_component_freq(node, graph);
+        }
+    }
     return map;
 }
 
-std::unordered_map<std::string, int> get_names_freq()
+std::map<std::string, int> name_freq_improved(
+    std::map<std::string, int> name_freq, 
+    std::vector<std::pair<std::string, std::string>> synonyms)
 {
-    std::unordered_map<std::string, int> map;
+    Graph graph = construct_graph(name_freq);
+    connect_edges(graph, synonyms);
+    std::map<std::string, int> map = get_true_freq(graph);
+    return map;
+}
+
+std::map<std::string, int> get_names_freq()
+{
+    std::map<std::string, int> map;
     map["John"] = 15;
     map["Jon"] = 12; 
     map["Chris"] = 13;
@@ -175,9 +293,9 @@ int main()
     std::cout << "Enter 1 to solve using brute force or any other number for improved approach:\n";
     int method;
     std::cin >> method;
-    std::unordered_map<std::string, int> name_freq = get_names_freq();
+    std::map<std::string, int> name_freq = get_names_freq();
     std::vector<std::pair<std::string, std::string>> synonyms = get_synonyms();
-    std::unordered_map<std::string, int> true_name_freq = 
+    std::map<std::string, int> true_name_freq = 
     (method == 1 ? name_freq_bf(name_freq, synonyms) : name_freq_improved(name_freq, synonyms));
     for(auto pair : true_name_freq)
     {
