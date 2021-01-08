@@ -22,21 +22,21 @@ std::vector<Dimension> get_dimensions()
     return dims;
 }
 
-std::vector<Dimension> max(std::vector<Dimension> v1, std::vector<Dimension> v2)
+std::vector<Dimension> max(const std::vector<Dimension>& v1, const std::vector<Dimension>& v2)
 {
     if(v1.empty()) return v2;
     else if(v2.empty()) return v1;
     return v1.size() > v2.size() ? v1 : v2;
 }
 
-bool can_append(Dimension dim, std::vector<Dimension> seq)
+bool can_append(const Dimension& dim, const std::vector<Dimension>& seq)
 {
     if(seq.empty()) return true;
     Dimension last = seq[seq.size() - 1];
     return last.wt < dim.wt && last.ht < dim.ht;
 }
 
-std::vector<Dimension> longest_seq_at_index(std::vector<Dimension> people, std::vector<Dimension> seq, int index)
+std::vector<Dimension> longest_seq_at_index(const std::vector<Dimension>& people, std::vector<Dimension> seq, const int index)
 {
     if(index >= people.size()) return seq;
     Dimension dim = people[index];
@@ -60,8 +60,8 @@ std::vector<Dimension> longest_recursive(std::vector<Dimension> people)
     return longest_seq_at_index(people, std::vector<Dimension>(), 0);
 } 
 
-std::vector<Dimension> longest_seq_at_index(std::vector<Dimension> people, 
-std::vector<std::vector<Dimension>> solutions, int index)
+std::vector<Dimension> longest_seq_at_index(const std::vector<Dimension>& people, 
+const std::vector<std::vector<Dimension>>& solutions, const int index)
 {
     Dimension dim = people[index];
     std::vector<Dimension> best_seq;
