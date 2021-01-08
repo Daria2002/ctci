@@ -60,10 +60,41 @@ std::vector<Dimension> longest_recursive(std::vector<Dimension> people)
     return longest_seq_at_index(people, std::vector<Dimension>(), 0);
 } 
 
+std::vector<Dimension> longest_seq_at_index(std::vector<Dimension> people, 
+std::vector<std::vector<Dimension>> solutions, int index)
+{
+    Dimension dim = people[index];
+    std::vector<Dimension> best_seq;
+    // find the longest subseq that we can append this element to
+    for(int i = 0; i < index; i++)
+    {
+        std::vector<Dimension> solution = solutions[i];
+        if(can_append(dim, solution)) 
+        {
+            best_seq = max(best_seq, solution);
+        }
+    }
+    best_seq.push_back(dim);
+    return best_seq;
+}
+
 std::vector<Dimension> longest_iterative(std::vector<Dimension> people)
 {
-    // todo;
-    return people;
+    std::sort(people.begin(), people.end(), [](const Dimension& lhs, const Dimension& rhs)
+    {
+        return lhs.ht < rhs.ht;
+    });
+    std::vector<std::vector<Dimension>> solutions;
+    for(int i = 0; i < people.size(); i++) solutions.push_back(std::vector<Dimension>());
+    std::vector<Dimension> best_seq;
+    // find the longest subseq that terminates with each element
+    for(int i = 0; i < people.size(); i++)
+    {
+        std::vector<Dimension> longest_at_index = longest_seq_at_index(people, solutions, i);
+        solutions[i] = longest_at_index;
+        best_seq = max(best_seq, longest_at_index);
+    }
+    return best_seq;
 } 
 
 /**
