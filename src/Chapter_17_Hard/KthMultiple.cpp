@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <deque>
+#include <algorithm>
 
 typedef std::numeric_limits<int> int_limit;
 
@@ -39,10 +41,35 @@ int kth_multiple_bf(const int k)
     return possibilities[k];
 }
 
+void add_products(std::deque<int>& q, int val)
+{
+    q.push_back(val * 3);
+    q.push_back(val * 5);
+    q.push_back(val * 7);
+}
+
+int remove_min(std::deque<int>& q)
+{
+    int min = std::numeric_limits<int>::max();
+    for(int val : q)
+    {
+        if(val < min) min = val;
+    }
+    q.erase(std::remove(q.begin(), q.end(), min), q.end());
+    return min;
+}
+
 int kth_multiple_improved(const int k)
 {
-    // todo
-    return 0;
+    std::deque<int> multiples;
+    int val = 1;
+    multiples.push_back(val);
+    for(int i = 0; i < k; i++)
+    {
+        val = remove_min(multiples);
+        add_products(multiples, val);
+    }
+    return val;
 }
 
 int kth_multiple_optimal(const int k)
