@@ -72,10 +72,59 @@ int kth_multiple_improved(const int k)
     return val;
 }
 
+class Result
+{
+    public:
+        Result() = default;
+        Result(int m, int q) : min(m), q_num(q) {}
+        int min, q_num;
+};
+
+Result remove_min(std::deque<int>& q3, std::deque<int>& q5, std::deque<int>& q7)
+{
+    int q3_front = q3.front();
+    int q5_front = q5.front();
+    int q7_front = q7.front();
+    if((!q3.empty() && q5.empty() && q7.empty()) || (q3_front < q5_front && q3_front < q7_front))
+    {
+        q3.pop_front();
+        return Result(q3_front, 3);
+    }
+    else if((q3.empty() && !q5.empty() && q7.empty()) || (q5_front < q3_front && q5_front < q7_front))
+    {
+        q5.pop_front();
+        return Result(q5_front, 5);
+    }
+    // q7 min
+    q7.pop_front();
+    return Result(q7_front, 7);
+}
+
+void add_products(int min, int q_num, std::deque<int>& q3, std::deque<int>& q5, std::deque<int>& q7)
+{
+    if(q_num == 3)
+    {
+        q3.push_back(min * 3);
+    }
+    if(q_num == 3 || q_num == 5)
+    {
+        q5.push_back(min * 5);
+    }
+    q7.push_back(min * 7);
+}
+
 int kth_multiple_optimal(const int k)
 {
-    // todo
-    return 0;
+    if(k < 0) return 0;
+    std::deque<int> q3, q5, q7;
+    q3.push_back(1); // ini
+    Result result;
+    for(int i = 0; i < k; i++)
+    {
+        result = remove_min(q3, q5, q7);
+        add_products(result.min, result.q_num, q3, q5, q7);
+    }
+    return result.min;
 }
 
 /**
