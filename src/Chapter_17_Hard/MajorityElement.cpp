@@ -5,7 +5,7 @@ bool is_majority_el(const std::vector<int>& elements, const int num)
 {
     int count = 0;
     for(const int el : elements) if(el == num) count++;
-    return count >= (elements.size() / 2);
+    return count > (elements.size() / 2);
 }
 
 // time: O(n^2), does not fit the time requirement
@@ -18,10 +18,23 @@ int majority_el_slow(const std::vector<int>& elements)
     return -1;
 }
 
+int get_maybe_majority(const std::vector<int>& elements)
+{
+    int majority = 0;
+    int count = 0;
+    for(int n : elements)
+    {
+        if(count == 0) majority = n;
+        if(n == majority) count++;
+        else count--;
+    }
+    return majority;
+}
+
 int majority_el_optimal(const std::vector<int>& elements)
 {
-    // todo
-    return 0;
+    int maybe_majority = get_maybe_majority(elements);
+    return (is_majority_el(elements, maybe_majority) ? maybe_majority : -1);
 }
 
 /**
