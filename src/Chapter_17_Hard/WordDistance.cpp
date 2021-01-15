@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <unordered_map>
 
 class LocationPair
 {
@@ -32,7 +34,7 @@ class LocationPair
         }
 };
 
-LocationPair find_closest1(std::vector<std::string> words, std::string word1, std::string word2)
+LocationPair find_closest_bf(std::vector<std::string> words, std::string word1, std::string word2)
 {
     LocationPair best(-1, -1);
     LocationPair curr(-1, -1);
@@ -52,11 +54,39 @@ LocationPair find_closest1(std::vector<std::string> words, std::string word1, st
     return best;
 }
 
-LocationPair find_closest2(std::vector<std::string> words, std::string word1, std::string word2)
+LocationPair find_min_distance_pair(const std::vector<int>& locations1, const std::vector<int>& locations2)
 {
-    // todo;
-    LocationPair best;
+    int index1(0), index2(0);
+    LocationPair best(-1, -1);
+    LocationPair curr(-1, -1);
+    while (index1 < locations1.size() && index2 < locations2.size())
+    {
+        curr.set_locations(locations1[index1], locations2[index2]);
+        best.update(curr);
+        // move smaller one because the bigger one can only increase diff between two locations
+        index1 += (locations1[index1] < locations2[index2] ? 1 : 0);
+        index2 += (locations1[index1] > locations2[index2] ? 1 : 0);
+    }
     return best;
+}
+
+bool precomputated = false;
+std::unordered_map<std::string, std::vector<int>> map_locations;
+
+std::vector<int> get_locations(std::vector<std::string> words, const std::string& word)
+{
+    if(precomputated) return map_locations[word];
+    for(int i = 0; i < words.size(); i++) map_locations[words[i]].push_back(i);
+    precomputated = true;
+    return map_locations[word];
+}
+
+LocationPair find_closest_with_precomputation(const std::vector<std::string>& words, 
+const std::string& word1, const std::string& word2)
+{
+    std::vector<int> locations1 = get_locations(words, word1);
+    std::vector<int> locations2 = get_locations(words, word2);
+    return find_min_distance_pair(locations1, locations2);
 }
 
 /**
@@ -66,13 +96,16 @@ LocationPair find_closest2(std::vector<std::string> words, std::string word1, st
  */
 int main()
 {
-    std::vector<std::string> words = {"hello", "love", "zoo", "life", "sea", "sun", "sea", "love", "pencil", "apple", "coffee", "water"};
+    std::vector<std::string> words = 
+    {"hello", "love", "zoo", "life", "sea", "sun", "sea", "love", "pencil", "apple", "coffee", "water"};
     const std::string word1 = "sea";
     const std::string word2 = "love";
-    std::cout << "Enter 1 to solve using 1st approach or any other number to solve using 2nd approach:\n";
+    std::cout << "Enter 1 to solve using brute force approach or\n"
+    "any other number to solve using approach with precomputation:\n";
     int method;
     std::cin >> method;
-    LocationPair closest_pair = (method == 1 ? find_closest1(words, word1, word2) : find_closest2(words, word1, word2));
+    LocationPair closest_pair = 
+    (method == 1 ? find_closest_bf(words, word1, word2) : find_closest_with_precomputation(words, word1, word2));
     if(closest_pair.is_valid())
     {
         std::cout << "Shortest difference between " << word1 << " and " << word2 << " is " << closest_pair.distance() << ".\n";
