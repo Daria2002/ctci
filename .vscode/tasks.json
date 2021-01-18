@@ -12,7 +12,13 @@
       {
         "label": "Cmake-cxx",
         "type": "shell",
-        "command": "rm -rf ${workspaceFolder}/build && mkdir ${workspaceFolder}/build && cd ${workspaceFolder}/build && cmake ..",
+        "command": "rm -rf ${workspaceFolder}/build && mkdir ${workspaceFolder}/build && cd ${workspaceFolder}/build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..",
+        "group": "build"
+      },
+      {
+        "label": "Cmake-cxx-debug",
+        "type": "shell",
+        "command": "rm -rf ${workspaceFolder}/build && mkdir ${workspaceFolder}/build && cd ${workspaceFolder}/build && cmake -DCMAKE_BUILD_TYPE=Debug ..",
         "group": "build"
       },
       {

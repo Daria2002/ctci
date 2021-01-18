@@ -6,7 +6,7 @@ class BiNode
         BiNode() = default;
         BiNode(int val, BiNode *n1, BiNode *n2) : value(val), node1(n1), node2(n2) {}
         int value;
-        BiNode *node1, *node2;
+        BiNode *node1 = nullptr, *node2 = nullptr;
 };
 
 class NodePair
@@ -14,7 +14,7 @@ class NodePair
     public:
         NodePair() = default;
         NodePair(BiNode *h, BiNode *t) : head(h), tail(t) {}
-        BiNode *head, *tail;
+        BiNode *head = nullptr, *tail = nullptr;
 };
 
 void concat(BiNode *n1, BiNode *n2)
@@ -65,12 +65,12 @@ class Result2
 BiNode* get_tail(BiNode *head)
 {
     if(head == nullptr) return nullptr;
-    std::cout << "head val = " << head->value << '\n';
+    // std::cout << "head val = " << head->value << '\n';
     while ((head->node2) != nullptr)
     {
         head = head->node2;
     }
-    std::cout << "tail value = " << head->value << '\n';
+    // std::cout << "tail value = " << head->value << '\n';
     if(head == nullptr) std::cout << "tail is nullptr\n";
     return head;
 }
@@ -78,31 +78,27 @@ BiNode* get_tail(BiNode *head)
 Result2 convert2(BiNode *root)
 {
     if(root == nullptr) return Result2(true, BiNode());
-    std::cout << "root val = " << root->value << '\n';
-    // if(root->node1 != nullptr)
-    //     std::cout << "root node1 val = " << root->node1->value << '\n';
-    // if(root->node2 != nullptr)
-    //     std::cout << "root node2 val = " << root->node2->value << '\n';
     Result2 part1(true, BiNode());
+    Result2 part2(true, BiNode());
     if(root->node1 != nullptr)
     {
         part1 = convert2(root->node1);
         if(!part1.is_null)
         {
-            std::cout << "part1 = " << part1.head.value << '\n';
+            // std::cout << "part1 = " << part1.head.value << '\n';
             concat(get_tail(&(part1.head)), root);
         }
     }
     if(root->node2 != nullptr)
     {
-        Result2 part2 = convert2(root->node2);
+        part2 = convert2(root->node2);
         if(!part2.is_null)
         {
-            std::cout << "part2 = " << part2.head.value << '\n';
             concat(root, &(part2.head));
         }
     }
-    return part1.is_null ? Result2(false, *root) : part1;
+    Result2 r2 = part1.is_null ? Result2(false, *root) : part1;
+    return r2;
 }
 
 /**
@@ -120,13 +116,17 @@ int main()
     int method;
     std::cin >> method;
     // create tree
-    BiNode node0(0, nullptr, nullptr);
-    BiNode node1(1, &node0, nullptr);
-    BiNode node3(3, nullptr, nullptr);
-    BiNode node2(2, &node1, &node3);
-    BiNode node6(6, nullptr, nullptr);
-    BiNode node5(5, nullptr, &node6);
-    BiNode node4(4, &node2, &node5);
+    // BiNode node0(0, nullptr, nullptr);
+    // BiNode node1(1, &node0, nullptr);
+    // BiNode node3(3, nullptr, nullptr);
+    // BiNode node2(2, &node1, &node3);
+    // BiNode node6(6, nullptr, nullptr);
+    // BiNode node5(5, nullptr, &node6);
+    // BiNode node4(4, &node2, &node5);
+
+    BiNode node5(5, nullptr, nullptr);
+    BiNode node4(4, nullptr, &node5);
+
     if(method == 1)
     {
         Result r = convert1(&node4);
@@ -143,15 +143,15 @@ int main()
     else if(method == 2)
     {
         Result2 r = convert2(&node4);
-        // std::cout << "List elements: ";
-        // std::cout << r.head.value << ", ";
-        // BiNode *tmp = r.head.node2;
-        // while (tmp != nullptr)
-        // {
-        //     std::cout << tmp->value << ", ";
-        //     tmp = tmp->node2;
-        // }
-        // std::cout << '\n';
+        std::cout << "List elements: ";
+        std::cout << r.head.value << ", ";
+        BiNode *tmp = r.head.node2;
+        while (tmp != nullptr)
+        {
+            std::cout << tmp->value << ", ";
+            tmp = tmp->node2;
+        }
+        std::cout << '\n';
     }
     else 
     {
