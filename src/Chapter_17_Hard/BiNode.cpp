@@ -57,9 +57,9 @@ class Result2
 {
     public:
         Result2() = default;
-        Result2(bool n, BiNode h) : is_null(n), head(h) {}
+        Result2(bool n, BiNode *h) : is_null(n), head(h) {}
         bool is_null;
-        BiNode head;
+        BiNode *head;
 };
 
 BiNode* get_tail(BiNode *head)
@@ -77,16 +77,16 @@ BiNode* get_tail(BiNode *head)
 
 Result2 convert2(BiNode *root)
 {
-    if(root == nullptr) return Result2(true, BiNode());
-    Result2 part1(true, BiNode());
-    Result2 part2(true, BiNode());
+    if(root == nullptr) return Result2(true, new BiNode());
+    Result2 part1(true, new BiNode());
+    Result2 part2(true, new BiNode());
     if(root->node1 != nullptr)
     {
         part1 = convert2(root->node1);
         if(!part1.is_null)
         {
             // std::cout << "part1 = " << part1.head.value << '\n';
-            concat(get_tail(&(part1.head)), root);
+            concat(get_tail(part1.head), root);
         }
     }
     if(root->node2 != nullptr)
@@ -94,10 +94,19 @@ Result2 convert2(BiNode *root)
         part2 = convert2(root->node2);
         if(!part2.is_null)
         {
-            concat(root, &(part2.head));
+            concat(root, part2.head);
         }
     }
-    Result2 r2 = part1.is_null ? Result2(false, *root) : part1;
+    std::cout << "part1.is_null = " << (part1.is_null ? "yes" : "no") << '\n';
+    Result2 r2 = part1.is_null ? Result2(false, root) : part1;
+    std::cout << "List elements2: ";
+    BiNode *tmp = r2.head->node2;
+    while (tmp != nullptr)
+    {
+        std::cout << tmp->value << ", ";
+        tmp = tmp->node2;
+    }
+    std::cout << '\n';
     return r2;
 }
 
@@ -124,6 +133,9 @@ int main()
     // BiNode node5(5, nullptr, &node6);
     // BiNode node4(4, &node2, &node5);
 
+    // BiNode node5(5, nullptr, nullptr);
+    // BiNode node4(4, nullptr, &node5);
+
     BiNode node5(5, nullptr, nullptr);
     BiNode node4(4, nullptr, &node5);
 
@@ -144,8 +156,8 @@ int main()
     {
         Result2 r = convert2(&node4);
         std::cout << "List elements: ";
-        std::cout << r.head.value << ", ";
-        BiNode *tmp = r.head.node2;
+        std::cout << r.head->value << ", ";
+        BiNode *tmp = r.head->node2;
         while (tmp != nullptr)
         {
             std::cout << tmp->value << ", ";
