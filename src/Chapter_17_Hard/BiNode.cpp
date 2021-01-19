@@ -97,17 +97,7 @@ Result2 convert2(BiNode *root)
             concat(root, part2.head);
         }
     }
-    std::cout << "part1.is_null = " << (part1.is_null ? "yes" : "no") << '\n';
-    Result2 r2 = part1.is_null ? Result2(false, root) : part1;
-    std::cout << "List elements2: ";
-    BiNode *tmp = r2.head->node2;
-    while (tmp != nullptr)
-    {
-        std::cout << tmp->value << ", ";
-        tmp = tmp->node2;
-    }
-    std::cout << '\n';
-    return r2;
+    return part1.is_null ? Result2(false, root) : part1;
 }
 
 /**
@@ -125,19 +115,13 @@ int main()
     int method;
     std::cin >> method;
     // create tree
-    // BiNode node0(0, nullptr, nullptr);
-    // BiNode node1(1, &node0, nullptr);
-    // BiNode node3(3, nullptr, nullptr);
-    // BiNode node2(2, &node1, &node3);
-    // BiNode node6(6, nullptr, nullptr);
-    // BiNode node5(5, nullptr, &node6);
-    // BiNode node4(4, &node2, &node5);
-
-    // BiNode node5(5, nullptr, nullptr);
-    // BiNode node4(4, nullptr, &node5);
-
-    BiNode node5(5, nullptr, nullptr);
-    BiNode node4(4, nullptr, &node5);
+    BiNode node0(0, nullptr, nullptr);
+    BiNode node1(1, &node0, nullptr);
+    BiNode node3(3, nullptr, nullptr);
+    BiNode node2(2, &node1, &node3);
+    BiNode node6(6, nullptr, nullptr);
+    BiNode node5(5, nullptr, &node6);
+    BiNode node4(4, &node2, &node5);
 
     if(method == 1)
     {
