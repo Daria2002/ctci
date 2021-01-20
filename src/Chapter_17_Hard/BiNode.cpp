@@ -100,6 +100,32 @@ Result2 convert2(BiNode *root)
     return part1.is_null ? Result2(false, root) : part1;
 }
 
+BiNode* convert3(BiNode *root)
+{
+    if(root == nullptr) return nullptr;
+    BiNode* part1 = convert3(root->node1);
+    BiNode* part2 = convert3(root->node2);
+    if(part1 == nullptr && part2 == nullptr)
+    {
+        root->node1 = root;
+        root->node2 = root;
+        return root;
+    }
+    // todo
+}
+
+void print_elements(BiNode *head)
+{
+    BiNode *tmp = head;
+    std::cout << "List elements: ";
+    while (tmp != nullptr)
+    {
+        std::cout << tmp->value << ", ";
+        tmp = tmp->node2;
+    }
+    std::cout << '\n';
+}
+
 /**
  * BiNode: Consider a simple data structure called BiNode, which has pointers to two other nodes. The
  * data structure BiNode could be used to represent both a binary tree (where node1 is the left node
@@ -126,31 +152,16 @@ int main()
     if(method == 1)
     {
         Result r = convert1(&node4);
-        BiNode *tmp = r.root.head;
-        std::cout << "List elements: ";
-        while (tmp != nullptr)
-        {
-            std::cout << tmp->value << ", ";
-            tmp = tmp->node2;
-        }
-        std::cout << '\n';
+        print_elements(r.root.head);
     }
 
     else if(method == 2)
     {
         Result2 r = convert2(&node4);
-        std::cout << "List elements: ";
-        std::cout << r.head->value << ", ";
-        BiNode *tmp = r.head->node2;
-        while (tmp != nullptr)
-        {
-            std::cout << tmp->value << ", ";
-            tmp = tmp->node2;
-        }
-        std::cout << '\n';
+        print_elements(r.head);
     }
     else 
     {
-        // todo
+        BiNode head = convert3(&node4);
     }
 }
