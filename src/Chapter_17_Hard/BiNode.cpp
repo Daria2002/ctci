@@ -100,18 +100,51 @@ Result2 convert2(BiNode *root)
     return part1.is_null ? Result2(false, root) : part1;
 }
 
-BiNode* convert3(BiNode *root)
+BiNode* convert_to_circular(BiNode *root)
 {
     if(root == nullptr) return nullptr;
-    BiNode* part1 = convert3(root->node1);
-    BiNode* part2 = convert3(root->node2);
-    if(part1 == nullptr && part2 == nullptr)
+    BiNode* part1 = convert_to_circular(root->node1);
+    BiNode* part3 = convert_to_circular(root->node2);
+    if(part1 == nullptr && part3 == nullptr)
     {
         root->node1 = root;
         root->node2 = root;
         return root;
     }
-    // todo
+    BiNode* tail = (part3 == nullptr) ? nullptr : part3->node1;
+    // join left to root
+    if(part1 == nullptr)
+    {
+        concat(part3->node1, root);
+    }
+    else 
+    {
+        concat(part1->node1, root);
+    }
+    // join right to root
+    if(part3 == nullptr)
+    {
+        concat(root, part1);
+    }
+    else 
+    {
+        concat(root, part3);
+    }
+    // join right to root
+    if(part1 != nullptr && part3 != nullptr)
+    {
+        concat(tail, part1);
+    }
+    return part1 == nullptr ? root : part1;
+}
+
+BiNode* convert3(BiNode *root)
+{
+    BiNode* head = convert_to_circular(root);
+    // distroy circular list
+    head->node1->node2 = nullptr;
+    head->node1 = nullptr;
+    return head;
 }
 
 void print_elements(BiNode *head)
@@ -162,6 +195,7 @@ int main()
     }
     else 
     {
-        BiNode head = convert3(&node4);
+        BiNode* head = convert3(&node4);
+        print_elements(head);
     }
 }
