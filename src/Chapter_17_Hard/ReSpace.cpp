@@ -11,10 +11,42 @@ class Result
         std::string parsed = " ";
 };
 
+bool contains(std::unordered_set<std::string> words, std::string word)
+{
+    return (words.find(word) != words.end());
+}
+
+Result split(std::unordered_set<std::string> words, std::string sentence, int start)
+{
+    if(start >= sentence.size()) return Result(0, "");
+    int best = std::numeric_limits<int>::max();
+    std::string best_parsed = "";
+    int index = start;
+    std::string part = "";
+    // index represent start of new word
+    while (index < sentence.size())
+    {
+        part += sentence[index];
+        int num_of_wrong_chars = contains(words, part) ? 0 : part.size();
+        if(num_of_wrong_chars < best)
+        {
+            Result r = split(words, sentence, index + 1);
+            if(num_of_wrong_chars + r.num_of_wrong_chars < best)
+            {
+                best = num_of_wrong_chars + r.num_of_wrong_chars;
+                best_parsed = part + " " + r.parsed;
+                if(best == 0) break;
+            }
+        }
+        index++;
+    }
+    return Result(best, best_parsed);
+}
+
 std::string parse_bf(std::unordered_set<std::string> words, std::string sentence)
 {
-
-    return "";
+    Result r = split(words, sentence, 0);
+    return r.parsed;
 }
 
 std::string parse_optimized(std::unordered_set<std::string> words, std::string sentence)
