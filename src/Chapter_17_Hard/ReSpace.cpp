@@ -8,7 +8,7 @@ class Result
         Result() = default;
         Result(int n, std::string p) : parsed(p), num_of_wrong_chars(n) {}
         int num_of_wrong_chars = std::numeric_limits<int>::max();
-        std::string parsed = " ";
+        std::string parsed = "";
 };
 
 bool contains(std::unordered_set<std::string> words, std::string word)
@@ -34,7 +34,8 @@ Result split(std::unordered_set<std::string> words, std::string sentence, int st
             if(num_of_wrong_chars + r.num_of_wrong_chars < best)
             {
                 best = num_of_wrong_chars + r.num_of_wrong_chars;
-                best_parsed = part + " " + r.parsed;
+                best_parsed = (contains(words, part) ? " " : "");
+                best_parsed += part + r.parsed;
                 if(best == 0) break;
             }
         }
@@ -70,7 +71,7 @@ int main()
     std::cout << "Enter 1 to use brute force approach or any other number for optimized approach:\n";
     std::cin >> method;
     // set contains only few words needed for testing
-    std::unordered_set<std::string> words = {"looked", "like", "brother", "her", "just", "look", "liked"};
-    std::string sentence = "jesslookedjustliketimherbrotheer";
+    std::unordered_set<std::string> words = {"looked", "like", "brother", "her", "just", "look", "liked", "nice", "are"};
+    std::string sentence = "jesslookjustlikeherbrother";
     std::cout << (method == 1 ? parse_bf(words, sentence) : parse_optimized(words, sentence)) << '\n';
 }
