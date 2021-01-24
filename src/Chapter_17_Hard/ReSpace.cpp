@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <limits>
+#include <vector>
 
 class Result
 {
@@ -50,9 +51,48 @@ std::string parse_bf(std::unordered_set<std::string> words, std::string sentence
     return r.parsed;
 }
 
+Result split(std::unordered_set<std::string> words, std::string sentence, int start, std::vector<Result>& cached_results)
+{
+    if(start >= sentence.size()) return Result(0, "");
+    if(cached_results[start].parsed != "") 
+    {
+        std::cout << "this is cached\n";
+        return cached_results[start];
+    }
+    int best = std::numeric_limits<int>::max();
+    std::string best_parsed = "";
+    int index = start;
+    std::string part = "";
+    // index represent start of new word
+    while (index < sentence.size())
+    {
+        part += sentence[index];
+        int num_of_wrong_chars = contains(words, part) ? 0 : part.size();
+        if(num_of_wrong_chars < best)
+        {
+            Result r = split(words, sentence, index + 1);
+            if(num_of_wrong_chars + r.num_of_wrong_chars < best)
+            {
+                best = num_of_wrong_chars + r.num_of_wrong_chars;
+                best_parsed = (contains(words, part) ? " " : "");
+                best_parsed += part + r.parsed;
+                if(best == 0) break;
+            }
+        }
+        index++;
+    }
+    Result r = Result(best, best_parsed);
+    cached_results[start] = r;
+    return r;
+}
+
 std::string parse_optimized(std::unordered_set<std::string> words, std::string sentence)
 {
-    return "";
+    std::vector<Result> cached_results;
+    // initialize cache
+    for(int i = 0; i < sentence.size(); i++) cached_results.push_back(Result(0, ""));
+    Result r = split(words, sentence, 0, cached_results);
+    return r.parsed;
 }
 
 /**
