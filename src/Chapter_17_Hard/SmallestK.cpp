@@ -10,10 +10,36 @@ std::vector<int> smallest_sort(std::vector<int> elements, const int k)
     return std::vector<int>(elements.begin(), elements.begin() + k);
 }
 
+std::vector<int> heap_to_vector(MaxHeap heap)
+{
+    std::vector<int> v;
+    while (!heap.empty())
+    {
+        v.push_back(heap.top());
+        heap.pop();
+    }
+    return v;
+}
+
+MaxHeap get_k_max_heap(std::vector<int> elements, const int k)
+{
+    MaxHeap heap;
+    for(int element : elements)
+    {
+        if(heap.size() < k) heap.push(element);
+        else if(element < heap.top())
+        {
+            heap.pop();
+            heap.push(element);
+        }
+    }
+    return heap;
+}
+
 std::vector<int> smallest_max_heap(std::vector<int> elements, const int k)
 {
-    // todo
-    return elements;
+    MaxHeap heap = get_k_max_heap(elements, k);
+    return heap_to_vector(heap);
 }
 
 std::vector<int> smallest_selection_rank1(std::vector<int> elements, const int k)
