@@ -115,9 +115,9 @@ int rank(std::vector<int> elements, const int k)
 std::vector<int> smallest_selection_rank1(std::vector<int> elements, const int k)
 {
     if(elements.size() <  k) return elements;
-    int biggest = rank(elements, k);
+    int biggest = rank(elements, k - 1);
     std::vector<int> smallest;
-    for(int i = 0; ((i < elements.size()) && (smallest.size() < k)); i++)
+    for(int i = 0; i < elements.size(); i++)
     {
         if(elements[i] <= biggest) smallest.push_back(elements[i]);
     }
