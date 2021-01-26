@@ -124,10 +124,69 @@ std::vector<int> smallest_selection_rank1(std::vector<int> elements, const int k
     return smallest;
 }
 
+class PartitionResult
+{
+    public:
+        PartitionResult() = default;
+        PartitionResult(int l, int m) : left_size(l), middle_size(m) {}
+        int left_size, middle_size;
+};
+
+PartitionResult partition2(std::vector<int> elements, int start, int end, int pivot)
+{
+    int left = start;
+    int right = end;
+    int middle = left;
+    while (middle <= right)
+    {
+        if(elements[middle] < pivot)
+        {
+            swap(elements, middle, left);
+            middle++;
+            left++;
+        }
+        else if(elements[middle] > pivot)
+        {
+            swap(elements, middle, right);
+            right--;
+        }
+        else if(elements[middle] == pivot)
+        {
+            middle++;
+        }
+    }
+    return PartitionResult(left - start, right - left + 1);
+}
+
+int rank2(std::vector<int> elements, int num_rank, int left, int right)
+{
+    int pivot = elements[random_index(left, right)];
+    PartitionResult partition = partition2(elements, left, right, pivot);
+    if(num_rank < partition.left_size) // threshold is on left
+    {
+        return rank2(elements, num_rank, left, left + partition.left_size - 1);
+    }
+    else if(num_rank < partition.left_size + partition.middle_size) // threshold is in the middle
+    {
+        return pivot;
+    }
+    // threshold is on the right
+    return rank2(elements, num_rank - partition.left_size - partition.middle_size, left + partition.left_size + partition.middle_size, right);
+}
+
+int rank2(std::vector<int> elements, int num_rank)
+{
+    return rank2(elements, num_rank, 0, elements.size() - 1);
+}
+
 std::vector<int> smallest_selection_rank2(std::vector<int> elements, const int k)
 {
-    // todo
-    return elements;
+    if(k >= elements.size()) return elements;
+    int threshold = rank2(elements, k - 1);
+    std::vector<int> smallest;
+    for(int el : elements) if(el < threshold) smallest.push_back(el);
+    while (smallest.size() < k) smallest.push_back(threshold);
+    return smallest;
 }
 
 /**
@@ -159,6 +218,9 @@ int main()
     }
     else
     {
+        // modify elements, so elements are not unique
+        elements.push_back(5);
+        elements.push_back(5);
         smallest = smallest_selection_rank2(elements, k);
     }
     std::cout << "Smallest k elements: ";
