@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 int max_minutes_recursion(const std::vector<int>& requests, const int index)
 {
@@ -9,15 +10,31 @@ int max_minutes_recursion(const std::vector<int>& requests, const int index)
     return (with > without ? with : without);
 }
 
+// O(2^n) - time complexity, at each element we're making two choices and we do this n times (n - num of requests)
+// O(n) - space complexity, due to recursive call stack
 int max_minutes_recursion(const std::vector<int>& requests)
 {
     return max_minutes_recursion(requests, 0);
 }
 
+int max_minutes_recursion_memo(const std::vector<int>& requests, const int index, std::unordered_map<int, int>& memo)
+{
+    if(index >= requests.size()) return 0;
+    if(!memo.count(index)) 
+    {
+        int with = requests[index] + max_minutes_recursion_memo(requests, index + 2, memo);
+        int without = max_minutes_recursion_memo(requests, index + 1, memo);
+        memo[index] = (with > without ? with : without);
+    }
+    return memo[index];;
+}
+
+// O(n) - time complexity
+// O(n) - space complexity, the space usage comes from the recursive call stack as well as from memoization
 int max_minutes_recursion_memo(std::vector<int> requests)
 {
-    // todo
-    return 0;
+    std::unordered_map<int, int> memo; // key - index, value - max
+    return max_minutes_recursion_memo(requests, 0, memo);
 }
 
 int max_minutes_iterative(std::vector<int> requests)
