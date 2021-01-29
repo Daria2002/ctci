@@ -37,10 +37,15 @@ int max_minutes_recursion_memo(std::vector<int> requests)
     return max_minutes_recursion_memo(requests, 0, memo);
 }
 
-int max_minutes_iterative(std::vector<int> requests)
+// O(n) - time complexity, O(n) - space complexity
+int max_minutes_iterative(const std::vector<int>& requests)
 {
-    // todo
-    return 0;
+    std::vector<int> best(requests.size());
+    for(int i = requests.size() - 1; i >= 0; i--)
+    {
+        best[i] = (((best[i + 2] + requests[i]) > best[i + 1]) ? (best[i + 2] + requests[i]) : best[i + 1]);
+    }
+    return best[0];
 }
 
 int max_minutes_iterative_optimal(std::vector<int> requests)
