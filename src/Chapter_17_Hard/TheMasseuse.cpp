@@ -48,10 +48,16 @@ int max_minutes_iterative(const std::vector<int>& requests)
     return best[0];
 }
 
-int max_minutes_iterative_optimal(std::vector<int> requests)
+int max_minutes_iterative_optimal(const std::vector<int>& requests)
 {
-    // todo
-    return 0;
+    int first_adjecent = 0, second_adjecent = 0;
+    for(int i = requests.size() - 1; i >= 0; i--)
+    {
+        int best = (first_adjecent > second_adjecent + requests[i] ? first_adjecent : second_adjecent + requests[i]);
+        second_adjecent = first_adjecent;
+        first_adjecent = best;
+    }
+    return (first_adjecent > second_adjecent ? first_adjecent : second_adjecent);
 }
 
 /**
