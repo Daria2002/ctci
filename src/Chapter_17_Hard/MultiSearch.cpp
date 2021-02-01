@@ -2,12 +2,12 @@
 #include <unordered_map>
 #include <vector>
 
-inline bool is_substr_at_index(std::string big, std::string small, int index)
+inline bool is_substr_at_index(const std::string& big, const std::string& small, const int index)
 {
     return (big.substr(index, small.size()) == small);
 }
 
-std::vector<int> get_indices(std::string str, std::string word)
+std::vector<int> get_indices(const std::string& str, const std::string& word)
 {
     std::vector<int> indices;
     for(int index = 0; index < str.size() - word.size() + 1; index++)
@@ -17,17 +17,116 @@ std::vector<int> get_indices(std::string str, std::string word)
     return indices;
 }
 
-std::unordered_map<std::string, std::vector<int>> multi_search1(std::string big_word, std::vector<std::string> small_words)
+std::unordered_map<std::string, std::vector<int>> multi_search1(const std::string& big_word, const std::vector<std::string>& small_words)
 {
     std::unordered_map<std::string, std::vector<int>> map;
-    for(std::string small_word : small_words) map[small_word] = get_indices(big_word, small_word);
+    for(const std::string small_word : small_words) map[small_word] = get_indices(big_word, small_word);
     return map;
 }
 
-std::unordered_map<std::string, std::vector<int>> multi_search2(std::string str, std::vector<std::string> small_words)
+class TrieNode
+{
+    public:
+        std::unordered_map<char, TrieNode*> children;
+        std::vector<int> indices;
+
+        TrieNode() = default;
+
+        std::vector<int> search(std::string str)
+        {
+            if(str.empty()) 
+            {
+                return indices;
+            }
+            else 
+            {
+                if(this == nullptr)
+                {
+                    return std::vector<int>();
+                }
+                char first = str[0];
+                if(!children.empty() && children.find(first) != children.end())
+                {
+                    if(str.size() < 2) return indices;
+                    std::string rem = str.substr(1); // size must be at least 2
+                    return children[first]->search(rem);
+                }
+            }
+            return std::vector<int>(); 
+        }
+
+        void insert(const std::string& str, const int index)
+        {
+            if(str.empty()) return;
+            indices.push_back(index);
+            if(str.size() > 0)
+            {
+                char val = str.at(0);
+                TrieNode* child = new TrieNode();
+                if(!children.empty() && children.find(val) != children.end())
+                {
+                    child = children[val];
+                }
+                else
+                {
+                    children.emplace(val, child);
+                }
+                std::string rem = str.substr(1);
+                child -> insert(rem, index + 1);
+            }
+            else 
+            {
+                children['\0'] = nullptr;
+            }
+        }
+};
+
+class Trie 
+{
+    public:
+        TrieNode root;
+
+        Trie() = default;
+
+        std::vector<int> search(std::string str)
+        {
+            std::vector<int> els = root.search(str);
+            return root.search(str);
+        }
+
+        Trie(const std::string& str) 
+        {
+            insert(str, 0);
+        }
+
+        void insert(std::string str, int index)
+        {
+            root.insert(str, index);   
+        }
+};
+
+Trie create_trie_from_string(const std::string& str)
+{
+    Trie t;
+    for(int i = 0; i < str.size(); i++) t.insert(str.substr(i), i);
+    return t;
+}
+
+void adjust_index_start(std::vector<int>& indices, const int delta)
+{
+    for(int i = 0; i < indices.size(); i++) indices[i] = indices[i] - delta + 1;
+}
+
+std::unordered_map<std::string, std::vector<int>> multi_search2(const std::string& str, const std::vector<std::string>& small_words)
 {
     std::unordered_map<std::string, std::vector<int>> map;
-    // todo
+    Trie t = create_trie_from_string(str);
+    for(std::string small_word : small_words)
+    {
+        std::vector<int> indices = t.search(small_word); // end indices
+        adjust_index_start(indices, small_words.size());
+        map[small_word] = indices; 
+    }
     return map;
 }
 
@@ -46,7 +145,8 @@ int main()
 {
     int method;
     std::cout << "Enter 1 for solution #1, 2 for solution #2 or any other number for solution #3:\n";
-    std::cin >> method;
+    // std::cin >> method; // todo: uncomment this line and delete the next one
+    method = 2;
     std::string str = "mississippi";
     std::vector<std::string> small_words = {"is", "ppi", "hi", "sis", "i", "ssippi"};
     std::unordered_map<std::string, std::vector<int>> str_location;
