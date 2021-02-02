@@ -46,7 +46,6 @@ class TrieNode
 
         void insert(const std::string& str, const int index)
         {
-            if(str.empty()) return;
             indices.push_back(index);
             if(str.size() > 0)
             {
@@ -111,7 +110,8 @@ std::unordered_map<std::string, std::vector<int>> multi_search2(const std::strin
     Trie t = create_trie_from_string(str);
     for(std::string small_word : small_words)
     {
-        std::vector<int> indices = t.search(small_word); // end indices
+        std::vector<int> indices = t.search(small_word); 
+        // search function returns index of the \0 so indices need to be substracted with small word size 
         adjust_index_start(indices, small_word.size());
         map[small_word] = indices; 
     }
@@ -135,10 +135,8 @@ int main()
     std::cout << "Enter 1 for solution #1, 2 for solution #2 or any other number for solution #3:\n";
     // std::cin >> method; // todo: uncomment this line and delete the next one
     method = 2;
-    // std::string str = "mississippi";
-    // std::vector<std::string> small_words = {"is", "ppi", "hi", "sis", "i", "ssippi"};
-    std::string str = "hoho";
-    std::vector<std::string> small_words = {"ho"};
+    std::string str = "mississippi";
+    std::vector<std::string> small_words = {"is", "ppi", "hi", "sis", "i", "ssippi"};
     std::unordered_map<std::string, std::vector<int>> str_location;
     if(method == 1)
     {
