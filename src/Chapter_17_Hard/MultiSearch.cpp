@@ -34,25 +34,15 @@ class TrieNode
 
         std::vector<int> search(std::string str)
         {
-            if(str.empty()) 
+            if(str.empty()) return indices;
+            char first = str[0];
+            if(children.find(first) != children.end())
             {
-                return indices;
+                std::string rem = str.substr(1); // size must be at least 2
+                return children[first]->search(rem);
+            
             }
-            else 
-            {
-                if(this == nullptr)
-                {
-                    return std::vector<int>();
-                }
-                char first = str[0];
-                if(!children.empty() && children.find(first) != children.end())
-                {
-                    if(str.size() < 2) return indices;
-                    std::string rem = str.substr(1); // size must be at least 2
-                    return children[first]->search(rem);
-                }
-            }
-            return std::vector<int>(); 
+            return std::vector<int>();
         }
 
         void insert(const std::string& str, const int index)
@@ -63,7 +53,7 @@ class TrieNode
             {
                 char val = str.at(0);
                 TrieNode* child = new TrieNode();
-                if(!children.empty() && children.find(val) != children.end())
+                if(children.find(val) != children.end())
                 {
                     child = children[val];
                 }
@@ -90,7 +80,6 @@ class Trie
 
         std::vector<int> search(std::string str)
         {
-            std::vector<int> els = root.search(str);
             return root.search(str);
         }
 
@@ -114,7 +103,7 @@ Trie create_trie_from_string(const std::string& str)
 
 void adjust_index_start(std::vector<int>& indices, const int delta)
 {
-    for(int i = 0; i < indices.size(); i++) indices[i] = indices[i] - delta + 1;
+    for(int i = 0; i < indices.size(); i++) indices[i] = indices[i] - delta;
 }
 
 std::unordered_map<std::string, std::vector<int>> multi_search2(const std::string& str, const std::vector<std::string>& small_words)
@@ -124,13 +113,17 @@ std::unordered_map<std::string, std::vector<int>> multi_search2(const std::strin
     for(std::string small_word : small_words)
     {
         std::vector<int> indices = t.search(small_word); // end indices
+        std::cout << "small word = " << small_word << '\n';
+        std::cout << "indexes = ";
+        for(int el : indices) std::cout << el << ", ";
+        std::cout << '\n';
         adjust_index_start(indices, small_words.size());
         map[small_word] = indices; 
     }
     return map;
 }
 
-std::unordered_map<std::string, std::vector<int>> multi_search3(std::string str, std::vector<std::string> small_words)
+std::unordered_map<std::string, std::vector<int>> multi_search3(const std::string& str, const std::vector<std::string>& small_words)
 {
     std::unordered_map<std::string, std::vector<int>> map;
     // todo
@@ -147,8 +140,10 @@ int main()
     std::cout << "Enter 1 for solution #1, 2 for solution #2 or any other number for solution #3:\n";
     // std::cin >> method; // todo: uncomment this line and delete the next one
     method = 2;
+    // std::string str = "mississippi";
+    // std::vector<std::string> small_words = {"is", "ppi", "hi", "sis", "i", "ssippi"};
     std::string str = "mississippi";
-    std::vector<std::string> small_words = {"is", "ppi", "hi", "sis", "i", "ssippi"};
+    std::vector<std::string> small_words = {"ssippi"};
     std::unordered_map<std::string, std::vector<int>> str_location;
     if(method == 1)
     {
