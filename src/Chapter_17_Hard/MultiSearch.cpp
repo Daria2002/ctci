@@ -38,9 +38,8 @@ class TrieNode
             char first = str[0];
             if(children.find(first) != children.end())
             {
-                std::string rem = str.substr(1); // size must be at least 2
+                std::string rem = str.substr(1);
                 return children[first]->search(rem);
-            
             }
             return std::vector<int>();
         }
@@ -113,11 +112,7 @@ std::unordered_map<std::string, std::vector<int>> multi_search2(const std::strin
     for(std::string small_word : small_words)
     {
         std::vector<int> indices = t.search(small_word); // end indices
-        std::cout << "small word = " << small_word << '\n';
-        std::cout << "indexes = ";
-        for(int el : indices) std::cout << el << ", ";
-        std::cout << '\n';
-        adjust_index_start(indices, small_words.size());
+        adjust_index_start(indices, small_word.size());
         map[small_word] = indices; 
     }
     return map;
@@ -142,8 +137,8 @@ int main()
     method = 2;
     // std::string str = "mississippi";
     // std::vector<std::string> small_words = {"is", "ppi", "hi", "sis", "i", "ssippi"};
-    std::string str = "mississippi";
-    std::vector<std::string> small_words = {"ssippi"};
+    std::string str = "hoho";
+    std::vector<std::string> small_words = {"ho"};
     std::unordered_map<std::string, std::vector<int>> str_location;
     if(method == 1)
     {
