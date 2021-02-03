@@ -118,10 +118,46 @@ std::unordered_map<std::string, std::vector<int>> multi_search2(const std::strin
     return map;
 }
 
+Trie create_trie_from_small_words(const std::vector<std::string>& small_words, const int max_len)
+{
+    Trie t;
+    for(int i = 0; i < small_words.size(); i++) 
+    {
+        if(small_words[i].size() <= max_len) t.insert(small_words[i], i);
+    }
+    return t;
+}
+
+std::vector<std::string> find_strings_at_loc(TrieNode root, std::string str, const int start)
+{
+    std::vector<std::string> strings;
+    int i = 1;
+    TrieNode* tmp = root.children[str[start]];
+    while (i < str.size())
+    {
+        if(tmp == nullptr) break;
+        if(tmp->children.find('\0') != tmp->children.end()) strings.push_back(str.substr(start, i));
+        tmp = tmp -> children[str[start + i]];
+        i++;
+    }
+    return strings;
+}
+
+void insert_into_map(const std::vector<std::string> strings, std::unordered_map<std::string, std::vector<int>>& map, const int i)
+{
+    for(auto str : strings) map[str].push_back(i);
+}
+
 std::unordered_map<std::string, std::vector<int>> multi_search3(const std::string& str, const std::vector<std::string>& small_words)
 {
     std::unordered_map<std::string, std::vector<int>> map;
-    // todo
+    Trie t = create_trie_from_small_words(small_words, str.size());
+    TrieNode root = t.root;
+    for(int i = 0; i < str.size(); i++)
+    {
+        std::vector<std::string> strings = find_strings_at_loc(root, str, i);
+        insert_into_map(strings, map, i);
+    }
     return map;
 }
 
@@ -133,8 +169,7 @@ int main()
 {
     int method;
     std::cout << "Enter 1 for solution #1, 2 for solution #2 or any other number for solution #3:\n";
-    // std::cin >> method; // todo: uncomment this line and delete the next one
-    method = 2;
+    std::cin >> method; // todo: uncomment this line and delete the next one
     std::string str = "mississippi";
     std::vector<std::string> small_words = {"is", "ppi", "hi", "sis", "i", "ssippi"};
     std::unordered_map<std::string, std::vector<int>> str_location;
