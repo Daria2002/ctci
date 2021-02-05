@@ -13,13 +13,13 @@ class Range
         }
 };
 
-int find_next_instance(const std::vector<int> shortest_arr, int element, const int index)
+int find_next_instance(const std::vector<int>& shortest_arr, const int element, const int index)
 {
     for(int i = index; i < shortest_arr.size(); i++) if(shortest_arr[i] == element) return i;
     return -1;
 }
 
-int find_closure(const std::vector<int> longer_arr, const std::vector<int> shorter_arr, const int index)
+int find_closure(const std::vector<int>& longer_arr, const std::vector<int>& shorter_arr, const int index)
 {
     int max = -1;
     // iterate through shorter arr and search each element in longer arr
@@ -32,7 +32,7 @@ int find_closure(const std::vector<int> longer_arr, const std::vector<int> short
     return max;
 }
 
-Range shortest_range_bf(const std::vector<int> shorter_arr, const std::vector<int> longer_arr)
+Range shortest_range_bf(const std::vector<int>& shorter_arr, const std::vector<int>& longer_arr)
 {
     int best_start = -1, best_end = -1;
     for(int i = 0; i < longer_arr.size(); i++)
@@ -48,7 +48,7 @@ Range shortest_range_bf(const std::vector<int> shorter_arr, const std::vector<in
     return Range(best_start, best_end);
 }
 
-void sweep_for_closure(int el, const std::vector<int>& longer_arr, std::vector<int>& closures)
+void sweep_for_closure(const int el, const std::vector<int>& longer_arr, std::vector<int>& closures)
 {
     int next = -1;
     for(int i = longer_arr.size() - 1; i >= 0; i--)
@@ -88,13 +88,13 @@ Range get_shortest_closure(const std::vector<int>& closures)
     return shortest;
 }
 
-Range shortest_range_less_space(const std::vector<int> shorter_arr, const std::vector<int> longer_arr)
+Range shortest_range_less_space(const std::vector<int>& shorter_arr, const std::vector<int>& longer_arr)
 {
     std::vector<int> closures = get_closures(shorter_arr, longer_arr);
     return get_shortest_closure(closures);
 }
 
-Range shortest_range_optimal(const std::vector<int> shorter_arr, const std::vector<int> longer_arr)
+Range shortest_range_optimal(const std::vector<int>& shorter_arr, const std::vector<int>& longer_arr)
 {
     Range r;
     // todo
