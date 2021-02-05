@@ -7,6 +7,10 @@ class Range
         Range() = default;
         Range(int s, int e) : start(s), end(e) {}
         int start, end;
+        int len() const
+        {
+            return end - start + 1;
+        }
 };
 
 int find_next_instance(const std::vector<int> shortest_arr, int element, const int index)
@@ -44,18 +48,50 @@ Range shortest_range_bf(const std::vector<int> shorter_arr, const std::vector<in
     return Range(best_start, best_end);
 }
 
-Range shortest_range_fast(const std::vector<int> shorter_arr, const std::vector<int> longer_arr)
+void sweep_for_closure(int el, const std::vector<int>& longer_arr, std::vector<int>& closures)
 {
-    Range r;
-    // todo
-    return r;
+    int next = -1;
+    for(int i = longer_arr.size() - 1; i >= 0; i--)
+    {
+        if(longer_arr[i] == el) 
+        {
+            next = i;
+        }
+        // closures[i] == -1, there is an element in the smaller arr that still didn't occurred in the bigger arr
+        if((next == -1 || closures[i] < next) && (closures[i] != -1)) 
+        {
+            closures[i] = next;
+        }
+    }
+}
+
+std::vector<int> get_closures(const std::vector<int>& shorter_arr, const std::vector<int>& longer_arr)
+{
+    std::vector<int> closures(longer_arr.size(), 0);
+    for(int i = 0; i < shorter_arr.size(); i++)
+    {
+        sweep_for_closure(shorter_arr[i], longer_arr, closures);
+    }
+    return closures;
+}
+
+Range get_shortest_closure(const std::vector<int>& closures)
+{
+    Range shortest = Range(0, closures[0]);
+    for(int i = 1; i < closures.size(); i++)
+    {
+        if(closures[i] == -1) break;
+        Range r = Range(i, closures[i]);
+        if(shortest.len() > r.len()) shortest = r;
+    }
+    if(shortest.len() <= 0) return Range(-1, -1);
+    return shortest;
 }
 
 Range shortest_range_less_space(const std::vector<int> shorter_arr, const std::vector<int> longer_arr)
 {
-    Range r;
-    // todo
-    return r;
+    std::vector<int> closures = get_closures(shorter_arr, longer_arr);
+    return get_shortest_closure(closures);
 }
 
 Range shortest_range_optimal(const std::vector<int> shorter_arr, const std::vector<int> longer_arr)
@@ -78,8 +114,8 @@ Range shortest_range_optimal(const std::vector<int> shorter_arr, const std::vect
  **/
 int main()
 {
-    std::cout << "Enter 1 to solve using bf approach, 2 to solve using pretty fast solution, 3 to solve using\n"
-    "pretty fast with less space approach or any other number to solve using optimal approach\n";
+    std::cout << "Enter 1 to solve using bf approach, 2 to solve using pretty fast with less space approach\n"
+    "or any other number to solve using optimal approach\n";
     int method;
     std::cin >> method;
     const std::vector<int> shorter_arr = {1, 5, 9};
@@ -90,10 +126,6 @@ int main()
         shortest_range = shortest_range_bf(shorter_arr, longer_arr);
     }
     else if(method == 2)
-    {
-        shortest_range = shortest_range_fast(shorter_arr, longer_arr);
-    }
-    else if(method == 3)
     {
         shortest_range = shortest_range_less_space(shorter_arr, longer_arr);
     }
