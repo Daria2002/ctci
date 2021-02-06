@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 class Range
 {
@@ -94,10 +95,68 @@ Range shortest_range_less_space(const std::vector<int>& shorter_arr, const std::
     return get_shortest_closure(closures);
 }
 
+class CountedLookup
+{
+    public:
+        CountedLookup() = default;
+        CountedLookup(std::vector<int> a) 
+        {
+            for(int el : a) lookup[el] = 0;
+        }
+        std::unordered_map<int, int> lookup;
+        int fulfilled = 0;
+
+        bool contains(int el)
+        {
+            return lookup.count(el) > 0;
+        }
+
+        void increment_if_found(int element)
+        {
+            if(!contains(element)) return;
+            if(lookup[element] == 0) fulfilled++;
+            lookup[element]++;
+        }
+
+        void decrement_if_found(int element)
+        {
+            if(!contains(element)) return;
+            lookup[element]--;
+            if(lookup[element] == 0) fulfilled--;
+        }
+
+        bool are_all_fulfilled() const
+        {
+            return fulfilled == lookup.size();
+        }
+};
+
+int find_closure(const std::vector<int>& longer_arr, const int start, CountedLookup& cl)
+{
+    int index = start;
+    while (!cl.are_all_fulfilled() && index + 1 < longer_arr.size())
+    {
+        index++;
+        cl.increment_if_found(longer_arr[index]);
+    }
+    return index;
+}
+
 Range shortest_range_optimal(const std::vector<int>& shorter_arr, const std::vector<int>& longer_arr)
 {
-    Range r;
-    // todo
+    Range r(0, std::numeric_limits<int>::max() - 1); // len is std::numeric_limits<int>::max
+    if(longer_arr.size() < shorter_arr.size()) return r;
+    CountedLookup counted_lookup(shorter_arr);
+    int right = 0;
+    counted_lookup.increment_if_found(longer_arr[0]); // increment leftmost element, if contained in shorter arr
+    for(int left = 0; left < longer_arr.size(); left++)
+    {
+        right = find_closure(longer_arr, right, counted_lookup);
+        if(!counted_lookup.are_all_fulfilled()) break; // from current index till end some elements didn't occurred 
+        int len = right - left + 1;
+        if(r.len() > len) r = Range(left, right);
+        counted_lookup.decrement_if_found(longer_arr[left]); // decrement leftmost element, if contained in shorter arr
+    }
     return r;
 }
 
