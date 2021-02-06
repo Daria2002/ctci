@@ -106,7 +106,7 @@ class CountedLookup
         std::unordered_map<int, int> lookup;
         int fulfilled = 0;
 
-        bool contains(int el)
+        bool contains(int el) const
         {
             return lookup.count(el) > 0;
         }
