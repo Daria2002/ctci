@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 int missing_number(const std::vector<int>& elements)
 {
@@ -11,11 +12,52 @@ int missing_number(const std::vector<int>& elements)
     return full_sum - actual_sum;
 }
 
+std::pair<int, int> solve(const int k1, const int k2)
+{
+    /*
+        ax^2 + bx + c -> x = [-b +- sqrt(b^2 - 4ac)] / 2a
+        2x^2 - 2sx + s^2 - t = 0 (see missing_numbers function)
+    */
+   int a = 2;
+   int b = -2 * k1;
+   int c = k1 * k1 - k2;
+   double part1 = -b;
+   double part2 = sqrt(b*b - 4*a*c);
+   double part3 = 2 * a;
+   int x = (int) ((part1 + part2) / part3);
+   int y = k1 - x;
+   std::cout << "x = " << x << '\n';
+   std::cout << "y = " << y << '\n';
+   return std::make_pair(x, y);
+}
+
+int square_sum(int n, int power)
+{
+    int sum = 0;
+    for(int i = 1; i <= n; i++) sum += pow(i, power);
+    return sum;
+}
+
 std::pair<int, int> missing_numbers(const std::vector<int>& elements)
 {
-    std::pair<int, int> missing = std::make_pair(-1, -1);
-    // todo
-    return missing;
+    /*
+        x + y = s
+        x^2 + y^2 = t
+        y = s - x
+        x^2 + (s - x)^2 = t
+        2x^2 - 2sx + s^2 - t = 0
+        k1 = s
+        k2 = t
+    */
+    int n = elements.size() + 2; // last element can be calculated from elements size because numbers are in range [1, n], where 2 nums are missing in size, so there is +2
+    int s = n * (n + 1) / 2; // initialize to expected value, and in for loop decrement to get sum of missing numbers
+    int t = square_sum(n, 2);  // initialize to expected value
+    for(int i = 0; i < elements.size(); i++)
+    {
+        t -= (elements[i] * elements[i]);
+        s -= elements[i];
+    }
+    return solve(s, t);
 }
 
 /**
