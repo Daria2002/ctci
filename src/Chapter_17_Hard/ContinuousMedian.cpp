@@ -3,8 +3,10 @@
 #include <ctime> // time
 #include <queue>
 
-// max heap for values below the median, min heap for values above the median
-std::priority_queue<int> max_heap, min_heap;
+// max heap for values below the median
+std::priority_queue<int, std::vector<int>, std::less<int>> max_heap;
+// min heap for values above the median
+std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap;
 
 double get_median()
 {
@@ -49,6 +51,25 @@ void add_number(int num)
     }
 }
 
+void print_heaps()
+{
+    std::priority_queue<int, std::vector<int>, std::less<int>> max_heap_tmp = max_heap;
+    std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap_tmp = min_heap;
+    std::cout << "max heap:";
+    while (!max_heap_tmp.empty())
+    {
+        std::cout << max_heap_tmp.top() << ", ";
+        max_heap_tmp.pop();
+    }
+    std::cout << "\nmin heap:";
+    while (!min_heap_tmp.empty())
+    {
+        std::cout << min_heap_tmp.top() << ", ";
+        min_heap_tmp.pop();
+    }
+    std::cout << '\n';
+}
+
 /**
  * Continuous Median: Numbers are randomly generated and passed to a method. 
  * Write a program to find and maintain the median values as new values are generated.
@@ -63,7 +84,7 @@ int main()
         int rand_num = rand() % 15;
         std::cout << rand_num << ", ";
         add_number(rand_num);
-
+        print_heaps();
     }
     std::cout << "\nMedian = " << get_median() << '\n';
 }
