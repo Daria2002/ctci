@@ -17,7 +17,7 @@ double get_median()
  * Max heap contains values below the median. Max_heap.top is the biggest of the smallest elements.
  * If Max_heap.top > value -> biggest of small elements is bigger than value. move max_heap top to min_heap and store value in max_heap.
  * Min heap contains values above the median. Min heap.top is the biggest of the biggest elements.
- * If Min_heap.top < value -> biggest of big elements is smaller than value. move min_heap top to max_heap and store value in min_heap.
+ * If Min_heap.top < value -> smallest of big elements is smaller than value. move min_heap top to max_heap and store value in min_heap.
  */
 void add_number(int num)
 {
