@@ -1,14 +1,14 @@
 #include <iostream>
 #include <vector>
 
-int find_max_index(std::vector<int> histogram, int start, int end)
+int find_max_index(const std::vector<int>& histogram, const int start, const int end)
 {
     int max_index = start;
     for(int i = start + 1; i <= end; i++) if(histogram[i] > histogram[max_index]) max_index = i;
     return max_index;
 }
 
-int bordered_vol(std::vector<int> histogram, int start, int end)
+int bordered_vol(const std::vector<int>& histogram, const int start, const int end)
 {
     if(start >= end) return 0;
     int min = std::min(histogram[start], histogram[end]);
@@ -20,7 +20,7 @@ int bordered_vol(std::vector<int> histogram, int start, int end)
     return sum;
 }
 
-int subgraph_vol(std::vector<int> histogram, int start, int end, bool is_left)
+int subgraph_vol(const std::vector<int>& histogram, const int start, const int end, bool is_left)
 {
     if(start >= end) return 0;
     int sum = 0;
@@ -39,7 +39,7 @@ int subgraph_vol(std::vector<int> histogram, int start, int end, bool is_left)
     return sum;
 }
 
-int volume1(std::vector<int> histogram)
+int volume1(const std::vector<int>& histogram)
 {
     int start = 0;
     int end = histogram.size() - 1;
@@ -49,13 +49,80 @@ int volume1(std::vector<int> histogram)
     return left_vol + right_vol;
 }
 
-int volume2(std::vector<int> histogram)
+class Histogram 
 {
-    // todo
-    return 0;
+    public:
+        Histogram(int h) : height(h) {}
+        Histogram() = default;
+        int height;
+        int leftMaxIndex = -1;
+        int rightMaxIndex = -1;
+};
+
+int bordered_vol(const std::vector<Histogram>& histogram, const int start, const int end)
+{
+    if(start >= end) return 0;
+    int min = std::min(histogram.at(start).height, histogram.at(end).height);
+    int sum = 0;
+    for(int i = start + 1; i < end; i++)
+    {
+        sum += min - histogram.at(i).height;
+    }
+    return sum;
 }
 
-int volume3(std::vector<int> histogram)
+int subgraph_vol(const std::vector<Histogram>& histogram, const int start, const int end, bool is_left)
+{
+    if(start >= end) return 0;
+    int sum = 0;
+    if(is_left)
+    {
+        int max = histogram.at(end - 1).leftMaxIndex;
+        sum += bordered_vol(histogram, max, end);
+        sum += subgraph_vol(histogram, start, max, is_left);
+    }
+    else 
+    {
+        int max = histogram.at(start + 1).rightMaxIndex;
+        sum += bordered_vol(histogram, start, max);
+        sum += subgraph_vol(histogram, max, end, is_left);
+    }
+    return sum;
+}
+
+std::vector<Histogram> create_histogram(const std::vector<int>& h)
+{
+    std::vector<Histogram> histogram(h.size());
+    for(int i = 0; i < h.size(); i++) histogram[i] = Histogram(h[i]);
+    int max_index = 0;
+    // set left max index
+    for(int i = 0; i < h.size(); i++) 
+    {
+        if(h.at(max_index) < h.at(i)) max_index = i;
+        histogram[i].leftMaxIndex = max_index;
+    }
+    // set right max index
+    max_index = h.size() - 1;
+    for(int i = h.size() - 1; i >= 0; i--) 
+    {
+        if(h.at(max_index) < h.at(i)) max_index = i;
+        histogram[i].rightMaxIndex = max_index;
+    }
+    return histogram;
+}
+
+int volume2(const std::vector<int>& histogram)
+{
+    int start = 0;
+    int end = histogram.size() - 1;
+    std::vector<Histogram> h = create_histogram(histogram);
+    int max = h[0].rightMaxIndex;
+    int left_vol = subgraph_vol(h, start, max, true);
+    int right_vol = subgraph_vol(h, max, end, false);
+    return left_vol + right_vol;
+}
+
+int volume3(const std::vector<int>& histogram)
 {
     // todo
     return 0;
@@ -70,7 +137,7 @@ int volume3(std::vector<int> histogram)
  */
 int main()
 {
-    std::cout << "Enter 1 for soluzion #1, 2 for solution #2 or any other number for solution #3:\n";
+    std::cout << "Enter 1 for solution #1, 2 for solution #2 or any other number for solution #3:\n";
     int method;
     std::cin >> method;
     int volume;
