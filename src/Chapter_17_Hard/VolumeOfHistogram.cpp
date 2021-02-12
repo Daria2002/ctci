@@ -124,8 +124,22 @@ int volume2(const std::vector<int>& histogram)
 
 int volume3(const std::vector<int>& histogram)
 {
-    // todo
-    return 0;
+    std::vector<int> left_maxes;
+    int left_max = histogram[0];
+    for(int i = 0; i < histogram.size(); i++) 
+    {
+        if(histogram[i] > left_max) left_max = histogram[i];
+        left_maxes.push_back(left_max);
+    }
+    int sum = 0;
+    int right_max = histogram[histogram.size() - 1];
+    for(int i = histogram.size() - 1; i >= 0; i--) 
+    {
+        if(histogram[i] > right_max) right_max = histogram[i];
+        int second_tallest = std::min(right_max, left_maxes[i]);
+        if(second_tallest > histogram[i]) sum += second_tallest - histogram[i];
+    }
+    return sum;
 }
 
 /**
