@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <vector>
+#include <unordered_map>
     
 std::unordered_set<std::string> set_up_dict(std::vector<std::string> words)
 {
@@ -57,11 +58,79 @@ std::vector<std::string> transform_bf(std::string start, std::string end, std::v
     return transform(visited, start, end, dict);
 }
 
+std::vector<std::string> get_wild_card_roots(std::string w)
+{
+    std::vector<std::string> words;
+    for(int i = 0; i < w.size(); i++)
+    {
+        std::string word = w.substr(0, i) + "_" + w.substr(i + 1);
+        words.push_back(word);
+    }
+    return words;
+}
+
+std::unordered_map<std::string, std::vector<std::string>> words_to_map(std::vector<std::string> words)
+{
+    std::unordered_map<std::string, std::vector<std::string>> word_map;
+    for(std::string word : words)
+    {
+        std::vector<std::string> linked = get_wild_card_roots(word);
+        for(std::string linked_word : linked)
+        {
+            word_map[linked_word].push_back(word);
+        }
+    }
+    return word_map;
+}
+
+std::vector<std::string> get_valid_linked_words(std::string word, 
+std::unordered_map<std::string, std::vector<std::string>> wild_card_to_word_vector)
+{
+    std::vector<std::string> wild_cards = get_wild_card_roots(word);
+    std::vector<std::string> linked_words;
+    for(std::string wild_card : wild_cards)
+    {
+        std::vector<std::string> words = wild_card_to_word_vector[wild_card];
+        for(std::string linked_word : words)
+        {
+            if(linked_word != word) linked_words.push_back(linked_word);
+        }
+    }
+    return linked_words;
+}
+
+std::vector<std::string> transform_optimized(std::unordered_set<std::string> visited, std::string start, 
+std::string end, std::unordered_map<std::string, std::vector<std::string>> wild_card_to_word_vector)
+{
+    std::vector<std::string> path;
+    if(start == end)
+    {
+        path.push_back(start);
+        return path;
+    }
+    else if(visited.find(start) != visited.end())
+    {
+        return path;
+    }
+    visited.emplace(start);
+    std::vector<std::string> words = get_valid_linked_words(start, wild_card_to_word_vector);
+    for(std::string word : words)
+    {
+        path = transform_optimized(visited, word, end, wild_card_to_word_vector);
+        if(!path.empty())
+        {
+            path.push_back(start);
+            return path;
+        }
+    }
+    return path;
+}
+
 std::vector<std::string> transform_optimized(std::string start, std::string end, std::vector<std::string> dict)
 {
-    std::vector<std::string> w;
-    // todo
-    return w;
+    std::unordered_map<std::string, std::vector<std::string>> wild_card_to_word_vector = words_to_map(dict);
+    std::unordered_set<std::string> visited;
+    return transform_optimized(visited, start, end, wild_card_to_word_vector);
 }
 
 std::vector<std::string> transform_optimal(std::string start, std::string end, std::vector<std::string> dict)
