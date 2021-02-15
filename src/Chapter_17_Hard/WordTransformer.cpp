@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <vector>
 #include <unordered_map>
+#include <queue>
     
 std::unordered_set<std::string> set_up_dict(std::vector<std::string> words)
 {
@@ -133,11 +134,87 @@ std::vector<std::string> transform_optimized(std::string start, std::string end,
     return transform_optimized(visited, start, end, wild_card_to_word_vector);
 }
 
+class PathNode
+{
+    public:
+        std::string word = "";
+        PathNode* previous_node = nullptr;
+        PathNode(std::string w, PathNode* previous)
+        {
+            word = w;
+            previous_node = previous;
+        }
+        std::string get_word()
+        {
+            return word;
+        }
+        std::vector<std::string> collapse(bool starts_with_root)
+        {
+            std::vector<std::string> path;
+            PathNode* node = this;
+            while (node != nullptr)
+            {
+                if(starts_with_root)
+                {
+                    path.push_back(node->word);
+                }
+                else 
+                {
+                    node = node->previous_node;
+                }
+            }
+            return path;
+        }
+};
+
+class BFSData
+{
+    public:
+        std::queue<PathNode> to_visit;
+        std::unordered_map<std::string, PathNode> visited;
+        BFSData() = default;
+        BFSData(std::string root)
+        {
+            PathNode source_path(root, nullptr);
+            to_visit.push(source_path);
+            visited[root] = source_path;
+        }
+        bool is_finished()
+        {
+            return to_visit.empty();
+        }
+};
+
+std::string search_level(std::unordered_map<std::string, std::vector<std::string>> 
+wild_card_to_word_list, BFSData source_data, BFSData dest_data)
+{
+    // todo
+}
+
+std::vector<std::string> merge_paths(BFSData source_data, BFSData dest_data, std::string collision)
+{
+    // todo
+}
+
 std::vector<std::string> transform_optimal(std::string start, std::string end, std::vector<std::string> dict)
 {
-    std::vector<std::string> w;
-    // todo
-    return w;
+    std::unordered_map<std::string, std::vector<std::string>> wild_card_to_word_list = words_to_map(dict);
+    BFSData source_data(start);
+    BFSData dest_data(end);
+    while (!source_data.is_finished() && !dest_data.is_finished())
+    {
+        std::string collision = search_level(wild_card_to_word_list, source_data, dest_data);
+        if(!collision.empty())
+        {
+            return merge_paths(source_data, dest_data, collision);
+        }
+        collision = search_level(wild_card_to_word_list, dest_data, source_data);
+        if(!collision.empty())
+        {
+            return merge_paths(source_data, dest_data, collision);
+        }
+    }
+    return std::vector<std::string>();
 }
 
 /**
