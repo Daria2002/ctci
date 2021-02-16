@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <queue>
+#include <algorithm>
     
 std::unordered_set<std::string> set_up_dict(std::vector<std::string> words)
 {
@@ -193,7 +194,12 @@ wild_card_to_word_list, BFSData source_data, BFSData dest_data)
 
 std::vector<std::string> merge_paths(BFSData source_data, BFSData dest_data, std::string collision)
 {
-    // todo
+    PathNode end1 = source_data.visited[collision];
+    PathNode end2 = dest_data.visited[collision];
+    std::vector<std::string> path_one = end1.collapse(false); // forward
+    std::vector<std::string> path_two = end2.collapse(true); // reverse
+    std::copy(path_two.begin() + 1, path_two.end(), std::back_inserter(path_one));
+    return path_one;
 }
 
 std::vector<std::string> transform_optimal(std::string start, std::string end, std::vector<std::string> dict)
