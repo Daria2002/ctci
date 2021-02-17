@@ -146,11 +146,11 @@ class PathNode
             word = w;
             previous_node = previous;
         }
-        std::string get_word()
+        std::string get_word() const
         {
             return word;
         }
-        std::vector<std::string> collapse(bool starts_with_root)
+        std::vector<std::string> collapse(const bool starts_with_root)
         {
             std::list<std::string> path;
             PathNode* node = this;
@@ -182,13 +182,13 @@ class BFSData
             to_visit.push(source_path);
             visited[root] = source_path;
         }
-        bool is_finished()
+        bool is_finished() const
         {
             return to_visit.empty();
         }
 };
 
-std::string search_level(std::unordered_map<std::string, std::vector<std::string>> 
+std::string search_level(const std::unordered_map<std::string, std::vector<std::string>>&
 wild_card_to_word_list, BFSData& primary, BFSData& secondary)
 {
     int count = primary.to_visit.size();
@@ -215,7 +215,7 @@ wild_card_to_word_list, BFSData& primary, BFSData& secondary)
     return "";
 }
 
-std::vector<std::string> merge_paths(BFSData& source_data, BFSData& dest_data, std::string collision)
+std::vector<std::string> merge_paths(BFSData& source_data, BFSData& dest_data, const std::string collision)
 {
     PathNode* end1 = source_data.visited[collision];
     PathNode* end2 = dest_data.visited[collision];
@@ -225,7 +225,7 @@ std::vector<std::string> merge_paths(BFSData& source_data, BFSData& dest_data, s
     return path_one;
 }
 
-std::vector<std::string> transform_optimal(std::string start, std::string end, std::vector<std::string> dict)
+std::vector<std::string> transform_optimal(const std::string start, const std::string end, const std::vector<std::string>& dict)
 {
     std::unordered_map<std::string, std::vector<std::string>> wild_card_to_word_list = words_to_map(dict);
     BFSData source_data(start);
