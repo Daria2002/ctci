@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <queue>
 #include <algorithm>
+#include <list>
     
 std::unordered_set<std::string> set_up_dict(std::vector<std::string> words)
 {
@@ -151,32 +152,33 @@ class PathNode
         }
         std::vector<std::string> collapse(bool starts_with_root)
         {
-            std::vector<std::string> path;
+            std::list<std::string> path;
             PathNode* node = this;
             while (node != nullptr)
             {
                 if(starts_with_root)
                 {
-                    path.push_back(node->word);
+                    path.push_back(node -> word);
                 }
-                else 
+                else
                 {
-                    node = node->previous_node;
+                    path.push_front(node -> word);
                 }
+                node = node->previous_node;
             }
-            return path;
+            return std::vector<std::string>(path.begin(), path.end());
         }
 };
 
 class BFSData
 {
     public:
-        std::queue<PathNode> to_visit;
-        std::unordered_map<std::string, PathNode> visited;
+        std::queue<PathNode*> to_visit;
+        std::unordered_map<std::string, PathNode*> visited;
         BFSData() = default;
         BFSData(std::string root)
         {
-            PathNode source_path(root, nullptr);
+            PathNode* source_path = new PathNode(root, nullptr);
             to_visit.push(source_path);
             visited[root] = source_path;
         }
@@ -187,17 +189,38 @@ class BFSData
 };
 
 std::string search_level(std::unordered_map<std::string, std::vector<std::string>> 
-wild_card_to_word_list, BFSData source_data, BFSData dest_data)
+wild_card_to_word_list, BFSData& primary, BFSData& secondary)
 {
-    // todo
+    int count = primary.to_visit.size();
+    for(int i = 0; i < count; i++)
+    {
+        PathNode* pathNode = primary.to_visit.front();
+        primary.to_visit.pop();
+        std::string word = pathNode->get_word();
+        if(secondary.visited.find(word) != secondary.visited.end())
+        {
+            return pathNode->get_word();
+        }
+        std::vector<std::string> words = get_valid_linked_words(word, wild_card_to_word_list);
+        for(std::string w : words)
+        {
+            if(primary.visited.find(w) == primary.visited.end())
+            {
+                PathNode* next = new PathNode(w, pathNode);
+                primary.visited[w] = next;
+                primary.to_visit.push(next);
+            }
+        }
+    }
+    return "";
 }
 
-std::vector<std::string> merge_paths(BFSData source_data, BFSData dest_data, std::string collision)
+std::vector<std::string> merge_paths(BFSData& source_data, BFSData& dest_data, std::string collision)
 {
-    PathNode end1 = source_data.visited[collision];
-    PathNode end2 = dest_data.visited[collision];
-    std::vector<std::string> path_one = end1.collapse(false); // forward
-    std::vector<std::string> path_two = end2.collapse(true); // reverse
+    PathNode* end1 = source_data.visited[collision];
+    PathNode* end2 = dest_data.visited[collision];
+    std::vector<std::string> path_one = end1->collapse(false); // forward
+    std::vector<std::string> path_two = end2->collapse(true); // reverse
     std::copy(path_two.begin() + 1, path_two.end(), std::back_inserter(path_one));
     return path_one;
 }
