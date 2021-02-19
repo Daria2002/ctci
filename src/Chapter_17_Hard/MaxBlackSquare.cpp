@@ -6,22 +6,71 @@ class Subsquare
     public:
         Subsquare() = default;
         Subsquare(int r, int c, int s) : row(r), col(c), size(s) {}
-        int row, col, size;
+        int row = -1, col = -1, size = -1;
 };
 
-Subsquare find_max_square_preprocessing(std::vector<std::vector<int>> matrix)
+bool is_square(const std::vector<std::vector<int>>& matrix, const int row, const int col, const int size)
 {
-    
+    // check top and bottom border
+    for(int j = 0; j < size; j++)
+    {
+        if(matrix[row][col + j] == 0) return false;
+        if(matrix[row + size - 1][col + j] == 0) return false;
+    }
+    // check left and right border
+    for(int j = 0; j < size; j++)
+    {
+        if(matrix[row + j][col] == 0) return false;
+        if(matrix[row + j][col + size - 1] == 0) return false;
+    }
+    return true;
 }
 
-Subsquare find_max_square_simple(std::vector<std::vector<int>> matrix)
+bool find_sequence(const std::vector<std::vector<int>>& matrix, const int size, Subsquare& s)
 {
-    
+    int count = matrix.size() - size + 1;
+    for(int row = 0; row < count; row++)
+    {
+        for(int col = 0; col < count; col++)
+        {
+            if(is_square(matrix, row, col, size))
+            {
+                s = Subsquare(row, col, size);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+Subsquare find_max_square_preprocessing(const std::vector<std::vector<int>>& matrix)
+{
+    Subsquare s;
+    // todo
+    return s;   
+}
+
+Subsquare find_max_square_simple(const std::vector<std::vector<int>>& matrix)
+{
+    Subsquare s;
+    for(int size = matrix.size(); size >= 1; size--)
+    {
+        if(find_sequence(matrix, size, s)) return s;
+    }
+    return s;
 }
 
 std::vector<std::vector<int>> generate_matrix()
 {
-
+    std::vector<std::vector<int>> v = 
+    {
+        {0, 0, 1, 1, 1},
+        {0, 1, 1, 0, 1},
+        {0, 1, 1, 1, 1},
+        {1, 1, 1, 0, 0},
+        {0, 0, 0, 1, 1}
+    };
+    return v;
 }
 
 /**
