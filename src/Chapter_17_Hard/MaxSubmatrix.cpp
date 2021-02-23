@@ -50,9 +50,19 @@ SubMatrix max_submatrix_bf(const std::vector<std::vector<int>>& matrix)
     return best;
 }
 
-SubMatrix max_submatrix_dp(std::vector<std::vector<int>> matrix)
+std::vector<std::vector<int>> precompute_sums(const std::vector<std::vector<int>>& matrix)
 {
     // todo
+}
+
+SubMatrix max_submatrix_dp(const std::vector<std::vector<int>>& matrix)
+{
+    SubMatrix best;
+    int row_count = matrix.size();
+    int col_count = matrix[0].size();
+    std::vector<std::vector<int>> sum_through = precompute_sums(matrix);
+    // todo
+    return best;
 }
 
 SubMatrix max_submatrix_optimized(std::vector<std::vector<int>> matrix)
