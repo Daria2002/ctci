@@ -52,7 +52,27 @@ SubMatrix max_submatrix_bf(const std::vector<std::vector<int>>& matrix)
 
 std::vector<std::vector<int>> precompute_sums(const std::vector<std::vector<int>>& matrix)
 {
-    // todo
+    std::vector<std::vector<int>> sums = matrix; // initialize to matrix, just because of the space initialization
+    for(int r = 0; r < matrix.size(); r++)
+    {
+        for(int c = 0; c < matrix[0].size(); c++)
+        {
+            int left = c > 0 ? sums[r][c - 1] : 0;
+            int top = r > 0 ? sums[r - 1][c] : 0;
+            int overlap = r > 0 && c > 0 ? sums[r - 1][c - 1] : 0;
+            sums[r][c] = left + top - overlap + matrix[r][c];
+        }
+    }
+    return sums;
+}
+
+int sum_area(std::vector<std::vector<int>> sum_through, int r1, int c1, int r2, int c2)
+{
+    int top_left = r1 > 0 && c1 > 0 ? sum_through[r1 - 1][c1 - 1] : 0;
+    int full = sum_through[r2][c2];
+    int left = c1 > 0 ? sum_through[r2][c1 - 1] : 0;
+    int top = r1 > 0 ? sum_through[r1 - 1][c2] : 0;
+    return full - left - top + top_left;
 }
 
 SubMatrix max_submatrix_dp(const std::vector<std::vector<int>>& matrix)
@@ -61,7 +81,23 @@ SubMatrix max_submatrix_dp(const std::vector<std::vector<int>>& matrix)
     int row_count = matrix.size();
     int col_count = matrix[0].size();
     std::vector<std::vector<int>> sum_through = precompute_sums(matrix);
-    // todo
+    for(int row1 = 0; row1 < row_count; row1++)
+    {
+        for(int row2 = 0; row2 < row_count; row2++)
+        {
+            for(int col1 = 0; col1 < col_count; col1++)
+            {
+                for(int col2 = 0; col2 < col_count; col2++)
+                {
+                    int sum = sum_area(sum_through, row1, col1, row2, col2);
+                    if(!best.initialized || best.sum < sum)
+                    {
+                        best = SubMatrix(row1, col1, row2, col2, sum);
+                    }
+                }
+            }
+        }
+    }
     return best;
 }
 
