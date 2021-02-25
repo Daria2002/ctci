@@ -101,6 +101,14 @@ SubMatrix max_submatrix_dp(const std::vector<std::vector<int>>& matrix)
     return best;
 }
 
+class Range
+{
+    public:
+        Range() = default;
+        Range(int s, int e) : start(s), end(e) {}
+        int start, end;
+};
+
 SubMatrix max_submatrix_optimized(std::vector<std::vector<int>> matrix)
 {
     // todo
