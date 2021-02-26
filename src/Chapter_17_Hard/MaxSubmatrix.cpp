@@ -105,9 +105,34 @@ class Range
 {
     public:
         Range() = default;
-        Range(int s, int e) : start(s), end(e) {}
-        int start, end;
+        Range(int s, int e, int s) : start(s), end(e), sum(s) 
+        {
+            initialized = true;
+        }
+        int start, end, sum;
+        bool initialized = false;
 };
+
+Range max_subarray(std::vector<int> arr, int N)
+{
+    Range best;
+    int start = 0; 
+    int sum = 0;
+    for(int i = 0; i < N; i++)
+    {
+        sum += arr[i];
+        if(!best.initialized || sum > best.sum)
+        {
+            best = Range(start, i, sum);
+        }
+        if(sum < 0)
+        {
+            start = i + 1;
+            sum = 0;
+        }
+    }
+    return best;
+}
 
 SubMatrix max_submatrix_optimized(std::vector<std::vector<int>> matrix)
 {
