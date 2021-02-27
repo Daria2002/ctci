@@ -105,7 +105,7 @@ class Range
 {
     public:
         Range() = default;
-        Range(int s, int e, int s) : start(s), end(e), sum(s) 
+        Range(int s, int e, int range_sum) : start(s), end(e), sum(range_sum) 
         {
             initialized = true;
         }
@@ -113,12 +113,17 @@ class Range
         bool initialized = false;
 };
 
-Range max_subarray(std::vector<int> arr, int N)
+std::ostream& operator<<(std::ostream& os, const Range& r) {
+    os << "[" << r.start << ", " << r.end << "]";
+    return os;
+}
+
+Range max_subarray(const std::vector<int>& arr)
 {
     Range best;
     int start = 0; 
     int sum = 0;
-    for(int i = 0; i < N; i++)
+    for(int i = 0; i < arr.size(); i++)
     {
         sum += arr[i];
         if(!best.initialized || sum > best.sum)
