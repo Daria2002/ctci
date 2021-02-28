@@ -141,7 +141,26 @@ Range max_subarray(const std::vector<int>& arr)
 
 SubMatrix max_submatrix_optimized(std::vector<std::vector<int>> matrix)
 {
-    // todo
+    const int row_count = matrix.size();
+    const int col_count = matrix[0].size();
+    SubMatrix best;
+    for(int row_start = 0; row_start < row_count; row_start++)
+    {
+        std::vector<int> partial_sum(col_count);
+        for(int row_end = row_start; row_end < row_count; row_end++)
+        {
+            for(int i = 0; i < col_count; i++)
+            {
+                partial_sum[i] += matrix[row_end][i];
+            }
+            Range best_range = max_subarray(partial_sum);
+            if(!best.initialized || best.sum < best_range.sum)
+            {
+                best = SubMatrix(row_start, best_range.start, row_end, best_range.end, best_range.sum);
+            }
+        }
+    }
+    return best;
 }
 
 /**
