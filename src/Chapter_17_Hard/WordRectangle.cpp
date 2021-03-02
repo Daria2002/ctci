@@ -1,4 +1,24 @@
 #include <iostream>
+#include <vector>
+#include "trie/Trie.hpp"
+
+class Rectangle
+{
+    public:
+        int height = 0, length;
+        std::vector<std::vector<int>> matrix;
+        Rectangle() = default;
+        Rectangle(int l): length(l) {}
+};
+
+class WordGroup
+{
+    public:
+        static std::vector<WordGroup> create_word_groups(std::vector<std::string> words)
+        {
+            // todo
+        }
+};
 
 /**
  * Word Rectangle: Given a list of millions of words, design an algorithm to create the largest possible
@@ -8,5 +28,9 @@
  */
 int main()
 {
-
+    std::vector<std::string> words;
+    std::vector<WordGroup> groupList = WordGroup::create_word_groups(words);
+    int maxWordLen = groupList.size();
+    std::vector<Trie> tries(maxWordLen);
+    // todo
 }
