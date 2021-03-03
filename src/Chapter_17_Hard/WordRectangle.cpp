@@ -8,7 +8,7 @@ class Rectangle
         std::vector<std::vector<char>> matrix;
         Rectangle() = default;
         Rectangle(int l): length(l) {}
-        Rectangle(int l, int h, std::vector<std::vector<char>> letters) : length(l), height(h), matrix(lette) {}
+        Rectangle(int l, int h, std::vector<std::vector<char>> letters) : length(l), height(h), matrix(letters) {}
         char get_letter(int i, int j) { return matrix[i][j]; }
 };
 
@@ -19,6 +19,14 @@ class WordGroup
         {
             // todo
         }
+};
+
+class Trie
+{
+    public:
+        Trie() = default;
+        Trie(int l) : len(l) {}
+        int len;
 };
 
 /**
