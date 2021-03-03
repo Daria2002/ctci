@@ -1,14 +1,15 @@
 #include <iostream>
 #include <vector>
-#include "trie/Trie.hpp"
 
 class Rectangle
 {
     public:
         int height = 0, length;
-        std::vector<std::vector<int>> matrix;
+        std::vector<std::vector<char>> matrix;
         Rectangle() = default;
         Rectangle(int l): length(l) {}
+        Rectangle(int l, int h, std::vector<std::vector<char>> letters) : length(l), height(h), matrix(lette) {}
+        char get_letter(int i, int j) { return matrix[i][j]; }
 };
 
 class WordGroup
