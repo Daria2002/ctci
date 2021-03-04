@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include "trie/Trie.hpp"
 
 class Rectangle
 {
@@ -21,13 +22,28 @@ class WordGroup
         }
 };
 
-class Trie
+bool make_rectangle(Rectangle rectangle, int i, int j)
 {
-    public:
-        Trie() = default;
-        Trie(int l) : len(l) {}
-        int len;
-};
+    // todo
+}
+
+Rectangle maxRectangle(const int maxWordLength)
+{
+    int maxSize = maxWordLength * maxWordLength;
+    Rectangle rectangle;
+    for(int z = maxSize; z > 0; z--)
+    {
+        for(int i = 1; i <= maxWordLength; i++)
+        {
+            if(z % i) continue;
+            int j = z / i;
+            if(j <= maxWordLength)
+            {
+                if(make_rectangle(rectangle, i, j)) return rectangle;
+            }
+        }
+    }
+}
 
 /**
  * Word Rectangle: Given a list of millions of words, design an algorithm to create the largest possible
