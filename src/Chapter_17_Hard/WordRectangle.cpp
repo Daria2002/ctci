@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "trie/Trie.hpp"
+#include <algorithm>
 #include <unordered_map>
 
 class Rectangle
@@ -21,7 +22,7 @@ class WordGroup
         std::vector<std::string> group;
         bool contains_word(std::string s) const
         {
-            return std::find(lookup.begin(), lookup.end(), s) != lookup.end();
+            return lookup.find(s) != lookup.end();
         }
         int len() const
         {
@@ -85,6 +86,11 @@ Rectangle maxRectangle(const int maxWordLength)
     }
 }
 
+std::vector<std::string> generate_words()
+{
+    // todo
+}
+
 /**
  * Word Rectangle: Given a list of millions of words, design an algorithm to create the largest possible
  * rectangle of letters such that every row forms a word (reading left to right) and every column forms 
@@ -93,7 +99,7 @@ Rectangle maxRectangle(const int maxWordLength)
  */
 int main()
 {
-    std::vector<std::string> words;
+    std::vector<std::string> words = generate_words();
     std::vector<WordGroup> groupList = WordGroup::create_word_groups(words);
     int maxWordLen = groupList.size();
     std::vector<Trie> tries(maxWordLen);
