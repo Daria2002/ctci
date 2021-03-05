@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "trie/Trie.hpp"
+#include <unordered_map>
 
 class Rectangle
 {
@@ -16,9 +17,48 @@ class Rectangle
 class WordGroup
 {
     public:
+        std::unordered_map<std::string, bool> lookup;
+        std::vector<std::string> group;
+        bool contains_word(std::string s) const
+        {
+            return std::find(lookup.begin(), lookup.end(), s) != lookup.end();
+        }
+        int len() const
+        {
+            return group.size();
+        }
+        std::string get_word(const int i) const
+        {
+            return group[i];
+        }
+        std::vector<std::string> get_words() const
+        {
+            return group;
+        }
+        void add_word(const std::string s)
+        {
+            group.push_back(s);
+            lookup[s] = true;
+        }
         static std::vector<WordGroup> create_word_groups(std::vector<std::string> words)
         {
-            // todo
+            int max_word_len = 0;
+            // find the length of the longest word
+            for(int i = 0; i < words.size(); i++)
+            {
+                if(words[i].size() > max_word_len)
+                {
+                    max_word_len = words[i].size();
+                }
+            }
+            std::vector<WordGroup> group_list(max_word_len);
+            // group the words in the dictionary into lists of words of the same length
+            for(int i = 0; i < words.size(); i++)
+            {
+                int word_len = words[i].size() - 1; // word len is index for a word with some len
+                group_list[word_len].add_word(words[i]);
+            }
+            return group_list;
         }
 };
 
