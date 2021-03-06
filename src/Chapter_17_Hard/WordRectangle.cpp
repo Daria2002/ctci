@@ -13,6 +13,31 @@ class Rectangle
         Rectangle(int l): length(l) {}
         Rectangle(int l, int h, std::vector<std::vector<char>> letters) : length(l), height(h), matrix(letters) {}
         char get_letter(int i, int j) { return matrix[i][j]; }
+
+        std::string get_col(const int col_num)
+        {
+            std::string col = "";
+            for(int i = 0; i < height; i++)
+            {
+                col += matrix[i][col_num];
+            }
+            return col;
+        }
+
+        // check if all columns are valid. All rows are already known to be valid since they were added from the dict.
+        bool is_complete(int l, int h, WordGroup group_list)
+        {
+            if(height == h)
+            {
+                for(int i = 0; i < l; i++)
+                {
+                    std::string col = get_col(i);
+                    if(!group_list.contains_word(col)) return false;
+                }
+                return true;
+            }
+            return false;
+        }
 };
 
 class WordGroup
@@ -63,12 +88,16 @@ class WordGroup
         }
 };
 
-bool make_rectangle(Rectangle rectangle, int i, int j)
+/**
+ * This function returns true (and changes Rectangle object) if it's possible to 
+ * create rectangle of specific height and length, otherwise false.
+ */
+bool make_rectangle(const std::vector<WordGroup>& group_list, Rectangle& rectangle, const int i, const int j)
 {
     // todo
 }
 
-Rectangle maxRectangle(const int maxWordLength)
+Rectangle maxRectangle(const std::vector<WordGroup>& group_list, const int maxWordLength)
 {
     int maxSize = maxWordLength * maxWordLength;
     Rectangle rectangle;
@@ -80,7 +109,7 @@ Rectangle maxRectangle(const int maxWordLength)
             int j = z / i;
             if(j <= maxWordLength)
             {
-                if(make_rectangle(rectangle, i, j)) return rectangle;
+                if(make_rectangle(group_list, rectangle, i, j)) return rectangle;
             }
         }
     }
