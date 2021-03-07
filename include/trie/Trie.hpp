@@ -17,6 +17,11 @@ class Trie
             }
         }
 
+        Trie(std::vector<std::string> words)
+        {
+            for(std::string word : words) insert(word);
+        }
+
         void insert(std::string);
         bool search(std::string);
         bool have_children(Trie const*);

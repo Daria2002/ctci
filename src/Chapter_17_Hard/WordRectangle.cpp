@@ -4,42 +4,6 @@
 #include <algorithm>
 #include <unordered_map>
 
-class Rectangle
-{
-    public:
-        int height = 0, length;
-        std::vector<std::vector<char>> matrix;
-        Rectangle() = default;
-        Rectangle(int l): length(l) {}
-        Rectangle(int l, int h, std::vector<std::vector<char>> letters) : length(l), height(h), matrix(letters) {}
-        char get_letter(int i, int j) { return matrix[i][j]; }
-
-        std::string get_col(const int col_num)
-        {
-            std::string col = "";
-            for(int i = 0; i < height; i++)
-            {
-                col += matrix[i][col_num];
-            }
-            return col;
-        }
-
-        // check if all columns are valid. All rows are already known to be valid since they were added from the dict.
-        bool is_complete(int l, int h, WordGroup group_list)
-        {
-            if(height == h)
-            {
-                for(int i = 0; i < l; i++)
-                {
-                    std::string col = get_col(i);
-                    if(!group_list.contains_word(col)) return false;
-                }
-                return true;
-            }
-            return false;
-        }
-};
-
 class WordGroup
 {
     public:
@@ -88,16 +52,64 @@ class WordGroup
         }
 };
 
-/**
- * This function returns true (and changes Rectangle object) if it's possible to 
- * create rectangle of specific height and length, otherwise false.
- */
-bool make_rectangle(const std::vector<WordGroup>& group_list, Rectangle& rectangle, const int i, const int j)
+class Rectangle
+{
+    public:
+        int height = 0, length;
+        std::vector<std::vector<char>> matrix;
+        Rectangle() = default;
+        Rectangle(int l): length(l) {}
+        Rectangle(int l, int h, std::vector<std::vector<char>> letters) : length(l), height(h), matrix(letters) {}
+        char get_letter(int i, int j) { return matrix[i][j]; }
+
+        std::string get_col(const int col_num)
+        {
+            std::string col = "";
+            for(int i = 0; i < height; i++)
+            {
+                col += matrix[i][col_num];
+            }
+            return col;
+        }
+
+        // check if all columns are valid. All rows are already known to be valid since they were added from the dict.
+        bool is_complete(int l, int h, WordGroup group_list)
+        {
+            if(height == h)
+            {
+                for(int i = 0; i < l; i++)
+                {
+                    std::string col = get_col(i);
+                    if(!group_list.contains_word(col)) return false;
+                }
+                return true;
+            }
+            return false;
+        }
+};
+
+Rectangle make_partial_rectangle(const int l, const int h, Rectangle rectangle)
 {
     // todo
 }
 
-Rectangle maxRectangle(const std::vector<WordGroup>& group_list, const int maxWordLength)
+/**
+ * This function returns true (and changes Rectangle object) if it's possible to 
+ * create rectangle of specific height and length, otherwise false.
+ */
+bool make_rectangle(const std::vector<WordGroup>& group_list, Rectangle& rectangle, std::vector<Trie>& trie_list, const int l, const int h)
+{
+    if(group_list[l - 1].len() == 0 || group_list[h - 1].len() == 0) return false;
+    if(trie_list[h - 1].is_leaf)
+    {
+        std::vector<std::string> words = group_list[h - 1].get_words();
+        trie_list[h - 1] = Trie(words);
+    }
+    rectangle = make_partial_rectangle(l, h, Rectangle(l));
+    return true;
+}
+
+Rectangle maxRectangle(const std::vector<WordGroup>& group_list, std::vector<Trie>& trie_list, const int maxWordLength)
 {
     int maxSize = maxWordLength * maxWordLength;
     Rectangle rectangle;
@@ -109,7 +121,7 @@ Rectangle maxRectangle(const std::vector<WordGroup>& group_list, const int maxWo
             int j = z / i;
             if(j <= maxWordLength)
             {
-                if(make_rectangle(group_list, rectangle, i, j)) return rectangle;
+                if(make_rectangle(group_list, rectangle, trie_list, i, j)) return rectangle;
             }
         }
     }
@@ -117,7 +129,24 @@ Rectangle maxRectangle(const std::vector<WordGroup>& group_list, const int maxWo
 
 std::vector<std::string> generate_words()
 {
-    // todo
+    std::vector<std::string> words;
+    words.push_back("ssssss");
+    words.push_back("ju");
+    words.push_back("love");
+    words.push_back("like");
+    words.push_back("oioi");
+    words.push_back("koji");
+    words.push_back("voji");
+    words.push_back("eiji");
+    words.push_back("eiii");
+    words.push_back("le");
+    words.push_back("l");
+    words.push_back("oioioi");
+    words.push_back("kojjjji");
+    words.push_back("zszzs");
+    words.push_back("sasasa");
+    words.push_back("ppp");
+    return words;
 }
 
 /**
