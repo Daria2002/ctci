@@ -175,22 +175,22 @@ Rectangle maxRectangle(const std::vector<WordGroup>& group_list, std::vector<Tri
 std::vector<std::string> generate_words()
 {
     std::vector<std::string> words;
-    words.push_back("ssssss");
-    words.push_back("ju");
-    words.push_back("love");
-    words.push_back("like");
-    words.push_back("oioi");
-    words.push_back("koji");
-    words.push_back("voji");
-    words.push_back("eiji");
-    words.push_back("eiii");
-    words.push_back("le");
-    words.push_back("l");
-    words.push_back("oioioi");
-    words.push_back("kojjjji");
-    words.push_back("zszzs");
-    words.push_back("sasasa");
-    words.push_back("ppp");
+    words.push_back("abc");
+    words.push_back("ab");
+    words.push_back("bc");
+    words.push_back("cd");
+    words.push_back("abcd");
+    words.push_back("bcda");
+    words.push_back("cdab");
+    words.push_back("dabc");
+    words.push_back("aaa");
+    words.push_back("bbbbbbb");
+    words.push_back("ccccc");
+    words.push_back("d");
+    words.push_back("cdcdcdcd");
+    words.push_back("adbaba");
+    words.push_back("ada");
+    words.push_back("bab");
     return words;
 }
 
