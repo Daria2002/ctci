@@ -126,7 +126,7 @@ Rectangle make_partial_rectangle(const int l, const int h, Rectangle rectangle, 
     // go through all words of the right len. Add each one to the curr partial rect, and attempt to build a rect recursively
     for(int i = 0; i < group_list[l - 1].len(); i++)
     {
-        Rectangle orgPlus = rectangle.append(group_list[l - 1].get_words());
+        Rectangle orgPlus = rectangle.append(group_list[l - 1].get_word(i));
         // try to build a rectangle with this new, partial rectangle
         Rectangle rect = make_partial_rectangle(l, h, orgPlus, group_list, trie_list);
         if(rect.initialized)
