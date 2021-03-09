@@ -83,9 +83,14 @@ class Rectangle
         /**
          * Create a new rectangle by taking the rows of the current rectangle and appending s
          */
-        Rectangle append(std::string s)
+        Rectangle append(const std::string s)
         {
-            // todo
+            Rectangle r = *this;
+            for(int i = 0; i < r.matrix[0].size(); i++)
+            {
+                r.matrix[r.matrix.size()][i] = s.at(i);
+            }
+            return r;
         }
 
         std::string get_col(const int col_num)
