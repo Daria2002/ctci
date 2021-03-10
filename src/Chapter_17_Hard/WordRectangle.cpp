@@ -86,10 +86,9 @@ class Rectangle
         Rectangle append(const std::string s)
         {
             Rectangle r = *this;
-            for(int i = 0; i < r.matrix[0].size(); i++)
-            {
-                r.matrix[r.matrix.size()][i] = s.at(i);
-            }
+            std::vector<char> row;
+            for(int i = 0; i < s.size(); i++) row.push_back(s[i]);
+            r.matrix.push_back(row);
             return r;
         }
 
@@ -211,5 +210,5 @@ int main()
     std::vector<WordGroup> groupList = WordGroup::create_word_groups(words);
     int maxWordLen = groupList.size();
     std::vector<Trie> tries(maxWordLen);
-    // todo
+    Rectangle r = maxRectangle(groupList, tries, maxWordLen);
 }
