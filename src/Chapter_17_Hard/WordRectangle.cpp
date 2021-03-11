@@ -200,6 +200,7 @@ bool make_rectangle(const std::vector<WordGroup>& group_list, Rectangle& rectang
         trie_list[h - 1] = Trie(words);
     }
     rectangle = make_partial_rectangle(l, h, Rectangle(l), group_list, trie_list);
+    std::cout << "Is ini = " << (rectangle.initialized ? "true" : "false") << '\n';
     return true;
 }
 
@@ -215,32 +216,38 @@ Rectangle maxRectangle(const std::vector<WordGroup>& group_list, std::vector<Tri
             int j = z / i;
             if(j <= maxWordLength)
             {
-                if(make_rectangle(group_list, rectangle, trie_list, i, j)) return rectangle;
+                if(make_rectangle(group_list, rectangle, trie_list, i, j)) 
+                {
+                    std::cout << "rect created\n";
+                    return rectangle;
+                }
             }
         }
     }
-    return Rectangle();
+    return Rectangle(false);
 }
 
 std::vector<std::string> generate_words()
 {
     std::vector<std::string> words;
-    words.push_back("abc");
+    // words.push_back("abc");
+    // words.push_back("ab");
+    // words.push_back("bc");
+    // words.push_back("cd");
+    // words.push_back("abcd");
+    // words.push_back("bcda");
+    // words.push_back("cdab");
+    // words.push_back("dabc");
+    // words.push_back("aaa");
+    // words.push_back("bbbbbbb");
+    // words.push_back("ccccc");
+    // words.push_back("d");
+    // words.push_back("cdcdcdcd");
+    // words.push_back("adbaba");
+    // words.push_back("ada");
+    // words.push_back("bab");
     words.push_back("ab");
-    words.push_back("bc");
-    words.push_back("cd");
-    words.push_back("abcd");
-    words.push_back("bcda");
-    words.push_back("cdab");
-    words.push_back("dabc");
-    words.push_back("aaa");
-    words.push_back("bbbbbbb");
-    words.push_back("ccccc");
-    words.push_back("d");
-    words.push_back("cdcdcdcd");
-    words.push_back("adbaba");
-    words.push_back("ada");
-    words.push_back("bab");
+    words.push_back("bb");
     return words;
 }
 
@@ -257,4 +264,7 @@ int main()
     int maxWordLen = groupList.size();
     std::vector<Trie> tries(maxWordLen);
     Rectangle r = maxRectangle(groupList, tries, maxWordLen);
+    r.print();
 }
+
+// todo: try small example - 2 letters 
