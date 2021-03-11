@@ -55,23 +55,38 @@ class WordGroup
 class Rectangle
 {
     public:
-        int height = 0, length;
         bool initialized = false;
         std::vector<std::vector<char>> matrix;
         Rectangle() = default;
-        Rectangle(int l): length(l) 
+        Rectangle(bool ini) : initialized(ini) {}
+        Rectangle(int l): l_(l) 
         {
             initialized = true;
         }
-        Rectangle(int l, int h, std::vector<std::vector<char>> letters) : length(l), height(h), matrix(letters) 
+        Rectangle(int l, int h, std::vector<std::vector<char>> letters) : l_(l), h_(h), matrix(letters) 
         {
             initialized = true;
         }
-        char get_letter(int i, int j) { return matrix[i][j]; }
+        char get_letter(int i, int j) const
+        { 
+            return matrix[i][j]; 
+        }
 
-        bool is_partial_OK(int l, Trie trie)
+        void print() const
         {
-            if(height == 0) return true;
+            for(int i = 0; i < matrix.size(); i++)
+            {
+                for(int j = 0; j < matrix[i].size(); j++)
+                {
+                    std::cout << matrix[i][j] << ' ';
+                }
+                std::cout << "\n";
+            }
+        }
+
+        bool is_partial_OK(int l, Trie trie) const
+        {
+            if(height() == 0) return true;
             for(int i = 0; i < l; i++)
             {
                 std::string col = get_col(i);
@@ -92,10 +107,10 @@ class Rectangle
             return r;
         }
 
-        std::string get_col(const int col_num)
+        std::string get_col(const int col_num) const
         {
             std::string col = "";
-            for(int i = 0; i < height; i++)
+            for(int i = 0; i < height(); i++)
             {
                 col += matrix[i][col_num];
             }
@@ -103,9 +118,9 @@ class Rectangle
         }
 
         // check if all columns are valid. All rows are already known to be valid since they were added from the dict.
-        bool is_complete(int l, int h, WordGroup group_list)
+        bool is_complete(int l, int h, WordGroup group_list) const
         {
-            if(height == h)
+            if(height() == h)
             {
                 for(int i = 0; i < l; i++)
                 {
@@ -116,29 +131,60 @@ class Rectangle
             }
             return false;
         }
+        int height() const
+        {
+            return matrix.size();
+        }
+    private:
+        int h_ = 0, l_;
 };
 
-Rectangle make_partial_rectangle(const int l, const int h, Rectangle rectangle, std::vector<WordGroup> group_list, std::vector<Trie>& trie_list)
+Rectangle make_partial_rectangle(const int l, const int h, Rectangle rectangle, const std::vector<WordGroup>& group_list, const std::vector<Trie>& trie_list)
 {
-    if(rectangle.height == h) // check if complete rectangle
+    std::cout << "l = " << l << ", h = " << h << '\n';
+    std::cout << "start\n";
+    rectangle.print();
+    if(rectangle.height() == h) // check if complete rectangle
     {
-        if(rectangle.is_complete(l, h, group_list[h - 1])) return rectangle;
-        return Rectangle();
+        std::cout << "complete rect\n";
+        if(rectangle.is_complete(l, h, group_list[h - 1])) 
+        {
+            std::cout << "end here\n";
+            return rectangle;
+        }
+        std::cout << "h == h end\n";
+        Rectangle r(false);
+        return r;
     }
+    std::cout << "after 1st if\n";
     // compare columns to trie to see if potentially valid rectangle
-    if(!rectangle.is_partial_OK(l, trie_list[h - 1])) return Rectangle();
+    if(!rectangle.is_partial_OK(l, trie_list[h - 1])) 
+    {
+        std::cout << "not ok - end\n";
+        Rectangle r(false);
+        return r;
+    }
     // go through all words of the right len. Add each one to the curr partial rect, and attempt to build a rect recursively
     for(int i = 0; i < group_list[l - 1].len(); i++)
     {
+        std::cout << "for loop\n";
         Rectangle orgPlus = rectangle.append(group_list[l - 1].get_word(i));
+        std::cout << "orgplus created\n";
+        std::cout << "word = " << group_list[l-1].get_word(i) << '\n';
+        std::cout << "len = " << group_list[l - 1].len() << '\n';
+        std::cout << "i = " << i << '\n';
         // try to build a rectangle with this new, partial rectangle
         Rectangle rect = make_partial_rectangle(l, h, orgPlus, group_list, trie_list);
+        std::cout << "rect created\n";
         if(rect.initialized)
         {
+            std::cout << "rect ini - end\n";
             return rect;
         }
     }
-    return Rectangle();
+    std::cout << "last end\n";
+    Rectangle r(false);
+    return r;
 }
 
 /**
