@@ -9,7 +9,7 @@ class WordGroup
     public:
         std::unordered_map<std::string, bool> lookup;
         std::vector<std::string> group;
-        bool contains_word(std::string s) const
+        bool contains_word(const std::string s) const
         {
             return lookup.find(s) != lookup.end();
         }
@@ -30,7 +30,7 @@ class WordGroup
             group.push_back(s);
             lookup[s] = true;
         }
-        static std::vector<WordGroup> create_word_groups(std::vector<std::string> words)
+        static std::vector<WordGroup> create_word_groups(const std::vector<std::string>& words)
         {
             int max_word_len = 0;
             // find the length of the longest word
@@ -67,7 +67,7 @@ class Rectangle
         {
             initialized = true;
         }
-        char get_letter(int i, int j) const
+        char get_letter(const int i, const int j) const
         { 
             return matrix[i][j]; 
         }
@@ -84,7 +84,7 @@ class Rectangle
             }
         }
 
-        bool is_partial_OK(int l, Trie trie) const
+        bool is_partial_OK(const int l, Trie trie) const
         {
             if(height() == 0) return true;
             for(int i = 0; i < l; i++)
@@ -118,7 +118,7 @@ class Rectangle
         }
 
         // check if all columns are valid. All rows are already known to be valid since they were added from the dict.
-        bool is_complete(int l, int h, WordGroup group_list) const
+        bool is_complete(const int l, const int h, const WordGroup& group_list) const
         {
             if(height() == h)
             {
