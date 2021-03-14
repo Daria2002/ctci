@@ -264,7 +264,9 @@ int main()
     int maxWordLen = groupList.size();
     std::vector<Trie> tries(maxWordLen);
     Rectangle r = maxRectangle(groupList, tries, maxWordLen);
+    std::cout << "Final rectangle:\n";
     r.print();
 }
 
 // todo: try small example - 2 letters 
+// todo: compare with solution in book
