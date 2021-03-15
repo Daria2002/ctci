@@ -194,7 +194,7 @@ Rectangle make_partial_rectangle(const int l, const int h, Rectangle rectangle, 
 bool make_rectangle(const std::vector<WordGroup>& group_list, Rectangle& rectangle, std::vector<Trie>& trie_list, const int l, const int h)
 {
     if(group_list[l - 1].len() == 0 || group_list[h - 1].len() == 0) return false;
-    if(trie_list[h - 1].is_leaf)
+    if(!trie_list[h - 1].is_ini)
     {
         std::vector<std::string> words = group_list[h - 1].get_words();
         trie_list[h - 1] = Trie(words);
@@ -269,4 +269,4 @@ int main()
 }
 
 // todo: try small example - 2 letters 
-// todo: compare with solution in book
+// todo: compare with solution in book - make rectangle - see why it doesn't insert

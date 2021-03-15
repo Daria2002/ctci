@@ -6,6 +6,7 @@ class Trie
 {
     public:
         bool is_leaf;
+        bool is_ini = false;
         Trie* character[CHAR_SIZE];
 
         Trie()
@@ -19,7 +20,9 @@ class Trie
 
         Trie(std::vector<std::string> words)
         {
+            Trie();
             for(std::string word : words) insert(word);
+            is_ini = true;
         }
 
         void insert(std::string);
@@ -33,6 +36,8 @@ void Trie::insert(std::string key)
     Trie* curr = this;
     for(int i = 0; i < key.length(); i++)
     {
+        std::cout << "Key[i] = " << key[i] << '\n';
+        std::cout << "ch[Key[i]] = " << curr->character[key[i]] << '\n';
         if(curr -> character[key[i]] == nullptr)
         {
             curr -> character[key[i]] = new Trie();
