@@ -144,18 +144,13 @@ class Rectangle
 Rectangle make_partial_rectangle(const int l, const int h, Rectangle rectangle, const std::vector<WordGroup>& group_list, 
 const std::vector<Trie*>& trie_list)
 {
-    std::cout << "l = " << l << ", h = " << h << '\n';
-    std::cout << "start\n";
     rectangle.print();
     if(rectangle.height() == h) // check if complete rectangle
     {
-        std::cout << "complete rect\n";
         if(rectangle.is_complete(l, h, group_list[h - 1])) 
         {
-            std::cout << "end here\n";
             return rectangle;
         }
-        std::cout << "h == h end\n";
         Rectangle r(false);
         return r;
     }
@@ -163,29 +158,23 @@ const std::vector<Trie*>& trie_list)
     // compare columns to trie to see if potentially valid rectangle
     if(!rectangle.is_partial_OK(l, trie_list[h - 1])) 
     {
-        std::cout << "not ok - end\n";
         Rectangle r(false);
+        std::cout << "nok\n";
         return r;
     }
     // go through all words of the right len. Add each one to the curr partial rect, and attempt to build a rect recursively
     for(int i = 0; i < group_list[l - 1].len(); i++)
     {
-        std::cout << "for loop\n";
         Rectangle orgPlus = rectangle.append(group_list[l - 1].get_word(i));
-        std::cout << "orgplus created\n";
-        std::cout << "word = " << group_list[l-1].get_word(i) << '\n';
-        std::cout << "len = " << group_list[l - 1].len() << '\n';
-        std::cout << "i = " << i << '\n';
         // try to build a rectangle with this new, partial rectangle
         Rectangle rect = make_partial_rectangle(l, h, orgPlus, group_list, trie_list);
-        std::cout << "rect created\n";
         if(rect.initialized)
         {
-            std::cout << "rect ini - end\n";
+            std::cout << "rect ini\n";
             return rect;
         }
     }
-    std::cout << "last end\n";
+    std::cout << "end\n";
     Rectangle r(false);
     return r;
 }
@@ -203,8 +192,7 @@ bool make_rectangle(const std::vector<WordGroup>& group_list, Rectangle& rectang
         trie_list[h - 1] = new Trie(words);
     }
     rectangle = make_partial_rectangle(l, h, Rectangle(l), group_list, trie_list);
-    std::cout << "Is ini = " << (rectangle.initialized ? "true" : "false") << '\n';
-    return true;
+    return rectangle.initialized; // before:true
 }
 
 Rectangle maxRectangle(const std::vector<WordGroup>& group_list, std::vector<Trie*>& trie_list, const int maxWordLength)
@@ -219,10 +207,16 @@ Rectangle maxRectangle(const std::vector<WordGroup>& group_list, std::vector<Tri
             int j = z / i;
             if(j <= maxWordLength)
             {
+                std::cout << "l = i = " << i << '\n';
+                std::cout << "h = j = " << j << '\n';
                 if(make_rectangle(group_list, rectangle, trie_list, i, j)) 
                 {
                     std::cout << "rect created\n";
                     return rectangle;
+                }
+                else 
+                {
+                    std::cout << "rect not created\n";
                 }
             }
         }
@@ -252,6 +246,7 @@ std::vector<std::string> generate_words()
     words.push_back("ab");
     words.push_back("a");
     words.push_back("b");
+
     return words;
 }
 
