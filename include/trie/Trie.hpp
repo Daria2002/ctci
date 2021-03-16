@@ -1,18 +1,18 @@
 #include <iostream>
 
-#define CHAR_SIZE 128
+#define ALPHABET_SIZE 26
 
 class Trie
 {
     public:
         bool is_leaf;
         bool is_ini = false;
-        Trie* character[CHAR_SIZE];
+        Trie* character[ALPHABET_SIZE];
 
         Trie()
         {
             is_leaf = false;
-            for(int i = 0; i < CHAR_SIZE; i++)
+            for(int i = 0; i < ALPHABET_SIZE; i++)
             {
                 character[i] = nullptr;
             }
@@ -29,22 +29,37 @@ class Trie
         bool search(std::string);
         bool have_children(Trie const*);
         Trie* get_child(char letter);
+        static Trie* get_node();
 };
+
+Trie* Trie::get_node()
+{
+    Trie* t = new Trie;
+    t->is_leaf = false;
+    for(int i = 0; i < ALPHABET_SIZE; i++)
+    {
+        t->character[i] = nullptr;
+    }
+    return t;
+}
 
 void Trie::insert(std::string key)
 {
-    Trie* curr = new Trie();
-    curr = this;
+    Trie* curr = this;
     for(int i = 0; i < key.length(); i++)
     {
-        if(curr -> character[key[i]] == nullptr)
+        int index = key[i] - 'a';
+        if(curr -> character[index] == nullptr)
         {
-            curr -> character[key[i]] = new Trie();
+            curr -> character[index] = get_node();
         }
-        curr = curr -> character[key[i]];
+        curr = curr -> character[index];
+    }
+    if(curr == nullptr)
+    {
+        std::cout << "curr = nullptr\n"; 
     }
     curr -> is_leaf = true;
-    delete curr;
 }
 
 bool Trie::search(std::string key)
@@ -61,7 +76,7 @@ bool Trie::search(std::string key)
 
 bool Trie::have_children(Trie const* curr)
 {   
-    for(int i = 0; i < CHAR_SIZE; i++)
+    for(int i = 0; i < ALPHABET_SIZE; i++)
     {
         if(curr -> character[i]) return true;
     }
