@@ -11,10 +11,10 @@ class Trie
 
         Trie()
         {
-            this -> is_leaf = false;
+            is_leaf = false;
             for(int i = 0; i < CHAR_SIZE; i++)
             {
-                this -> character[i] = nullptr;
+                character[i] = nullptr;
             }
         }
 
@@ -33,11 +33,10 @@ class Trie
 
 void Trie::insert(std::string key)
 {
-    Trie* curr = this;
+    Trie* curr = new Trie();
+    curr = this;
     for(int i = 0; i < key.length(); i++)
     {
-        std::cout << "Key[i] = " << key[i] << '\n';
-        std::cout << "ch[Key[i]] = " << curr->character[key[i]] << '\n';
         if(curr -> character[key[i]] == nullptr)
         {
             curr -> character[key[i]] = new Trie();
@@ -45,6 +44,7 @@ void Trie::insert(std::string key)
         curr = curr -> character[key[i]];
     }
     curr -> is_leaf = true;
+    delete curr;
 }
 
 bool Trie::search(std::string key)

@@ -63,8 +63,10 @@ class Rectangle
         {
             initialized = true;
         }
-        Rectangle(int l, int h, std::vector<std::vector<char>> letters) : l_(l), h_(h), matrix(letters) 
+        Rectangle(int l, int h, std::vector<std::vector<char>> letters)
         {
+            h_ = letters.size();
+            l_ = letters[0].size();
             initialized = true;
         }
         char get_letter(const int i, const int j) const
@@ -268,5 +270,4 @@ int main()
     r.print();
 }
 
-// todo: try small example - 2 letters 
-// todo: compare with solution in book - make rectangle - see why it doesn't insert
+// todo: ask L for help
