@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 class Document
 {
@@ -14,7 +15,7 @@ std::vector<Document> get_documents()
 {
     std::vector<Document> documents;
     documents.push_back(Document(13, {14, 15, 100, 9, 3}));
-    documents.push_back(Document(32, {32, 1, 9, 3, 5}));
+    documents.push_back(Document(16, {32, 1, 9, 3, 5}));
     documents.push_back(Document(19, {15, 29, 2, 6, 8, 7}));
     documents.push_back(Document(24, {7, 10}));
     return documents;
@@ -23,14 +24,43 @@ std::vector<Document> get_documents()
 class Similarity
 {
     public:
-        int id1, id2, similarity;
+        int id1, id2;
+        double similarity;
         Similarity() = default;
-        Similarity(int i1, int i2, int s) : id1(i1), id2(i2), similarity(s) {}
+        Similarity(int i1, int i2, double s) : id1(i1), id2(i2), similarity(s) {}
 };
 
-std::vector<Similarity> similarities_bf(std::vector<Document> documents)
+int get_intersection_bf(const std::vector<int>& els1, const std::vector<int>& els2)
+{   
+    int intersection = 0;
+    for(int el1 : els1)
+    {
+        intersection += std::count_if(els2.begin(), els2.end(), [&](int el) { return el == el1; });
+    }
+    return intersection;
+}
+
+Similarity calculate_similarity(const Document& doc1, const Document& doc2)
 {
-    // todo
+    const double _intersection = get_intersection_bf(doc1.elements, doc2.elements);
+    const double _union = doc1.elements.size() + doc2.elements.size() - _intersection;
+    return Similarity(doc1.document_id, doc2.document_id, _intersection/_union);
+}
+
+/**
+ * Time complexity: O(D^2*W^2)
+ */
+std::vector<Similarity> similarities_bf(const std::vector<Document>& documents)
+{
+    std::vector<Similarity> similarities;
+    for(int i = 0; i < documents.size(); i++)
+    {
+        for(int j = i + 1; j < documents.size(); j++)
+        {
+            similarities.push_back(calculate_similarity(documents[i], documents[j]));
+        }
+    }
+    return similarities;
 }
 
 std::vector<Similarity> similarities_better_bf(std::vector<Document> documents)
@@ -111,6 +141,7 @@ int main()
     std::cout << "ID1, ID2: SIMILARITY\n";
     for(Similarity s : similarities)
     {
+        if(s.similarity == 0) continue;
         std::cout << s.id1 << ", " << s.id2 << ": " << s.similarity << '\n';
     }
 }
