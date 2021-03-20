@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
+#include <unordered_set>
 
 class Document
 {
@@ -21,13 +23,17 @@ std::vector<Document> get_documents()
     return documents;
 }
 
-class Similarity
+class DocPair 
 {
     public:
         int id1, id2;
-        double similarity;
-        Similarity() = default;
-        Similarity(int i1, int i2, double s) : id1(i1), id2(i2), similarity(s) {}
+        DocPair() = default;
+        DocPair(int i1, int i2) : id1(i1), id2(i2) {}
+        
+        bool operator==(const DocPair &docPair) const
+        {
+            return (docPair.id1 == docPair.id2);
+        }
 };
 
 int get_intersection_bf(const std::vector<int>& els1, const std::vector<int>& els2)
@@ -40,45 +46,65 @@ int get_intersection_bf(const std::vector<int>& els1, const std::vector<int>& el
     return intersection;
 }
 
-Similarity calculate_similarity(const Document& doc1, const Document& doc2)
+double calculate_similarity_bf(const Document& doc1, const Document& doc2)
 {
     const double _intersection = get_intersection_bf(doc1.elements, doc2.elements);
     const double _union = doc1.elements.size() + doc2.elements.size() - _intersection;
-    return Similarity(doc1.document_id, doc2.document_id, _intersection/_union);
+    return _intersection/_union;
 }
 
-/**
- * Time complexity: O(D^2*W^2)
- */
-std::vector<Similarity> similarities_bf(const std::vector<Document>& documents)
+double calculate_similarity_better_bf(const Document& doc1, const Document& doc2)
 {
-    std::vector<Similarity> similarities;
+    double intersection = 0;
+    std::unordered_set<int> set1 (doc1.elements.begin(), doc1.elements.end());
+    for(auto el : doc2.elements)
+    {
+        if(set1.find(el) != set1.end()) intersection++;
+    }
+    double _union = doc1.elements.size() + doc2.elements.size() - intersection;
+    return intersection/_union;
+}
+
+struct Hash
+{
+    std::size_t operator()(const DocPair& docPair) const
+    {
+        std::hash<int> hash_f;
+        return hash_f(docPair.id1 * docPair.id2);
+    }
+};
+
+std::unordered_map<DocPair, double, Hash> similarities_bf(const std::vector<Document>& documents,
+double calculate_similarity(const Document&, const Document&))
+{
+    std::unordered_map<DocPair, double, Hash> similarities;
     for(int i = 0; i < documents.size(); i++)
     {
         for(int j = i + 1; j < documents.size(); j++)
         {
-            similarities.push_back(calculate_similarity(documents[i], documents[j]));
+            similarities[DocPair(documents[i].document_id, documents[j].document_id)] = 
+            calculate_similarity(documents[i], documents[j]);
         }
     }
     return similarities;
 }
 
-std::vector<Similarity> similarities_better_bf(std::vector<Document> documents)
+std::unordered_map<DocPair, double, Hash> similarities_little_optimization(std::vector<Document> documents)
 {
     // todo
 }
 
-std::vector<Similarity> similarities_little_optimization(std::vector<Document> documents)
+std::unordered_map<DocPair, double, Hash> similarities_little_alternate_optimization(std::vector<Document> documents)
 {
     // todo
 }
 
-std::vector<Similarity> similarities_optimized(std::vector<Document> documents)
+std::unordered_map<DocPair, double, Hash> similarities_optimized(std::vector<Document> documents)
 {
     // todo
 }
 
-std::vector<Similarity> similarities_alternative_optimized(std::vector<Document> documents)
+std::unordered_map<DocPair, double, Hash> similarities_alternative_optimized(std::vector<Document> documents)
 {
     // todo
 }
@@ -112,25 +138,31 @@ std::vector<Similarity> similarities_alternative_optimized(std::vector<Document>
  */  
 int main()
 {
-    std::cout << "Enter 1 for brute force, 2 for slightly better brute force, 3 for solution with a little\n"
-    "optimization, 4 for optimized solution or any other number for alternative optimized solution:\n";
+    std::cout << 
+    "Enter 1 for brute force, 2 for slightly better brute force, 3 for alternate slightly better brute force,\n"
+    "4 for solution with a little optimization, 5 for optimized solution or any other number for alternative\n"
+    "optimized solution:\n";
     int method;
     std::cin >> method;
     std::vector<Document> documents = get_documents();
-    std::vector<Similarity> similarities;
+    std::unordered_map<DocPair, double, Hash> similarities;
     if(method == 1)
     {
-        similarities = similarities_bf(documents);
+        similarities = similarities_bf(documents, calculate_similarity_bf);
     }
     else if(method == 2)
     {
-        similarities = similarities_better_bf(documents);
+        similarities = similarities_bf(documents, calculate_similarity_better_bf);
     }
     else if(method == 3)
     {
-        similarities = similarities_little_optimization(documents);
+        similarities = similarities_little_alternate_optimization(documents);
     }
     else if(method == 4)
+    {
+        similarities = similarities_little_optimization(documents);
+    }
+    else if(method == 5)
     {
         similarities = similarities_optimized(documents);
     }
@@ -139,9 +171,9 @@ int main()
         similarities = similarities_alternative_optimized(documents);
     }
     std::cout << "ID1, ID2: SIMILARITY\n";
-    for(Similarity s : similarities)
+    for(auto const& [docPair, similarity] : similarities)
     {
-        if(s.similarity == 0) continue;
-        std::cout << s.id1 << ", " << s.id2 << ": " << s.similarity << '\n';
+        if(similarity == 0) continue;
+        std::cout << docPair.id1 << ", " << docPair.id2 << ": " << similarity << '\n';
     }
 }
