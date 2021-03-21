@@ -11,6 +11,10 @@ class Document
         std::vector<int> elements;
         Document() = default;
         Document(int id, std::vector<int> el) : document_id(id), elements(el) {}
+        void sort()
+        {
+            std::sort(elements.begin(), elements.end());
+        }
 };
 
 std::vector<Document> get_documents()
@@ -65,6 +69,21 @@ double calculate_similarity_better_bf(const Document& doc1, const Document& doc2
     return intersection/_union;
 }
 
+double calculate_similarity_sorted(const Document& doc1, const Document& doc2)
+{
+    std::vector<int> els1 = doc1.elements;
+    std::vector<int> els2 = doc2.elements;
+    els1.insert(els1.end(), els2.begin(), els2.end()); // merge
+    std::sort(els1.begin(), els1.end());
+    double intersection = 0;
+    for(int i = 1; i < els1.size(); i++)
+    {
+        if(els1[i] == els1[i - 1]) intersection++;
+    }
+    double _union = doc1.elements.size() + doc2.elements.size() - intersection;
+    return intersection/_union;
+}
+
 struct Hash
 {
     std::size_t operator()(const DocPair& docPair) const
@@ -90,11 +109,6 @@ double calculate_similarity(const Document&, const Document&))
 }
 
 std::unordered_map<DocPair, double, Hash> similarities_little_optimization(std::vector<Document> documents)
-{
-    // todo
-}
-
-std::unordered_map<DocPair, double, Hash> similarities_little_alternate_optimization(std::vector<Document> documents)
 {
     // todo
 }
@@ -156,7 +170,7 @@ int main()
     }
     else if(method == 3)
     {
-        similarities = similarities_little_alternate_optimization(documents);
+        similarities = similarities_bf(documents, calculate_similarity_sorted);
     }
     else if(method == 4)
     {
