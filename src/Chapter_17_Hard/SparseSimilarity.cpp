@@ -33,12 +33,13 @@ class DocPair
         int id1, id2;
         DocPair() = default;
         DocPair(int i1, int i2) : id1(i1), id2(i2) {}
-        
-        bool operator==(const DocPair &docPair) const
-        {
-            return (docPair.id1 == docPair.id2);
-        }
 };
+
+bool operator==(const DocPair &docPair1, const DocPair& docPair2)
+{
+    return (docPair1.id1 == docPair2.id1 && docPair1.id2 == docPair2.id2) || 
+    (docPair1.id2 == docPair2.id1 && docPair1.id1 == docPair2.id2);
+}
 
 int get_intersection_bf(const std::vector<int>& els1, const std::vector<int>& els2)
 {   
@@ -108,9 +109,55 @@ double calculate_similarity(const Document&, const Document&))
     return similarities;
 }
 
+std::unordered_map<int, std::vector<int>> preprocess(std::vector<Document> documents)
+{
+    std::unordered_map<int, std::vector<int>> map_element_to_documents;
+    for(Document doc : documents)
+    {
+        for(int el : doc.elements)
+        {
+            if(map_element_to_documents.find(doc.document_id) == map_element_to_documents.end())
+            {
+                map_element_to_documents[el] = std::vector<int>();
+            }
+            map_element_to_documents[el].push_back(doc.document_id);
+        }
+    }
+    return map_element_to_documents;
+}
+
+std::vector<int> get_similar_documents(Document doc, std::unordered_map<int, std::vector<int>> map_element_to_documents)
+{
+    std::vector<int> similar_documents;
+    for(int i = 0; i < doc.elements.size(); i++)
+    {
+        std::vector<int> document_ids = map_element_to_documents[doc.elements[i]];
+        for(int j = 0; j < document_ids.size(); j++)
+        {
+            if(document_ids[j] == doc.document_id) continue;
+            similar_documents.push_back(document_ids[j]);
+        }
+    }
+    return similar_documents;
+}
+
 std::unordered_map<DocPair, double, Hash> similarities_little_optimization(std::vector<Document> documents)
 {
-    // todo
+    std::unordered_map<int, std::vector<int>> map_element_to_documents = preprocess(documents);
+    std::unordered_map<DocPair, double, Hash> similarities;
+    for(int i = 0; i < documents.size(); i++)
+    {
+        std::vector<int> similar_documents = get_similar_documents(documents[i], map_element_to_documents);
+        for(int k = 0; k < similar_documents.size(); k++)
+        {
+            DocPair docPair(documents[i].document_id, similar_documents[k]);
+            if(similarities.find(docPair) != similarities.end()) continue; // already in map
+            Document doc2 = std::find_if(documents.begin(), documents.end(), 
+            [&](const Document& doc) {return doc.document_id == similar_documents[k];})[0]; // [0] - there is only one element 
+            similarities[docPair] = calculate_similarity_bf(documents[i], doc2);
+        }
+    }
+    return similarities;
 }
 
 std::unordered_map<DocPair, double, Hash> similarities_optimized(std::vector<Document> documents)
