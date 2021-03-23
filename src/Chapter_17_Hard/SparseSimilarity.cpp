@@ -162,7 +162,27 @@ std::unordered_map<DocPair, double, Hash> similarities_little_optimization(std::
 
 std::unordered_map<DocPair, double, Hash> similarities_optimized(std::vector<Document> documents)
 {
-    // todo
+    std::unordered_map<int, std::vector<int>> map_element_to_documents = preprocess(documents);
+    std::unordered_map<DocPair, int, Hash> intersection_count;
+    for(int i = 0; i < documents.size(); i++)
+    {
+        std::vector<int> similar_documents = get_similar_documents(documents[i], map_element_to_documents);
+        for(int k = 0; k < similar_documents.size(); k++)
+        {
+            DocPair docPair(documents[i].document_id, similar_documents[k]);
+            intersection_count[docPair]++;
+        }
+    }
+    std::unordered_map<DocPair, double, Hash> similarities;
+    for(auto& [pair, count] : intersection_count)
+    {
+        Document doc1 = std::find_if(documents.begin(), documents.end(), 
+            [&](const Document& doc) {return doc.document_id == pair.id1;})[0];
+        Document doc2 = std::find_if(documents.begin(), documents.end(), 
+            [&](const Document& doc) {return doc.document_id == pair.id2;})[0];
+        similarities[pair] = count*1.0/(doc1.elements.size() + doc2.elements.size() - count);
+    }
+    return similarities;
 }
 
 std::unordered_map<DocPair, double, Hash> similarities_alternative_optimized(std::vector<Document> documents)
