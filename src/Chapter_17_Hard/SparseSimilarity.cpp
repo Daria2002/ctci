@@ -174,13 +174,15 @@ std::unordered_map<DocPair, double, Hash> similarities_optimized(const std::vect
         }
     }
     std::unordered_map<DocPair, double, Hash> similarities;
-    for(auto& [pair, count] : intersection_count)
+    for(auto& element : intersection_count)
     {
+        DocPair doc_pair = element.first;
+        int count = element.second;
         Document doc1 = std::find_if(documents.begin(), documents.end(), 
-            [&](const Document& doc) {return doc.document_id == pair.id1;})[0];
+            [&](const Document& doc) {return doc.document_id == doc_pair.id1;})[0];
         Document doc2 = std::find_if(documents.begin(), documents.end(), 
-            [&](const Document& doc) {return doc.document_id == pair.id2;})[0];
-        similarities[pair] = count*1.0/(doc1.elements.size() + doc2.elements.size() - count);
+            [&](const Document& doc) {return doc.document_id == doc_pair.id2;})[0];
+        similarities[doc_pair] = count*1.0/(doc1.elements.size() + doc2.elements.size() - count);
     }
     return similarities;
 }
@@ -233,16 +235,18 @@ std::unordered_map<DocPair, int, Hash> calculate_intersections(const std::vector
 }
 
 std::unordered_map<DocPair, double, Hash> intersections_to_similarities(const std::vector<Document>& documents, 
-std::unordered_map<DocPair, int, Hash> intersections)
+const std::unordered_map<DocPair, int, Hash>& intersections)
 {
     std::unordered_map<DocPair, double, Hash> similarities;
-    for(auto [pair, count_intersections] : intersections)
+    for(auto& element : intersections)
     {
+        DocPair doc_pair = element.first;
+        int count = element.second;
         Document doc1 = std::find_if(documents.begin(), documents.end(), 
-            [&](const Document& doc) {return doc.document_id == pair.id1;})[0];
+            [&](const Document& doc) {return doc.document_id == doc_pair.id1;})[0];
         Document doc2 = std::find_if(documents.begin(), documents.end(), 
-            [&](const Document& doc) {return doc.document_id == pair.id2;})[0];
-        similarities[pair] = count_intersections*1.0/(doc1.elements.size() + doc2.elements.size() - count_intersections);
+            [&](const Document& doc) {return doc.document_id == doc_pair.id2;})[0];
+        similarities[doc_pair] = count*1.0/(doc1.elements.size() + doc2.elements.size() - count);
     }
     return similarities;
 }
